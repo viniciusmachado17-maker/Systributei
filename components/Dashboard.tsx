@@ -782,8 +782,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           ))}
         </div>
 
-        <div className="relative group">
-          <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-600 transition-colors">
+        <div className="relative group flex flex-col md:block gap-3">
+          <div className="absolute left-6 top-[28px] md:top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-600 transition-colors">
             {mode === 'name' ? <i className="fa-solid fa-magnifying-glass"></i> : mode === 'barcode' ? <i className="fa-solid fa-barcode"></i> : <i className="fa-solid fa-hashtag"></i>}
           </div>
           <input
@@ -801,12 +801,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
             placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
-            className="w-full bg-white border border-slate-200 rounded-3xl py-6 pl-14 pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-lg font-medium shadow-sm"
+            className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-4 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
           />
           <button
             onClick={(e) => handleSearch(e)}
             disabled={loading || connStatus === 'testing'}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3.5 rounded-2xl font-black text-sm transition shadow-lg shadow-brand-500/30 active:scale-95 disabled:opacity-50"
+            className="md:absolute right-3 md:top-1/2 md:-translate-y-1/2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 md:py-3.5 rounded-xl md:rounded-2xl font-black text-sm transition shadow-lg shadow-brand-500/30 active:scale-95 disabled:opacity-50 w-full md:w-auto"
           >
             {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Consultar'}
           </button>
@@ -925,29 +925,29 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
       {product && taxes && (
         <div className="animate-slide-up bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden">
-          <div className="bg-brand-600 p-3 text-white flex flex-col md:flex-row justify-between items-center gap-2">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
+          <div className="bg-brand-600 p-4 md:p-3 text-white flex flex-col md:flex-row justify-between items-center gap-4 md:gap-2">
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
                 <span className="bg-white/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest">
                   RESULTADO DA CONSULTA
                 </span>
               </div>
-              <h3 className="text-xl font-black tracking-tighter uppercase">{product.produtos}</h3>
+              <h3 className="text-xl md:text-xl font-black tracking-tighter uppercase leading-tight">{product.produtos}</h3>
               <p className="text-brand-100 text-[10px] mt-0.5">{product.category}</p>
             </div>
-            <div className="text-right hidden md:block space-y-1">
+            <div className="flex md:flex-col items-center md:items-end gap-6 md:gap-1 border-t border-brand-500/30 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-center">
               <div>
-                <p className="text-[9px] font-black text-brand-200 uppercase tracking-widest">EAN Identificado</p>
-                <p className="text-base font-mono font-bold">{product.ean}</p>
+                <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">EAN Identificado</p>
+                <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ean}</p>
               </div>
               <div>
-                <p className="text-[9px] font-black text-brand-200 uppercase tracking-widest">NCM</p>
-                <p className="text-base font-mono font-bold">{product.ncm}</p>
+                <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">NCM</p>
+                <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ncm}</p>
               </div>
               {product.cest && (
-                <div>
-                  <p className="text-[9px] font-black text-brand-200 uppercase tracking-widest">CEST</p>
-                  <p className="text-base font-mono font-bold">{product.cest}</p>
+                <div className="hidden sm:block">
+                  <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">CEST</p>
+                  <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.cest}</p>
                 </div>
               )}
             </div>
@@ -2084,8 +2084,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                     }
                   }}
                   className={`px-4 py-2 font-bold text-xs rounded-xl transition border ${org?.has_commitment
-                      ? "text-brand-600 bg-brand-50 border-brand-100 hover:bg-brand-100"
-                      : "text-red-500 hover:bg-red-50 border-transparent hover:border-red-100"
+                    ? "text-brand-600 bg-brand-50 border-brand-100 hover:bg-brand-100"
+                    : "text-red-500 hover:bg-red-50 border-transparent hover:border-red-100"
                     }`}
                 >
                   {org?.has_commitment ? "Falar com Consultor" : "Cancelar Assinatura"}
@@ -2159,7 +2159,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         </div>
       </aside>
 
-      <main className="flex-grow flex flex-col h-full overflow-hidden">
+      <main className="flex-grow flex flex-col h-full overflow-hidden pb-20 lg:pb-0">
         <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between relative z-50">
           <div className="flex items-center gap-3">
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${connStatus === 'online' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' :
@@ -2305,6 +2305,50 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           {activeTab === 'settings' && renderSettings()}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-3 flex justify-between items-center z-[100] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <button
+          onClick={() => setActiveTab('search')}
+          className={`flex flex-col items-center gap-1 ${activeTab === 'search' ? 'text-brand-600' : 'text-slate-400'}`}
+        >
+          <i className="fa-solid fa-magnifying-glass text-lg"></i>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Consulta</span>
+        </button>
+        <button
+          onClick={() => {
+            if (user?.organization?.plan_type === 'gratis') {
+              setUpgradeReason('history');
+              setIsUpgradeModalOpen(true);
+            } else {
+              setActiveTab('history');
+            }
+          }}
+          className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-brand-600' : 'text-slate-400'}`}
+        >
+          <div className="relative">
+            <i className="fa-solid fa-clock-rotate-left text-lg"></i>
+            {user?.organization?.plan_type === 'gratis' && (
+              <i className="fa-solid fa-lock absolute -top-1 -right-1 text-[8px] text-slate-400"></i>
+            )}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Histórico</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('consultancy')}
+          className={`flex flex-col items-center gap-1 ${activeTab === 'consultancy' ? 'text-brand-600' : 'text-slate-400'}`}
+        >
+          <i className="fa-solid fa-envelope-open-text text-lg"></i>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Dúvidas</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-brand-600' : 'text-slate-400'}`}
+        >
+          <i className="fa-solid fa-user text-lg"></i>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Perfil</span>
+        </button>
+      </nav>
 
       {/* Modais Globais */}
       {renderSafeRejectModal()}

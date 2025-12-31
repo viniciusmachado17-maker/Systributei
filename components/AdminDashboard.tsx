@@ -149,94 +149,96 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <table className="w-full text-sm text-left text-slate-600">
-                        <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4">Organização</th>
-                                <th className="px-6 py-4">Dono (Email)</th>
-                                <th className="px-6 py-4">Plano</th>
-                                <th className="px-6 py-4">Carência</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Vencimento</th>
-                                <th className="px-6 py-4">Dia Cobrança</th>
-                                <th className="px-6 py-4 text-center">Membros</th>
-                                <th className="px-6 py-4 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {subscribers.map((org) => {
-                                const owner = org.profiles?.[0]; // Assumindo relação
-                                const statusKey = org.subscription_status || 'gratis';
-                                return (
-                                    <tr key={org.id} className="hover:bg-slate-50/50 transition">
-                                        <td className="px-6 py-4 font-bold text-slate-800">{org.name}</td>
-                                        <td className="px-6 py-4">{owner?.email || 'N/A'}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.plan_type === 'premium' ? 'bg-purple-100 text-purple-700' :
-                                                org.plan_type === 'pro' ? 'bg-indigo-100 text-indigo-700' :
-                                                    org.plan_type === 'enterprise' ? 'bg-slate-800 text-white' :
-                                                        'bg-slate-100 text-slate-600'
-                                                }`}>
-                                                {org.plan_type}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.has_commitment ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'}
-                                                `}>
-                                                {org.has_commitment ? '12 Meses' : 'Mensal'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${statusColors[statusKey] || 'bg-slate-100 text-slate-600'
-                                                }`}>
-                                                {statusMap[statusKey] || statusKey}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-xs text-slate-600">
-                                            {org.current_period_end
-                                                ? new Date(org.current_period_end).toLocaleDateString('pt-BR')
-                                                : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-xs text-center text-indigo-600 font-bold">
-                                            {org.billing_day ? `Dia ${org.billing_day}` : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-xs text-center">
-                                            <span className={`px-2 py-1 rounded-md ${(org.profiles?.length || 0) > (org.max_users || 1) ? 'bg-red-100 text-red-600 font-bold' : 'text-slate-600'
-                                                }`}>
-                                                {org.profiles?.length || 0} <span className="text-slate-400">/</span> {org.max_users || 1}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right space-x-2">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedOrg(org);
-                                                    setNewPlan(org.plan_type);
-                                                    setNewBillingDate(org.current_period_end ? new Date(org.current_period_end).toISOString().split('T')[0] : '');
-                                                    setBillingDay(org.billing_day || '');
-                                                    setHasCommitment(!!org.has_commitment);
-                                                    setModalMode('plan');
-                                                }}
-                                                className="text-indigo-600 hover:text-indigo-800 font-bold text-xs bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"
-                                            >
-                                                Mudar Plano
-                                            </button>
-                                            <button
-                                                onClick={() => { setSelectedOrg(org); setModalMode('member'); }}
-                                                disabled={!['premium', 'enterprise'].includes(org.plan_type)}
-                                                title={!['premium', 'enterprise'].includes(org.plan_type) ? "Disponível apenas no Premium" : "Adicionar Membro"}
-                                                className={`font-bold text-xs px-3 py-1.5 rounded-lg transition ${['premium', 'enterprise'].includes(org.plan_type)
-                                                    ? "text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200"
-                                                    : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
-                                                    }`}
-                                            >
-                                                + Membro
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-slate-600">
+                            <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Organização</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Dono (Email)</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Plano</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Carência</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Status</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Vencimento</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Dia</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Membros</th>
+                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {subscribers.map((org) => {
+                                    const owner = org.profiles?.[0]; // Assumindo relação
+                                    const statusKey = org.subscription_status || 'gratis';
+                                    return (
+                                        <tr key={org.id} className="hover:bg-slate-50/50 transition">
+                                            <td className="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">{org.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{owner?.email || 'N/A'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.plan_type === 'premium' ? 'bg-purple-100 text-purple-700' :
+                                                    org.plan_type === 'pro' ? 'bg-indigo-100 text-indigo-700' :
+                                                        org.plan_type === 'enterprise' ? 'bg-slate-800 text-white' :
+                                                            'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                    {org.plan_type}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.has_commitment ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'}
+                                                    `}>
+                                                    {org.has_commitment ? '12 Meses' : 'Mensal'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${statusColors[statusKey] || 'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                    {statusMap[statusKey] || statusKey}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-xs text-slate-600 whitespace-nowrap">
+                                                {org.current_period_end
+                                                    ? new Date(org.current_period_end).toLocaleDateString('pt-BR')
+                                                    : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 font-mono text-xs text-center text-indigo-600 font-bold whitespace-nowrap">
+                                                {org.billing_day ? org.billing_day : '-'}
+                                            </td>
+                                            <td className="px-6 py-4 font-mono text-xs text-center whitespace-nowrap">
+                                                <span className={`px-2 py-1 rounded-md ${(org.profiles?.length || 0) > (org.max_users || 1) ? 'bg-red-100 text-red-600 font-bold' : 'text-slate-600'
+                                                    }`}>
+                                                    {org.profiles?.length || 0} <span className="text-slate-400">/</span> {org.max_users || 1}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedOrg(org);
+                                                        setNewPlan(org.plan_type);
+                                                        setNewBillingDate(org.current_period_end ? new Date(org.current_period_end).toISOString().split('T')[0] : '');
+                                                        setBillingDay(org.billing_day || '');
+                                                        setHasCommitment(!!org.has_commitment);
+                                                        setModalMode('plan');
+                                                    }}
+                                                    className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition"
+                                                >
+                                                    Mudar Plano
+                                                </button>
+                                                <button
+                                                    onClick={() => { setSelectedOrg(org); setModalMode('member'); }}
+                                                    disabled={!['premium', 'enterprise'].includes(org.plan_type)}
+                                                    title={!['premium', 'enterprise'].includes(org.plan_type) ? "Disponível apenas no Premium" : "Adicionar Membro"}
+                                                    className={`font-bold text-[10px] px-2 py-1.5 rounded-lg transition ${['premium', 'enterprise'].includes(org.plan_type)
+                                                        ? "text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200"
+                                                        : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
+                                                        }`}
+                                                >
+                                                    + Membro
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
