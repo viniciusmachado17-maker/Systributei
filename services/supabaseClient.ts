@@ -504,16 +504,15 @@ export const clearUserSearchHistory = async (userId: string): Promise<boolean> =
 export const createDemoRequest = async (demoData: { name: string; phone: string; email: string }) => {
   if (!isSupabaseConfigured) return { success: true }; // Simula sucesso se offline
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('demo_requests')
-      .insert([demoData])
-      .select();
+      .insert([demoData]);
 
     if (error) {
       console.error('Erro ao criar pedido de demonstração:', error);
       return { success: false, error };
     }
-    return { success: true, data };
+    return { success: true };
   } catch (err) {
     console.error('Exceção ao criar pedido de demonstração:', err);
     return { success: false, error: err };
