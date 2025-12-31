@@ -232,54 +232,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             aspectRatio: 0.75
           };
 
-          // Estratégia de Tentativa: Alta Resolução -> Fallback para Básica
-          try {
-            // Tentativa 1: Alta Resolução (Ideal para códigos de barras)
-            await scannerRef.current.start(
-              {
-                facingMode: "environment",
-                width: { min: 1024, ideal: 1280, max: 1920 },
-                height: { min: 720, ideal: 720, max: 1080 },
-                aspectRatio: { ideal: 1.7777777778 }
-              },
-              config,
-              qrCodeSuccessCallback,
-              undefined
-            );
-          } catch (highResErr) {
-            console.warn("High Res start failed, retrying with defaults...", highResErr);
-            try {
-              // Tentativa 2: Configuração Básica (Compatibilidade total)
-              await scannerRef.current.start(
-                { facingMode: "environment" },
-                config,
-                qrCodeSuccessCallback,
-                undefined
-              );
-            } catch (err: any) {
-              console.error("Scanner Error:", err);
-              let msg = "Erro ao acessar a câmera.";
-              if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
-              else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
-              else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
-
-              setScannerError(`${msg} (${err?.toString()})`);
-            }
-          }
+          // Simplificando: Usar configuração robusta única para evitar "Race Conditions"
+          await scannerRef.current.start(
+            { facingMode: "environment" },
+            config,
+            qrCodeSuccessCallback,
+            undefined
+          );
         } catch (err: any) {
           console.error("Scanner Error:", err);
-          setScannerError(`Erro fatal no scanner: ${err?.toString()}`);
+          // Ignorar erros de limpeza se ocorrerem
+          if (err?.toString().includes("is scanning")) return;
+
+          setScannerError(`Erro: ${err?.message || err?.toString()}`);
         }
       };
 
-      const timer = setTimeout(startScanner, 500);
+      // Pequeno delay para garantir que o DOM renderizou
+      const timer = setTimeout(startScanner, 800);
+
       return () => {
         clearTimeout(timer);
         if (scannerRef.current) {
-          if (scannerRef.current.isScanning) {
-            scannerRef.current.stop().catch(e => console.error("Stop error:", e));
-          }
-          // Important: Clear instance to force fresh init next time
+          // Tenta parar graciosamente
+          try {
+            if (scannerRef.current.isScanning) {
+              scannerRef.current.stop().catch(console.error);
+            }
+          } catch (e) { console.error(e); }
           scannerRef.current = null;
         }
       };
