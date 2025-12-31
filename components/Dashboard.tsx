@@ -219,32 +219,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             });
           }
 
-          // Configurações avançadas movidas para o lugar correto (videoConstraints)
+          // Configurações otimizadas para leitura em tela cheia (mais confiável no iPhone)
           const config = {
-            fps: 20,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const minEdgePercentage = 0.85;
-              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-              return {
-                width: Math.floor(minEdgeSize * minEdgePercentage),
-                height: Math.floor(minEdgeSize * minEdgePercentage * 0.7)
-              };
-            },
-            aspectRatio: 0.75,
-            videoConstraints: {
-              facingMode: "environment",
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-              advanced: [{ focusMode: "continuous" }] as any
-            },
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true
-            }
+            fps: 25, // Mais rápido para não perder o momento do foco
+            disableFlip: false,
+          };
+
+          const constraints = {
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            advanced: [{ focusMode: "continuous" }] as any
           };
 
           await scannerRef.current.start(
-            { facingMode: "environment" }, // Apenas 1 chave aqui!
-            config,
+            { facingMode: "environment" },
+            {
+              ...config,
+              videoConstraints: constraints
+            },
             qrCodeSuccessCallback,
             undefined
           );
