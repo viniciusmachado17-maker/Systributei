@@ -226,7 +226,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           };
 
           await scannerRef.current.start(
-            { facingMode: "environment" },
+            {
+              facingMode: "environment",
+              width: { min: 640, ideal: 1920, max: 3840 },
+              height: { min: 480, ideal: 1080, max: 2160 },
+              advanced: [{ focusMode: "continuous" }]
+            } as any,
             config,
             qrCodeSuccessCallback,
             undefined
