@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
@@ -161,7 +161,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
     try {
       if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode("reader");
+        scannerRef.current = new Html5Qrcode("reader", {
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
+          },
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39
+          ],
+          verbose: false
+        });
       }
 
       if (scannerRef.current) {
@@ -179,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       }
     } catch (err) {
       console.error("File Scan Error:", err);
-      setScannerError("Não foi possível identificar o código na imagem.");
+      setScannerError("Não conseguimos identificar o código. Tente tirar a foto mais de perto, focando apenas no código de barras.");
     }
   };
 
@@ -193,7 +206,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
           // Ensure instance
           if (!scannerRef.current) {
-            scannerRef.current = new Html5Qrcode("reader");
+            scannerRef.current = new Html5Qrcode("reader", {
+              experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+              },
+              formatsToSupport: [
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39
+              ],
+              verbose: false
+            });
           }
 
           const qrCodeSuccessCallback = (decodedText: string) => {
@@ -204,6 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           const config = {
             fps: 10,
             qrbox: { width: 280, height: 160 },
+            aspectRatio: 1.0
           };
 
           await scannerRef.current.start(
