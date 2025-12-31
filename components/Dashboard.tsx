@@ -749,6 +749,114 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     </div>
   );
 
+  const renderSelectionModal = () => (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <div>
+            <h3 className="text-xl font-black text-slate-800">Selecione o Produto</h3>
+            <p className="text-xs text-slate-500 font-medium">Encontramos {searchResults.length} itens correspondentes</p>
+          </div>
+          <button
+            onClick={() => setIsSelectionOpen(false)}
+            className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div className="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
+          {/* Refinamento de Busca (Server-Side) */}
+          <div className="flex gap-2">
+            <div className="relative flex-grow">
+              <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input
+                type="text"
+                placeholder="Refinar termo de busca (Nova consulta)..."
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white shadow-sm"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
+            <button
+              onClick={() => handleSearch()}
+              disabled={loading}
+              className="px-4 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition shadow-sm"
+            >
+              <i className="fa-solid fa-rotate-right mr-2"></i>
+              Buscar
+            </button>
+          </div>
+
+          {/* Filtro Local (Client-Side) */}
+          <div className="relative">
+            <i className="fa-solid fa-filter absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input
+              type="text"
+              placeholder="Filtrar nesta lista por NCM ou código..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-slate-100/50"
+              value={secondaryFilter}
+              onChange={(e) => setSecondaryFilter(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="overflow-y-auto p-4 space-y-2 flex-grow">
+          {searchResults
+            .filter(item =>
+              secondaryFilter === '' ||
+              item.produto.toLowerCase().includes(secondaryFilter.toLowerCase()) ||
+              (item.ncm && item.ncm.includes(secondaryFilter)) ||
+              (item.ean && item.ean.includes(secondaryFilter))
+            )
+            .map((item) => (
+              <button
+                key={item.id}
+                onClick={() => loadProductDetails(item.id)}
+                className="w-full text-left bg-white p-4 rounded-xl border border-slate-100 hover:border-brand-500 hover:shadow-md transition group"
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className="font-bold text-slate-800 text-sm group-hover:text-brand-600 uppercase pr-4">{item.produto}</h4>
+                  <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">ID: {item.id}</span>
+                </div>
+                <div className="flex gap-4 mt-2">
+                  <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
+                    <i className="fa-solid fa-barcode mr-1"></i> {item.ean || 'S/GTIN'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
+                    <i className="fa-solid fa-layer-group mr-1"></i> NCM: {item.ncm || '---'}
+                  </p>
+                </div>
+              </button>
+            ))}
+
+          {searchResults.filter(item =>
+            secondaryFilter === '' ||
+            item.produto.toLowerCase().includes(secondaryFilter.toLowerCase()) ||
+            (item.ncm && item.ncm.includes(secondaryFilter)) ||
+            (item.ean && item.ean.includes(secondaryFilter))
+          ).length === 0 && (
+              <div className="text-center py-10">
+                <p className="text-slate-400 font-bold text-xs">Nenhum item corresponde ao filtro secundário.</p>
+              </div>
+            )}
+        </div>
+
+        <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col items-center gap-3">
+          <p className="text-[10px] text-slate-400">Clique no item correto para ver a tributação completa.</p>
+          <button
+            onClick={() => setIsSelectionOpen(false)}
+            className="w-full py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition text-xs"
+          >
+            Fechar Seleção
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+
   const renderSearch = () => (
     <div className="max-w-4xl mx-auto space-y-2 animate-slide-up">
       <div className={`space-y-2 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
@@ -815,115 +923,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         </div>
       </div>
 
-      {isRequestModalOpen && renderRequestModal()}
-
-      {/* Modal de Seleção de Produtos Multi-Step */}
-      {isSelectionOpen && searchResults.length > 0 && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <div>
-                <h3 className="text-xl font-black text-slate-800">Selecione o Produto</h3>
-                <p className="text-xs text-slate-500 font-medium">Encontramos {searchResults.length} itens correspondentes</p>
-              </div>
-              <button
-                onClick={() => setIsSelectionOpen(false)}
-                className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <div className="p-4 bg-slate-50 border-b border-slate-100 space-y-3">
-              {/* Refinamento de Busca (Server-Side) */}
-              <div className="flex gap-2">
-                <div className="relative flex-grow">
-                  <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                  <input
-                    type="text"
-                    placeholder="Refinar termo de busca (Nova consulta)..."
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white shadow-sm"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  />
-                </div>
-                <button
-                  onClick={() => handleSearch()}
-                  disabled={loading}
-                  className="px-4 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition shadow-sm"
-                >
-                  <i className="fa-solid fa-rotate-right mr-2"></i>
-                  Buscar
-                </button>
-              </div>
-
-              {/* Filtro Local (Client-Side) */}
-              <div className="relative">
-                <i className="fa-solid fa-filter absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input
-                  type="text"
-                  placeholder="Filtrar nesta lista por NCM ou código..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-slate-100/50"
-                  value={secondaryFilter}
-                  onChange={(e) => setSecondaryFilter(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="overflow-y-auto p-4 space-y-2 flex-grow">
-              {searchResults
-                .filter(item =>
-                  secondaryFilter === '' ||
-                  item.produto.toLowerCase().includes(secondaryFilter.toLowerCase()) ||
-                  (item.ncm && item.ncm.includes(secondaryFilter)) ||
-                  (item.ean && item.ean.includes(secondaryFilter))
-                )
-                .map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => loadProductDetails(item.id)}
-                    className="w-full text-left bg-white p-4 rounded-xl border border-slate-100 hover:border-brand-500 hover:shadow-md transition group"
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-slate-800 text-sm group-hover:text-brand-600 uppercase pr-4">{item.produto}</h4>
-                      <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">ID: {item.id}</span>
-                    </div>
-                    <div className="flex gap-4 mt-2">
-                      <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
-                        <i className="fa-solid fa-barcode mr-1"></i> {item.ean || 'S/GTIN'}
-                      </p>
-                      <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
-                        <i className="fa-solid fa-layer-group mr-1"></i> NCM: {item.ncm || '---'}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-
-              {searchResults.filter(item =>
-                secondaryFilter === '' ||
-                item.produto.toLowerCase().includes(secondaryFilter.toLowerCase()) ||
-                (item.ncm && item.ncm.includes(secondaryFilter)) ||
-                (item.ean && item.ean.includes(secondaryFilter))
-              ).length === 0 && (
-                  <div className="text-center py-10">
-                    <p className="text-slate-400 font-bold text-xs">Nenhum item corresponde ao filtro secundário.</p>
-                  </div>
-                )}
-            </div>
-
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col items-center gap-3">
-              <p className="text-[10px] text-slate-400">Clique no item correto para ver a tributação completa.</p>
-              <button
-                onClick={() => setIsSelectionOpen(false)}
-                className="w-full py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition text-xs"
-              >
-                Cancelar e Voltar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {product && taxes && (
         <div className="animate-slide-up bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden">
@@ -1041,6 +1040,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -2411,6 +2411,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       {renderSafeRejectModal()}
       {renderCancelModal()}
       {isUpgradeModalOpen && renderUpgradeModal()}
+      {isRequestModalOpen && renderRequestModal()}
+      {isSelectionOpen && searchResults.length > 0 && renderSelectionModal()}
     </div>
   );
 };
