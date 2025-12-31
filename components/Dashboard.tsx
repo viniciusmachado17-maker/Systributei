@@ -232,12 +232,40 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             aspectRatio: 0.75
           };
 
-          await scannerRef.current.start(
-            { facingMode: "environment" }, // REMOVIDO width/height para evitar travamentos
-            config,
-            qrCodeSuccessCallback,
-            undefined
-          );
+          // Estratégia de Tentativa: Alta Resolução -> Fallback para Básica
+          try {
+            // Tentativa 1: Alta Resolução (Ideal para códigos de barras)
+            await scannerRef.current.start(
+              {
+                facingMode: "environment",
+                width: { min: 1024, ideal: 1280, max: 1920 },
+                height: { min: 720, ideal: 720, max: 1080 },
+                aspectRatio: { ideal: 1.7777777778 }
+              },
+              config,
+              qrCodeSuccessCallback,
+              undefined
+            );
+          } catch (highResErr) {
+            console.warn("High Res start failed, retrying with defaults...", highResErr);
+            try {
+              // Tentativa 2: Configuração Básica (Compatibilidade total)
+              await scannerRef.current.start(
+                { facingMode: "environment" },
+                config,
+                qrCodeSuccessCallback,
+                undefined
+              );
+            } catch (err: any) {
+              console.error("Scanner Error:", err);
+              let msg = "Erro ao acessar a câmera.";
+              if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
+              else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
+              else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
+
+              setScannerError(`${msg} (${err?.name || 'Error'})`);
+            }
+          }
         } catch (err: any) {
           console.error("Scanner Error:", err);
           let msg = "Erro ao acessar a câmera.";
