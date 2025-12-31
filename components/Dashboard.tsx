@@ -219,23 +219,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             });
           }
 
-          // Configuração de Máxima Precisão para iPhone Pro/Modernos
+          // Configuração de Estabilidade Máxima (Sem distorção)
           const config = {
-            fps: 25,
-            aspectRatio: 0.75,
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true // Tenta usar o motor da Apple
-            }
+            fps: 30,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              // Caixa retangular larga, ideal para EAN-13
+              const width = Math.floor(viewfinderWidth * 0.8);
+              const height = Math.floor(width * 0.4);
+              return { width, height };
+            },
+            // REMOVIDA a trava de aspectRatio que estava distorcendo as barras no iPhone
           };
 
           const constraints = {
             facingMode: "environment",
-            width: { ideal: 1920 }, // Full HD para barras super nítidas
-            height: { ideal: 1080 },
-            advanced: [
-              { focusMode: "continuous" },
-              { brightness: { ideal: 1 } } // Tenta ajustar brilho se suportado
-            ] as any
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            advanced: [{ focusMode: "continuous" }] as any
           };
 
           await scannerRef.current.start(
