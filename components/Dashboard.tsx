@@ -698,37 +698,39 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   };
 
   const renderRequestModal = () => (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-28 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up">
-        <div className="p-8 text-center border-b border-slate-50">
-          <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fa-solid fa-clipboard-question text-2xl text-orange-500"></i>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+        <div className="overflow-y-auto flex-grow no-scrollbar">
+          <div className="p-8 text-center border-b border-slate-50">
+            <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fa-solid fa-clipboard-question text-2xl text-orange-500"></i>
+            </div>
+            <h3 className="text-xl font-black text-slate-800">Produto não encontrado</h3>
+            <p className="text-sm text-slate-500 mt-2">
+              Não localizamos <strong>"{notFoundTerm}"</strong> em nossa base.
+              Deseja solicitar o cadastro deste item?
+            </p>
           </div>
-          <h3 className="text-xl font-black text-slate-800">Produto não encontrado</h3>
-          <p className="text-sm text-slate-500 mt-2">
-            Não localizamos <strong>"{notFoundTerm}"</strong> em nossa base.
-            Deseja solicitar o cadastro deste item?
-          </p>
+
+          <div className="p-8 space-y-4">
+            <div className="bg-brand-50 p-4 rounded-xl flex justify-between items-center text-xs font-bold text-brand-700">
+              <span>Solicitações Disponíveis</span>
+              <span>{user?.organization ? user.organization.request_limit - user.organization.request_count : 0} restantes</span>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Observação (Opcional)</label>
+              <textarea
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-500 text-xs font-medium resize-none h-24"
+                placeholder="Ex: Marca do produto, detalhes adicionais..."
+                value={requestObs}
+                onChange={(e) => setRequestObs(e.target.value)}
+              ></textarea>
+            </div>
+          </div>
         </div>
 
-        <div className="p-8 space-y-4">
-          <div className="bg-brand-50 p-4 rounded-xl flex justify-between items-center text-xs font-bold text-brand-700">
-            <span>Solicitações Disponíveis</span>
-            <span>{user?.organization ? user.organization.request_limit - user.organization.request_count : 0} restantes</span>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Observação (Opcional)</label>
-            <textarea
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-500 text-xs font-medium resize-none h-24"
-              placeholder="Ex: Marca do produto, detalhes adicionais..."
-              value={requestObs}
-              onChange={(e) => setRequestObs(e.target.value)}
-            ></textarea>
-          </div>
-        </div>
-
-        <div className="p-6 bg-slate-50 flex gap-3">
+        <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3 shrink-0">
           <button
             onClick={() => setIsRequestModalOpen(false)}
             className="flex-1 py-3.5 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-white transition text-xs"
@@ -817,8 +819,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
       {/* Modal de Seleção de Produtos Multi-Step */}
       {isSelectionOpen && searchResults.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-18 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-slide-up">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h3 className="text-xl font-black text-slate-800">Selecione o Produto</h3>
@@ -1727,7 +1729,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
 
   const renderUpgradeModal = () => (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsUpgradeModalOpen(false)}></div>
 
       <div className="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-scale-up">
@@ -1877,7 +1879,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
   const renderSafeRejectModal = () => (
     rejectModalOpen && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto">
         <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm animate-fade-in" onClick={() => setRejectModalOpen(false)}></div>
         <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-up border-4 border-red-500/20">
           <div className="p-8 text-center">
@@ -1935,7 +1937,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     const hasCommitment = org?.has_commitment;
 
     return (
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto">
         <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm animate-fade-in" onClick={() => setIsCancelModalOpen(false)}></div>
         <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-up border-4 border-red-500/20">
           <div className="p-10 text-center">
