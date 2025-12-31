@@ -2294,6 +2294,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
         </header>
 
+        {/* Mobile Usage Limit Indicators */}
+        {organizationData && user?.role !== 'admin' && (
+          <div className="md:hidden h-14 bg-slate-50 border-b border-slate-200 flex items-center px-4 gap-2 overflow-x-auto no-scrollbar">
+            {/* Badge: Buscas */}
+            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Buscas Realizadas">
+              <i className={`fa-solid fa-magnifying-glass text-[10px] ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-emerald-500'}`}></i>
+              <div className="flex flex-col">
+                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Buscas</span>
+                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.usage_count}/{organizationData.usage_limit}</span>
+              </div>
+            </div>
+
+            {/* Badge: Consultas Técnicas */}
+            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Consultas Técnicas">
+              <i className={`fa-solid fa-envelope-open-text text-[10px] ${organizationData.email_count >= organizationData.email_limit ? 'text-red-500' : 'text-blue-500'}`}></i>
+              <div className="flex flex-col">
+                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Dúvidas</span>
+                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.email_count}/{organizationData.email_limit}</span>
+              </div>
+            </div>
+
+            {/* Badge: Solicitações */}
+            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Solicitações de Cadastro">
+              <i className={`fa-solid fa-clipboard-question text-[10px] ${organizationData.request_count >= organizationData.request_limit ? 'text-red-500' : 'text-orange-500'}`}></i>
+              <div className="flex flex-col">
+                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Pedidos</span>
+                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.request_count}/{organizationData.request_limit}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex-grow overflow-y-auto p-1 lg:p-2">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
