@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
@@ -148,6 +149,84 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [adminConsultations, setAdminConsultations] = useState<any[]>([]);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode("reader");
+      }
+
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) {
+            await scannerRef.current.stop();
+          }
+        } catch (ignore) {
+          // Ignore if not scanning
+        }
+
+        const decodedText = await scannerRef.current.scanFile(file, true);
+        setQuery(decodedText);
+        setIsScannerOpen(false);
+      }
+    } catch (err) {
+      console.error("File Scan Error:", err);
+      setScannerError("Não foi possível identificar o código na imagem.");
+    }
+  };
+
+  useEffect(() => {
+    if (isScannerOpen) {
+      setScannerError(null);
+      const startScanner = async () => {
+        try {
+          const readerElement = document.getElementById("reader");
+          if (!readerElement) return;
+
+          // Ensure instance
+          if (!scannerRef.current) {
+            scannerRef.current = new Html5Qrcode("reader");
+          }
+
+          const qrCodeSuccessCallback = (decodedText: string) => {
+            setQuery(decodedText);
+            setIsScannerOpen(false);
+          };
+
+          const config = {
+            fps: 10,
+            qrbox: { width: 280, height: 160 },
+          };
+
+          await scannerRef.current.start(
+            { facingMode: "environment" },
+            config,
+            qrCodeSuccessCallback,
+            undefined
+          );
+        } catch (err) {
+          console.error("Scanner Error:", err);
+          setScannerError("Câmera não permitida ou indisponível.");
+        }
+      };
+
+      const timer = setTimeout(startScanner, 500);
+      return () => {
+        clearTimeout(timer);
+        if (scannerRef.current?.isScanning) {
+          scannerRef.current.stop().catch(e => console.error("Stop error:", e));
+        }
+      };
+    }
+  }, [isScannerOpen]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [isAdminActionLoading, setIsAdminActionLoading] = useState<string | null>(null);
   const [adminReplyMap, setAdminReplyMap] = useState<Record<string, string>>({});
@@ -911,8 +990,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
             placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
-            className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-4 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
+            className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
           />
+          {mode === 'barcode' && (
+            <button
+              onClick={() => setIsScannerOpen(true)}
+              className="absolute right-4 md:hidden top-[28px] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-all"
+              title="Escanear Código"
+            >
+              <i className="fa-solid fa-camera"></i>
+            </button>
+          )}
           <button
             onClick={(e) => handleSearch(e)}
             disabled={loading || connStatus === 'testing'}
@@ -1728,6 +1816,57 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   );
 
 
+  const renderScannerModal = () => (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-up flex flex-col relative">
+        <div className="bg-brand-600 p-6 text-white text-center relative">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-12 -mt-12"></div>
+          <h3 className="text-xl font-black relative z-10">Escanear Produto</h3>
+          <p className="text-brand-100 text-[10px] font-bold uppercase tracking-widest mt-1 relative z-10">Aponte para o código de barras</p>
+        </div>
+
+        <div className="p-6 flex flex-col items-center">
+          <div id="reader" className="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
+            <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+          </div>
+
+          {scannerError && (
+            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex items-center gap-2 w-full animate-shake">
+              <i className="fa-solid fa-circle-exclamation"></i>
+              {scannerError}
+            </div>
+          )}
+
+          <div className="mt-6 w-full space-y-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition border border-slate-200 flex items-center justify-center gap-2"
+            >
+              <i className="fa-regular fa-image text-lg"></i>
+              Ler da Galeria
+            </button>
+
+            <button
+              onClick={() => setIsScannerOpen(false)}
+              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition shadow-lg shadow-slate-200 active:scale-95"
+            >
+              Fechar Scanner
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+
   const renderUpgradeModal = () => (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsUpgradeModalOpen(false)}></div>
@@ -2413,6 +2552,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       {isUpgradeModalOpen && renderUpgradeModal()}
       {isRequestModalOpen && renderRequestModal()}
       {isSelectionOpen && searchResults.length > 0 && renderSelectionModal()}
+      {isScannerOpen && renderScannerModal()}
     </div>
   );
 };
