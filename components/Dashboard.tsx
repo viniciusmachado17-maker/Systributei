@@ -2296,7 +2296,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
         {/* Mobile Usage Limit Indicators */}
         {organizationData && user?.role !== 'admin' && (
-          <div className="md:hidden h-14 bg-slate-50 border-b border-slate-200 flex items-center px-4 gap-2 overflow-x-auto no-scrollbar">
+          <div className="md:hidden h-14 bg-slate-50 border-b border-slate-200 flex items-center justify-center px-4 gap-2 overflow-x-auto no-scrollbar">
             {/* Badge: Buscas */}
             <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Buscas Realizadas">
               <i className={`fa-solid fa-magnifying-glass text-[10px] ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-emerald-500'}`}></i>
