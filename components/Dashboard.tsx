@@ -228,17 +228,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           await scannerRef.current.start(
             {
               facingMode: "environment",
-              width: { min: 640, ideal: 1920, max: 3840 },
-              height: { min: 480, ideal: 1080, max: 2160 },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
               advanced: [{ focusMode: "continuous" }]
             } as any,
             config,
             qrCodeSuccessCallback,
             undefined
           );
-        } catch (err) {
+        } catch (err: any) {
           console.error("Scanner Error:", err);
-          setScannerError("Câmera não permitida ou indisponível.");
+          let msg = "Erro ao acessar a câmera.";
+          if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
+          else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
+          else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
+          else if (err?.name === "OverconstrainedError") msg = "Resolução não suportada pelo dispositivo.";
+          setScannerError(msg);
         }
       };
 
