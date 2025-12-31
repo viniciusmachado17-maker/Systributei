@@ -222,7 +222,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           const config = {
             fps: 10,
             qrbox: { width: 280, height: 160 },
-            aspectRatio: 1.0
           };
 
           await scannerRef.current.start(
@@ -231,16 +230,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             qrCodeSuccessCallback,
             undefined
           );
-        } catch (err: any) {
+        } catch (err) {
           console.error("Scanner Error:", err);
-          let msg = "Erro ao acessar a câmera.";
-          if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
-          else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
-          else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
-          else if (err?.name === "OverconstrainedError") msg = "Resolução não suportada.";
-
-          // Append technical details for debugging
-          setScannerError(`${msg} (${err?.name || 'Unknown'}: ${err?.message || ''})`);
+          setScannerError("Erro ao acessar a câmera. Tente permitir o acesso ou usar outra opção.");
         }
       };
 
