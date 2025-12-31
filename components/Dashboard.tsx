@@ -162,16 +162,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     try {
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode("reader", {
-          experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true
-          },
           formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
             Html5QrcodeSupportedFormats.UPC_A,
             Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39
           ],
           verbose: false
         });
@@ -207,16 +203,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           // Ensure instance
           if (!scannerRef.current) {
             scannerRef.current = new Html5Qrcode("reader", {
-              experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
-              },
               formatsToSupport: [
                 Html5QrcodeSupportedFormats.EAN_13,
                 Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.CODE_128,
                 Html5QrcodeSupportedFormats.UPC_A,
                 Html5QrcodeSupportedFormats.UPC_E,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39
               ],
               verbose: false
             });
