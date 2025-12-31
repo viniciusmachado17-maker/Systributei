@@ -222,29 +222,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           const config = {
             fps: 10,
             qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const minEdgePercentage = 0.85; // 85% width/height
+              const minEdgePercentage = 0.85;
               const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
               return {
                 width: Math.floor(minEdgeSize * minEdgePercentage),
-                height: Math.floor(minEdgeSize * minEdgePercentage * 0.6) // Rectangular box for barcodes
+                height: Math.floor(minEdgeSize * minEdgePercentage * 0.6)
               };
             },
-            aspectRatio: 0.75 // 3:4 aspect ratio to match container
+            aspectRatio: 0.75
           };
 
           await scannerRef.current.start(
-            {
-              facingMode: "environment",
-              width: { ideal: 1280 }, // Try 720p (Good balance)
-              height: { ideal: 720 }
-            },
+            { facingMode: "environment" }, // REMOVIDO width/height para evitar travamentos
             config,
             qrCodeSuccessCallback,
             undefined
           );
-        } catch (err) {
+        } catch (err: any) {
           console.error("Scanner Error:", err);
-          setScannerError("Erro ao acessar a câmera. Tente permitir o acesso ou usar outra opção.");
+          let msg = "Erro ao acessar a câmera.";
+          if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
+          else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
+          else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
+          else if (err?.name === "OverconstrainedError") msg = "Resolução não suportada.";
+
+          setScannerError(`${msg} (${err?.name || 'Error'}: ${err?.message || ''})`);
         }
       };
 
