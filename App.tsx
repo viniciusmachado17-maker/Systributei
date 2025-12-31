@@ -1,0 +1,177 @@
+
+import React, { useState } from 'react';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import Features from './components/Features';
+import Timeline from './components/Timeline';
+import SectorImpact from './components/SectorImpact';
+import FAQ from './components/FAQ';
+import Footer from './components/Footer';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Pricing from './components/Pricing';
+import Dashboard from './components/Dashboard';
+import { AdminDashboard } from './components/AdminDashboard';
+
+import { testSupabaseConnection, supabase } from './services/supabaseClient';
+
+export type ViewState = 'landing' | 'login' | 'signup' | 'pricing' | 'dashboard' | 'admin';
+
+export interface Organization {
+  id: string;
+  name: string;
+  plan_type: 'gratis' | 'start' | 'pro' | 'premium' | 'enterprise';
+  usage_count: number;
+  usage_limit: number;
+  request_count: number;
+  request_limit: number;
+  email_count: number;
+  email_limit: number;
+  trial_ends_at: string | null;
+  max_users: number;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  subscription_status?: 'active' | 'past_due' | 'unpaid' | 'canceled' | 'gratis';
+  current_period_end?: string;
+  has_commitment?: boolean;
+  cancel_at_period_end?: boolean;
+  price_id?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  organization_id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+  organization?: Organization; // Optional for when we join
+}
+
+const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewState>('landing');
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [nextView, setNextView] = useState<ViewState | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  React.useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // 1. Testa Conexão
+        const conn = await testSupabaseConnection();
+        if (!conn.success) console.error("Supabase Connection Failed:", conn.message);
+
+        // 2. Recupera Sessão Ativa
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          // 3. Busca Perfil
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select(`
+              name, email, role,
+              organization:organizations (*)
+            `)
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile && !profileError) {
+            const userProfile: UserProfile = {
+              id: session.user.id,
+              organization_id: (profile as any).organization?.id,
+              name: profile.name || 'Usuário',
+              email: profile.email || session.user.email || '',
+              role: (profile.role as any) || 'user',
+              organization: (profile as any).organization
+            };
+            setUser(userProfile);
+
+            // 4. Se estiver voltando do Stripe, vai direto pro Dashboard
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('session') === 'success') {
+              setCurrentView('dashboard');
+              const newUrl = window.location.pathname;
+              window.history.replaceState({}, document.title, newUrl);
+            } else {
+              // Se já estiver logado, cai no dash por padrão em vez da landing (opcional)
+              setCurrentView('dashboard');
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Auth init error:", err);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  const navigateTo = (view: ViewState, profile?: UserProfile) => {
+    if (profile) {
+      setUser(profile);
+      // Se houver um redirecionamento pendente (ex: vindo do pricing), vai para ele
+      // Caso contrário, vai para a view solicitada (geralmente 'dashboard')
+      setCurrentView(nextView || view);
+      setNextView(null);
+    } else {
+      // Se estiver indo para o login a partir do pricing, salva para voltar depois
+      if (view === 'login' && currentView === 'pricing') {
+        setNextView('pricing');
+      }
+      setCurrentView(view);
+    }
+    window.scrollTo(0, 0);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentView('landing');
+    setNextView(null);
+    window.scrollTo(0, 0);
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen relative bg-slate-50">
+      {/* Navbar apenas para quem não está na dashboard ou admin */}
+      {currentView !== 'dashboard' && currentView !== 'admin' && (
+        <Navbar onNavigate={navigateTo} currentView={currentView} />
+      )}
+
+      <main>
+        {currentView === 'landing' && (
+          <>
+            <Hero />
+            <Features />
+            <Timeline />
+            <SectorImpact />
+            <FAQ />
+          </>
+        )}
+        {currentView === 'login' && <Login onNavigate={navigateTo} />}
+        {currentView === 'signup' && <Signup onNavigate={navigateTo} />}
+        {currentView === 'pricing' && <Pricing onNavigate={navigateTo} user={user} />}
+        {currentView === 'dashboard' && (
+          <Dashboard
+            user={user}
+            onLogout={handleLogout}
+            onNavigate={navigateTo}
+          />
+        )}
+        {currentView === 'admin' && <AdminDashboard onNavigate={navigateTo} />}
+      </main>
+
+      {currentView !== 'dashboard' && <Footer />}
+    </div>
+  );
+};
+
+export default App;

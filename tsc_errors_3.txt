@@ -1,0 +1,5 @@
+components/Dashboard.tsx(1515,9): error TS1005: ')' expected.
+components/Dashboard.tsx(1518,5): error TS1128: Declaration or statement expected.
+components/Dashboard.tsx(1519,3): error TS1109: Expression expected.
+components/Dashboard.tsx(1630,8): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+components/Dashboard.tsx(1925,1): error TS1128: Declaration or statement expected.

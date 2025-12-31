@@ -1,0 +1,5 @@
+components/Dashboard.tsx(1183,9): error TS2657: JSX expressions must have one parent element.
+components/Dashboard.tsx(1418,24): error TS1005: ',' expected.
+components/Dashboard.tsx(1422,16): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+components/Dashboard.tsx(1471,9): error TS1005: ')' expected.
+components/Dashboard.tsx(1923,1): error TS1128: Declaration or statement expected.

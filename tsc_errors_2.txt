@@ -1,0 +1,7 @@
+components/Dashboard.tsx(938,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+components/Dashboard.tsx(1519,32): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+components/Dashboard.tsx(1627,8): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+components/Dashboard.tsx(1632,35): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+components/Dashboard.tsx(1680,28): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+components/Dashboard.tsx(1922,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+components/Dashboard.tsx(1925,1): error TS1005: '</' expected.

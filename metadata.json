@@ -1,0 +1,7 @@
+{
+  "name": "TributeiClass - Consulta IBS e CBS",
+  "description": "Uma plataforma moderna para consulta e simulação de impostos da nova Reforma Tributária Brasileira (IBS e CBS), com busca por código de barras, NCM e inteligência artificial para explicar alíquotas.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

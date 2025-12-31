@@ -1,0 +1,8 @@
+# COPIE O CONTEÚDO ABAIXO PARA O ARQUIVO .env.local
+# O arquivo .env.local deve ficar na raiz do projeto (d:\PROJETOS\TRIBUTEICLASS\.env.local)
+
+VITE_SUPABASE_URL=https://mlxhsgwifgdzhcyeeumq.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1seGhzZ3dpZmdkemhjeWVldW1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3OTQ3NTQsImV4cCI6MjA4MjM3MDc1NH0.rSAHZjnQ9SouBa-31pZD5Z-VSoLL0QZnIoRd78CyExs
+
+# Se for usar a IA do Google Gemini, coloque a chave abaixo:
+VITE_GOOGLE_API_KEY=sua_chave_do_google_aqui
