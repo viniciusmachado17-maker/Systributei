@@ -263,26 +263,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
               else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
 
-              setScannerError(`${msg} (${err?.name || 'Error'})`);
+              setScannerError(`${msg} (${err?.toString()})`);
             }
           }
         } catch (err: any) {
           console.error("Scanner Error:", err);
-          let msg = "Erro ao acessar a câmera.";
-          if (err?.name === "NotAllowedError") msg = "Permissão de câmera negada.";
-          else if (err?.name === "NotFoundError") msg = "Nenhuma câmera encontrada.";
-          else if (err?.name === "NotReadableError") msg = "A câmera pode estar em uso.";
-          else if (err?.name === "OverconstrainedError") msg = "Resolução não suportada.";
-
-          setScannerError(`${msg} (${err?.name || 'Error'}: ${err?.message || ''})`);
+          setScannerError(`Erro fatal no scanner: ${err?.toString()}`);
         }
       };
 
       const timer = setTimeout(startScanner, 500);
       return () => {
         clearTimeout(timer);
-        if (scannerRef.current?.isScanning) {
-          scannerRef.current.stop().catch(e => console.error("Stop error:", e));
+        if (scannerRef.current) {
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop().catch(e => console.error("Stop error:", e));
+          }
+          // Important: Clear instance to force fresh init next time
+          scannerRef.current = null;
         }
       };
     }
