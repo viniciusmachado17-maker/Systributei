@@ -220,31 +220,61 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           };
 
           const config = {
-            fps: 10,
+            fps: 20, // Aumentado para 20 para ser mais agressivo
             qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
               const minEdgePercentage = 0.85;
               const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
               return {
                 width: Math.floor(minEdgeSize * minEdgePercentage),
-                height: Math.floor(minEdgeSize * minEdgePercentage * 0.6)
+                height: Math.floor(minEdgeSize * minEdgePercentage * 0.7) // Ligeiramente mais alto para facilitar enquadramento
               };
             },
-            aspectRatio: 0.75
+            aspectRatio: 0.75,
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true // Essencial para iOS 17+ (usa o detector nativo rápido)
+            }
           };
 
-          // Simplificando: Usar configuração robusta única para evitar "Race Conditions"
+          // Configurações avançadas para maior nitidez
+          const constraints = {
+            facingMode: "environment",
+            width: { ideal: 1920 }, // Tenta Full HD para máxima nitidez
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: "continuous" }] as any
+          };
+
           await scannerRef.current.start(
-            { facingMode: "environment" },
+            constraints,
             config,
             qrCodeSuccessCallback,
             undefined
           );
+
+          // Feedback visual: Se não ler em 5 segundos, mostra uma dica
+          setTimeout(() => {
+            if (isScannerOpen && !scannerError) {
+              setScannerError("Dica: Aproxime ou afaste um pouco o celular do código.");
+              setTimeout(() => setScannerError(null), 3000);
+            }
+          }, 5000);
+
         } catch (err: any) {
           console.error("Scanner Error:", err);
-          // Ignorar erros de limpeza se ocorrerem
           if (err?.toString().includes("is scanning")) return;
 
-          setScannerError(`Erro: ${err?.message || err?.toString()}`);
+          // Se falhou com constraints avançadas, tenta o modo ultra-básico como última chance
+          try {
+            if (scannerRef.current) {
+              await scannerRef.current.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 0.75 },
+                qrCodeSuccessCallback,
+                undefined
+              );
+            }
+          } catch (e) {
+            setScannerError(`Erro: ${err?.message || err?.toString()}`);
+          }
         }
       };
 
@@ -257,9 +287,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           // Tenta parar graciosamente
           try {
             if (scannerRef.current.isScanning) {
-              scannerRef.current.stop().catch(console.error);
+              scannerRef.current.stop().catch(() => { });
             }
-          } catch (e) { console.error(e); }
+          } catch (e) { }
           scannerRef.current = null;
         }
       };
