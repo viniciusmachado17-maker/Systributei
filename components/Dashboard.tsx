@@ -221,11 +221,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
           const config = {
             fps: 10,
-            qrbox: { width: 280, height: 160 },
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const minEdgePercentage = 0.85; // 85% width/height
+              const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+              return {
+                width: Math.floor(minEdgeSize * minEdgePercentage),
+                height: Math.floor(minEdgeSize * minEdgePercentage * 0.6) // Rectangular box for barcodes
+              };
+            },
+            aspectRatio: 0.75 // 3:4 aspect ratio to match container
           };
 
           await scannerRef.current.start(
-            { facingMode: "environment" },
+            {
+              facingMode: "environment",
+              width: { ideal: 1280 }, // Try 720p (Good balance)
+              height: { ideal: 720 }
+            },
             config,
             qrCodeSuccessCallback,
             undefined
@@ -1844,7 +1856,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         </div>
 
         <div className="p-6 flex flex-col items-center">
-          <div id="reader" className="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
+          <div id="reader" className="w-full aspect-[3/4] bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
             <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
           </div>
