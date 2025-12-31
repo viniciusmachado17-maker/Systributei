@@ -28,10 +28,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
   return (
     <nav className={`fixed w-full z-[80] transition-all duration-300 ${isScrolled || currentView !== 'landing' ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24">
+        <div className="flex justify-between items-center h-20 md:h-24">
           <div className="flex items-center">
             <button onClick={() => handleNavClick('landing')} className="flex items-center group outline-none">
-              <Logo iconSize={52} />
+              <Logo iconSize={isScrolled ? 42 : 48} />
             </button>
           </div>
 

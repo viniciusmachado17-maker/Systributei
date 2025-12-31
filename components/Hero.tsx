@@ -76,7 +76,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative pt-18 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
       {/* Background Decorativo */}
       <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-brand-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
@@ -92,7 +92,7 @@ const Hero: React.FC = () => {
               Nova Reforma Tributária
             </div>
 
-            <h1 className="text-5xl lg:text-7xl font-black leading-[1.1] text-slate-900 tracking-tighter">
+            <h1 className="text-4xl lg:text-7xl font-black leading-[1.1] text-slate-900 tracking-tighter">
               Chega de confusão com <br className="hidden lg:block" />
               <span className="gradient-text">IBS e CBS</span>!
             </h1>
