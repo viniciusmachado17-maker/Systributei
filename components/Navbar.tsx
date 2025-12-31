@@ -1,14 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Logo from './Logo';
-import { ViewState } from '../App';
+import { ViewState, UserProfile } from '../App';
 
 interface NavbarProps {
   onNavigate: (view: ViewState) => void;
   currentView: ViewState;
+  user?: UserProfile | null;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -53,18 +54,31 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
             {currentView !== 'landing' && (
               <button onClick={() => handleNavClick('landing')} className="hover:text-brand-600 transition">Início</button>
             )}
-            <button
-              onClick={() => handleNavClick('login')}
-              className={`transition ${currentView === 'login' ? 'text-brand-600' : 'hover:text-brand-600'}`}
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => handleNavClick('signup')}
-              className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-full text-[11px] font-black transition shadow-lg hover:shadow-brand-500/30 uppercase"
-            >
-              Criar Conta
-            </button>
+
+            {!user ? (
+              <>
+                <button
+                  onClick={() => handleNavClick('login')}
+                  className={`transition ${currentView === 'login' ? 'text-brand-600' : 'hover:text-brand-600'}`}
+                >
+                  Entrar
+                </button>
+                <button
+                  onClick={() => handleNavClick('signup')}
+                  className="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-full text-[11px] font-black transition shadow-lg hover:shadow-brand-500/30 uppercase"
+                >
+                  Criar Conta
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => handleNavClick('dashboard')}
+                className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-full text-[11px] font-black transition shadow-lg hover:shadow-brand-500/30 uppercase flex items-center gap-2"
+              >
+                <i className="fa-solid fa-gauge-high"></i>
+                Dashboard
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -101,19 +115,31 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView }) => {
               <button onClick={() => handleNavClick('landing')} className="text-sm font-black uppercase tracking-widest text-slate-600">Início</button>
             )}
 
-            <button
-              onClick={() => handleNavClick('login')}
-              className={`text-sm font-black uppercase tracking-widest ${currentView === 'login' ? 'text-brand-600' : 'text-slate-600'}`}
-            >
-              Entrar
-            </button>
+            {!user ? (
+              <>
+                <button
+                  onClick={() => handleNavClick('login')}
+                  className={`text-sm font-black uppercase tracking-widest ${currentView === 'login' ? 'text-brand-600' : 'text-slate-600'}`}
+                >
+                  Entrar
+                </button>
 
-            <button
-              onClick={() => handleNavClick('signup')}
-              className="w-full bg-brand-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand-500/20"
-            >
-              Criar Conta Grátis
-            </button>
+                <button
+                  onClick={() => handleNavClick('signup')}
+                  className="w-full bg-brand-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand-500/20"
+                >
+                  Criar Conta Grátis
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => handleNavClick('dashboard')}
+                className="w-full bg-brand-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand-500/20 flex items-center justify-center gap-2"
+              >
+                <i className="fa-solid fa-gauge-high"></i>
+                Acessar Dashboard
+              </button>
+            )}
 
             <div className="pt-4 flex items-center gap-4 text-slate-400">
               <i className="fa-brands fa-whatsapp text-xl"></i>

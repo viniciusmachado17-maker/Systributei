@@ -143,7 +143,7 @@ const App: React.FC = () => {
     <div className="min-h-screen relative bg-slate-50">
       {/* Navbar apenas para quem não está na dashboard ou admin */}
       {currentView !== 'dashboard' && currentView !== 'admin' && (
-        <Navbar onNavigate={navigateTo} currentView={currentView} />
+        <Navbar onNavigate={navigateTo} currentView={currentView} user={user} />
       )}
 
       <main>

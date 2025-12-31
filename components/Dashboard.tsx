@@ -2151,6 +2151,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'settings' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
             <i className="fa-solid fa-gear"></i> Minha Conta
           </button>
+
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => onNavigate('admin')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 transition mt-4"
+            >
+              <i className="fa-solid fa-gauge-high"></i> Painel Admin
+            </button>
+          )}
         </nav>
         <div className="p-4 border-t border-slate-100">
           <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-sm hover:bg-red-50 rounded-xl transition">
@@ -2167,7 +2176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 'bg-red-500 shadow-lg shadow-red-500/20'
               }`} title={connStatus === 'online' ? 'Conectado à Base Live' : connStatus === 'testing' ? 'Verificando conexão...' : 'Modo Demo (Offline)'}></span>
             <h2 className="text-xl font-black text-slate-800 tracking-tight">
-              {activeTab === 'search' ? 'Painel Administrativo' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : 'Minha Conta'}
+              {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : 'Minha Conta'}
             </h2>
           </div>
 
@@ -2239,6 +2248,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                     <p className="text-[10px] text-slate-500">{user?.role}</p>
                   </div>
                   <div className="p-2">
+                    <button
+                      onClick={() => { setActiveTab('search'); setIsDropdownOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-600 font-bold text-xs transition text-left"
+                    >
+                      <i className="fa-solid fa-magnifying-glass text-slate-400"></i> Consulta de Produtos
+                    </button>
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => { onNavigate('admin'); setIsDropdownOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-xs transition text-left"
+                      >
+                        <i className="fa-solid fa-gauge-high"></i> Painel Administrativo
+                      </button>
+                    )}
                     <button
                       onClick={() => { setActiveTab('settings'); setIsDropdownOpen(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 text-slate-600 font-bold text-xs transition text-left"
