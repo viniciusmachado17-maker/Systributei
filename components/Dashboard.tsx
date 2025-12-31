@@ -196,6 +196,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     if (isScannerOpen) {
       setScannerError(null);
       const startScanner = async () => {
+        const qrCodeSuccessCallback = (decodedText: string) => {
+          setQuery(decodedText);
+          setIsScannerOpen(false);
+        };
+
         try {
           const readerElement = document.getElementById("reader");
           if (!readerElement) return;
@@ -214,37 +219,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             });
           }
 
-          const qrCodeSuccessCallback = (decodedText: string) => {
-            setQuery(decodedText);
-            setIsScannerOpen(false);
-          };
-
+          // Configurações avançadas movidas para o lugar correto (videoConstraints)
           const config = {
-            fps: 20, // Aumentado para 20 para ser mais agressivo
+            fps: 20,
             qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
               const minEdgePercentage = 0.85;
               const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
               return {
                 width: Math.floor(minEdgeSize * minEdgePercentage),
-                height: Math.floor(minEdgeSize * minEdgePercentage * 0.7) // Ligeiramente mais alto para facilitar enquadramento
+                height: Math.floor(minEdgeSize * minEdgePercentage * 0.7)
               };
             },
             aspectRatio: 0.75,
+            videoConstraints: {
+              facingMode: "environment",
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              advanced: [{ focusMode: "continuous" }] as any
+            },
             experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true // Essencial para iOS 17+ (usa o detector nativo rápido)
+              useBarCodeDetectorIfSupported: true
             }
           };
 
-          // Configurações avançadas para maior nitidez
-          const constraints = {
-            facingMode: "environment",
-            width: { ideal: 1920 }, // Tenta Full HD para máxima nitidez
-            height: { ideal: 1080 },
-            advanced: [{ focusMode: "continuous" }] as any
-          };
-
           await scannerRef.current.start(
-            constraints,
+            { facingMode: "environment" }, // Apenas 1 chave aqui!
             config,
             qrCodeSuccessCallback,
             undefined
