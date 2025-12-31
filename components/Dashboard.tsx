@@ -219,25 +219,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             });
           }
 
-          // Configuração equilibrada: área de foco retangular + motor nativo Apple
+          // Configuração de Máxima Precisão para iPhone Pro/Modernos
           const config = {
-            fps: 15, // 15fps é o ideal para o processador não "engasgar" na leitura
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const width = Math.floor(viewfinderWidth * 0.85);
-              const height = Math.floor(width * 0.45); // Retângulo horizontal perfeito para códigos de barras
-              return { width, height };
-            },
+            fps: 25,
             aspectRatio: 0.75,
             experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true // Usa o hardware da Apple para ler o código
+              useBarCodeDetectorIfSupported: true // Tenta usar o motor da Apple
             }
           };
 
           const constraints = {
             facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            advanced: [{ focusMode: "continuous" }] as any
+            width: { ideal: 1920 }, // Full HD para barras super nítidas
+            height: { ideal: 1080 },
+            advanced: [
+              { focusMode: "continuous" },
+              { brightness: { ideal: 1 } } // Tenta ajustar brilho se suportado
+            ] as any
           };
 
           await scannerRef.current.start(
