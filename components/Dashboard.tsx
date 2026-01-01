@@ -166,9 +166,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       const objectUrl = URL.createObjectURL(file);
 
       img.onload = () => {
-        URL.revokeObjectURL(objectUrl); // Libera memória
+        URL.revokeObjectURL(objectUrl);
         const canvas = document.createElement('canvas');
-        const MAX_SIZE = 1280; // Aumentado para 1280px para melhor nitidez no EAN-13
+        const MAX_SIZE = 1000; // Reduzido para 1000px para garantir estabilidade no iOS/Chrome
         let width = img.width;
         let height = img.height;
 
@@ -199,7 +199,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           } else {
             resolve(file);
           }
-        }, 'image/jpeg', 0.90);
+          // Cleanup imediato do canvas
+          canvas.width = 0;
+          canvas.height = 0;
+        }, 'image/jpeg', 0.85); // Qualidade ajustada para 85% para reduzir peso final
       };
 
       img.onerror = () => {
@@ -368,19 +371,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             decodedText = await fileScannerRef.current.scanFile(optimizedFile, true);
           } catch (e2) {
             // 3. FALLBACK: Inteligência Artificial (OCR dos números impressos)
-            // Converte para base64 para mandar pro Gemini
-            const reader = new FileReader();
-            const aiResultPromise = new Promise<string | null>((resolve) => {
+            // Converte para base64 APENAS se falhar as outras tentativas (poupando memória)
+            const aiBarcode = await new Promise<string | null>((resolve) => {
+              const reader = new FileReader();
               reader.onload = async () => {
-                const base64 = reader.result as string;
-                const barcode = await extractBarcodeFromImage(base64);
-                resolve(barcode);
+                try {
+                  const base64 = reader.result as string;
+                  const result = await extractBarcodeFromImage(base64);
+                  resolve(result);
+                } catch (e) { resolve(null); }
               };
               reader.onerror = () => resolve(null);
               reader.readAsDataURL(optimizedFile);
             });
 
-            const aiBarcode = await aiResultPromise;
             if (aiBarcode) {
               decodedText = aiBarcode;
             }
