@@ -189,6 +189,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       }
     } catch (err) {
       console.error("File Scan Error:", err);
+      // Fallback: Tenta inicializar e ler novamente com configurações explícitas
+      try {
+        const tempScanner = new Html5Qrcode("reader", {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+          ],
+          verbose: false
+        });
+        const decodedText = await tempScanner.scanFile(file, true);
+        setQuery(decodedText);
+        setIsScannerOpen(false);
+      } catch (innerErr) {
+        setScannerError("Não conseguimos identificar o código na imagem. Tente uma foto mais próxima e focada.");
+      }
     }
   };
 
@@ -208,10 +226,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       // Criar instância se necessário (usando um elemento oculto)
       if (!scannerRef.current) {
         const tempDiv = document.createElement('div');
-        tempDiv.id = "temp-reader";
+        tempDiv.id = "capture-reader";
         tempDiv.style.display = "none";
         document.body.appendChild(tempDiv);
-        scannerRef.current = new Html5Qrcode("temp-reader");
+
+        scannerRef.current = new Html5Qrcode("capture-reader", {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+          ],
+          verbose: false
+        });
+      }
+
+      // Parar qualquer scanner ativo antes de processar arquivo
+      if (scannerRef.current.isScanning) {
+        await scannerRef.current.stop().catch(() => { });
       }
 
       const decodedText = await scannerRef.current.scanFile(file, true);
