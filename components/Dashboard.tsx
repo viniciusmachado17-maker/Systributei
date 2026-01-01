@@ -167,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       img.onload = () => {
         URL.revokeObjectURL(objectUrl); // Libera memória
         const canvas = document.createElement('canvas');
-        const MAX_SIZE = 1024;
+        const MAX_SIZE = 800; // Reduzido para 800px para máxima estabilidade (Chrome/iOS)
         let width = img.width;
         let height = img.height;
 
@@ -254,32 +254,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
   const handleCapturePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      // Se cancelou a foto, tenta retomar o scanner ao vivo
+      if (isScannerOpen) startScanner();
+      return;
+    }
 
-    // 1. Mostra o loading imediatamente
     setIsDecoding(true);
     setScannerError(null);
 
-    // 2. Espera o React renderizar o loading antes do processamento pesado
+    // Pequeno atraso para o UI de loading aparecer
     setTimeout(async () => {
       try {
-        // 3. Libera a câmera
-        if (scannerRef.current?.isScanning) {
-          await scannerRef.current.stop().catch(() => { });
-        }
-
-        // 4. Redimensiona
         const optimizedFile = await preprocessImage(file);
 
-        // 5. Inicializa engine de arquivo se necessário
         if (!fileScannerRef.current) {
-          let captureDiv = document.getElementById("file-capture-container");
-          if (!captureDiv) {
-            captureDiv = document.createElement('div');
-            captureDiv.id = "file-capture-container";
-            captureDiv.style.display = "none";
-            document.body.appendChild(captureDiv);
-          }
+          const captureDiv = document.getElementById("file-capture-container") || document.createElement('div');
+          captureDiv.id = "file-capture-container";
+          // @ts-ignore
+          captureDiv.style.display = "none";
+          if (!document.getElementById("file-capture-container")) document.body.appendChild(captureDiv);
+
           fileScannerRef.current = new Html5Qrcode("file-capture-container", {
             formatsToSupport: [
               Html5QrcodeSupportedFormats.EAN_13,
@@ -295,18 +290,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         setIsScannerOpen(false);
       } catch (err) {
         console.error("Capture Error:", err);
-        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular um pouco mais afastado.");
+        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular focado nas barras.");
+        // Retoma o scanner para não ficar travado
+        startScanner();
       } finally {
         setIsDecoding(false);
         if (e.target) e.target.value = '';
       }
-    }, 100);
+    }, 150);
   };
+
+  // Tornar startScanner acessível
+  let startScanner: () => Promise<void> = async () => { };
 
   useEffect(() => {
     if (isScannerOpen) {
       setScannerError(null);
-      const startScanner = async () => {
+      startScanner = async () => {
         const qrCodeSuccessCallback = (decodedText: string) => {
           setQuery(decodedText);
           setIsScannerOpen(false);
@@ -348,6 +348,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             advanced: [{ focusMode: "continuous" }] as any
           };
 
+          await scannerRef.current.stop().catch(() => { }); // Stop any existing scanner before starting
           await scannerRef.current.start(
             { facingMode: "environment" },
             {
@@ -374,48 +375,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           // Feedback visual: Se não ler em 5 segundos, mostra uma dica
           setTimeout(() => {
             if (isScannerOpen && !scannerError) {
-              setScannerError("Dica: Aproxime ou afaste um pouco o celular do código.");
-              setTimeout(() => setScannerError(null), 3000);
+              // Dica já presente no footer do modal
             }
           }, 5000);
 
         } catch (err: any) {
           console.error("Scanner Error:", err);
-          if (err?.toString().includes("is scanning")) return;
-
-          // Se falhou com constraints avançadas, tenta o modo ultra-básico como última chance
-          try {
-            if (scannerRef.current) {
-              await scannerRef.current.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 0.75 },
-                qrCodeSuccessCallback,
-                undefined
-              );
-            }
-          } catch (e) {
-            setScannerError(`Erro: ${err?.message || err?.toString()}`);
-          }
+          setScannerError("Não foi possível iniciar a câmera.");
         }
       };
 
-      // Pequeno delay para garantir que o DOM renderizou
-      const timer = setTimeout(startScanner, 800);
+      startScanner();
 
       return () => {
-        clearTimeout(timer);
         if (scannerRef.current) {
-          // Tenta parar graciosamente
-          try {
-            if (scannerRef.current.isScanning) {
-              scannerRef.current.stop().catch(() => { });
-            }
-          } catch (e) { }
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop().catch(() => { });
+          }
           scannerRef.current = null;
         }
+        setHasTorch(false);
+        setIsTorchOn(false);
+        setScannerError(null);
       };
     }
   }, [isScannerOpen]);
+
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [isAdminActionLoading, setIsAdminActionLoading] = useState<string | null>(null);
   const [adminReplyMap, setAdminReplyMap] = useState<Record<string, string>>({});
@@ -2074,7 +2059,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             />
 
             <button
-              onClick={() => document.getElementById('capture-input')?.click()}
+              onClick={async () => {
+                // Parar o leitor de vídeo para liberar recursos antes de abrir a câmera nativa
+                if (scannerRef.current?.isScanning) {
+                  await scannerRef.current.stop().catch(() => { });
+                  setHasTorch(false);
+                  setIsTorchOn(false);
+                }
+                // Pequeno atraso para garantir que o dispositivo liberou a câmera
+                setTimeout(() => {
+                  document.getElementById('capture-input')?.click();
+                }, 200);
+              }}
               className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 active:scale-95 flex items-center justify-center gap-3 group"
             >
               <i className="fa-solid fa-camera text-lg group-hover:scale-110 transition-transform"></i>
