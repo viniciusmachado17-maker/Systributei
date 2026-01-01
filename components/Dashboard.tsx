@@ -161,44 +161,48 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
   const preprocessImage = (file: File): Promise<File> => {
     return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_SIZE = 1024;
-          let width = img.width;
-          let height = img.height;
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
 
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height *= MAX_SIZE / width;
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width *= MAX_SIZE / height;
-              height = MAX_SIZE;
-            }
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl); // Libera memória
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 1024;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
           }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
 
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-            } else {
-              resolve(file);
-            }
-          }, 'image/jpeg', 0.85);
-        };
-        img.src = e.target?.result as string;
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.80);
       };
-      reader.onerror = () => resolve(file);
-      reader.readAsDataURL(file);
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+      };
+
+      img.src = objectUrl;
     });
   };
 
@@ -252,60 +256,51 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      setIsDecoding(true);
-      setScannerError(null);
+    // 1. Mostra o loading imediatamente
+    setIsDecoding(true);
+    setScannerError(null);
 
-      // 0. Liberar a câmera IMEDIATAMENTE antes do processamento pesado
-      if (scannerRef.current?.isScanning) {
-        try { await scannerRef.current.stop(); } catch (e) { }
-      }
+    // 2. Espera o React renderizar o loading antes do processamento pesado
+    setTimeout(async () => {
+      try {
+        // 3. Libera a câmera
+        if (scannerRef.current?.isScanning) {
+          await scannerRef.current.stop().catch(() => { });
+        }
 
-      // 1. Redimensionar a imagem para não estourar a memória do iPhone
-      const optimizedFile = await preprocessImage(file);
+        // 4. Redimensiona
+        const optimizedFile = await preprocessImage(file);
 
-      // 2. Limpa qualquer tentativa anterior de scanner de arquivo
-      if (fileScannerRef.current) {
-        try { await fileScannerRef.current.clear(); } catch (e) { }
-        fileScannerRef.current = null;
-      }
+        // 5. Inicializa engine de arquivo se necessário
+        if (!fileScannerRef.current) {
+          let captureDiv = document.getElementById("file-capture-container");
+          if (!captureDiv) {
+            captureDiv = document.createElement('div');
+            captureDiv.id = "file-capture-container";
+            captureDiv.style.display = "none";
+            document.body.appendChild(captureDiv);
+          }
+          fileScannerRef.current = new Html5Qrcode("file-capture-container", {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.CODE_128,
+            ],
+            verbose: false
+          });
+        }
 
-      // 2. Cria um elemento neutro e fixo para processamento
-      let captureDiv = document.getElementById("file-capture-container");
-      if (!captureDiv) {
-        captureDiv = document.createElement('div');
-        captureDiv.id = "file-capture-container";
-        captureDiv.style.display = "none";
-        document.body.appendChild(captureDiv);
-      }
-
-      // 3. Inicializa instância dedicada para o arquivo
-      fileScannerRef.current = new Html5Qrcode("file-capture-container", {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-        ],
-        verbose: false
-      });
-
-      // 4. Decodifica usando o arquivo otimizado (menor e mais leve)
-      const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
-
-      if (decodedText) {
+        const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
         setQuery(decodedText);
         setIsScannerOpen(false);
+      } catch (err) {
+        console.error("Capture Error:", err);
+        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular um pouco mais afastado.");
+      } finally {
+        setIsDecoding(false);
+        if (e.target) e.target.value = '';
       }
-    } catch (err) {
-      console.error("Capture Error:", err);
-      setScannerError("Não conseguimos ler o código desta foto. Tente aproximar mais a câmera do código de barras.");
-    } finally {
-      setIsDecoding(false);
-      if (fileScannerRef.current) {
-        fileScannerRef.current.clear().catch(() => { });
-      }
-      if (e.target) e.target.value = '';
-    }
+    }, 100);
   };
 
   useEffect(() => {
