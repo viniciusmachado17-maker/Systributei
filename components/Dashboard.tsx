@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { readBarcodesFromImageData, type BarcodeFormat } from 'zxing-wasm';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
@@ -163,10 +164,102 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const requestRef = useRef<number>();
 
+  const startIOSScanner = useCallback(async () => {
+    if (!isScannerOpen || !isIOS) return;
+    setScannerError(null);
 
+    try {
+      console.log("Starting iOS Specific Scanner...");
+      const constraints = {
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 }
+        }
+      };
+
+      if (!streamRef.current) {
+        streamRef.current = await navigator.mediaDevices.getUserMedia(constraints);
+      }
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = streamRef.current;
+        await videoRef.current.play();
+      }
+
+      let lastMatch = "";
+      let matchCount = 0;
+
+      const scanFrame = async () => {
+        if (!isScannerOpen || !videoRef.current || !canvasRef.current) return;
+
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d', { alpha: false, style: 'image-rendering: pixelated' });
+
+        if (ctx && video.readyState === video.HAVE_ENOUGH_DATA) {
+          // Crop focado no centro (onde está o guia visual)
+          const sw = video.videoWidth * 0.8;
+          const sh = video.videoHeight * 0.3;
+          const sx = (video.videoWidth - sw) / 2;
+          const sy = (video.videoHeight - sh) / 2;
+
+          canvas.width = sw;
+          canvas.height = sh;
+          ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+
+          try {
+            const imageData = ctx.getImageData(0, 0, sw, sh);
+            const formats: BarcodeFormat[] = ['EAN-13', 'EAN-8', 'Code128', 'UPC-A', 'UPC-E'];
+            const results = await readBarcodesFromImageData(imageData, {
+              formats,
+              tryInvert: true,
+              tryRotate: true
+            });
+
+            if (results.length > 0) {
+              const text = results[0].text;
+              if (text === lastMatch) {
+                matchCount++;
+              } else {
+                lastMatch = text;
+                matchCount = 1;
+              }
+
+              if (matchCount >= 2) {
+                if (streamRef.current) {
+                  streamRef.current.getTracks().forEach(t => t.stop());
+                  streamRef.current = null;
+                }
+                setIsScannerOpen(false);
+                setQuery(text);
+                handleSearch(undefined, undefined, text);
+                return;
+              }
+            } else {
+              matchCount = 0;
+            }
+          } catch (e) { }
+        }
+        requestRef.current = requestAnimationFrame(scanFrame);
+      };
+
+      requestRef.current = requestAnimationFrame(scanFrame);
+
+    } catch (err: any) {
+      console.error("IOS Scanner Error:", err);
+      setScannerError("Permita o acesso à câmera para escanear.");
+    }
+  }, [isScannerOpen, isIOS]);
 
   const startScanner = useCallback(async () => {
+    if (isIOS) return startIOSScanner();
     if (!isScannerOpen) return;
 
     setScannerError(null);
@@ -245,6 +338,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     if (isScannerOpen) {
       startScanner();
     } else {
+      // Cleanup para iOS
+      if (isIOS) {
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
+      }
+
+      // Cleanup para Android/Standard
       if (scannerRef.current) {
         if (scannerRef.current.isScanning) {
           scannerRef.current.stop().catch(() => { });
@@ -257,11 +360,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     }
 
     return () => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(() => { });
+      if (isIOS) {
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
+      } else {
+        if (scannerRef.current?.isScanning) {
+          scannerRef.current.stop().catch(() => { });
+        }
       }
     };
-  }, [isScannerOpen, startScanner]);
+  }, [isScannerOpen, startScanner, isIOS]);
 
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [isAdminActionLoading, setIsAdminActionLoading] = useState<string | null>(null);
@@ -1028,7 +1139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
             className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
           />
-          {mode === 'barcode' && !isIOS && (
+          {mode === 'barcode' && (
             <button
               onClick={() => setIsScannerOpen(true)}
               className="absolute right-4 md:hidden top-[28px] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-all"
@@ -1863,11 +1974,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
         <div className="p-6 flex flex-col items-center">
           <div id="reader" className="w-full aspect-[3/4] bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
-            <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10"></div>
+            {isIOS && (
+              <>
+                <video
+                  ref={videoRef}
+                  playsInline
+                  autoPlay
+                  muted
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <canvas ref={canvasRef} className="hidden" />
+              </>
+            )}
 
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+            <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10 flex items-center justify-center">
+              {/* Moldura de Guia para iOS */}
+              {isIOS && (
+                <div className="w-[85%] h-[45%] border-2 border-white/80 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.4)] relative">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-black text-white uppercase tracking-widest bg-brand-600 px-2 py-0.5 rounded shadow-lg">
+                    Alinhe o código aqui
+                  </div>
+                  {/* Cantos da moldura */}
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-brand-500 -ml-0.5 -mt-0.5"></div>
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-brand-500 -mr-0.5 -mt-0.5"></div>
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-brand-500 -ml-0.5 -mb-0.5"></div>
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-brand-500 -mr-0.5 -mb-0.5"></div>
+                </div>
+              )}
+            </div>
 
-            {hasTorch && (
+            {!isIOS && <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>}
+
+            {hasTorch && !isIOS && (
               <button
                 onClick={async () => {
                   try {
@@ -1888,6 +2026,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               </button>
             )}
           </div>
+
+          {isIOS && (
+            <div className="mt-4 p-3 bg-brand-50 rounded-2xl text-[10px] text-brand-700 font-bold text-center">
+              <i className="fa-solid fa-circle-info mr-1"></i>
+              Aproxime o código até ocupar ~70% da área, <br />mantenha boa luz e segure por 1s.
+            </div>
+          )}
 
           {scannerError && (
             <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex flex-col gap-2 w-full animate-shake border border-red-100">
