@@ -134,6 +134,12 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
 
     setLoadingPrice(priceId);
     try {
+      console.log('Initiating checkout session...', {
+        priceId,
+        orgId: user.organization_id,
+        userId: user.id
+      });
+
       const response = await createCheckoutSession({
         priceId,
         orgId: user.organization_id,
@@ -142,12 +148,17 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
         cancelUrl: `${window.location.origin}/?session=cancel`
       });
 
+      console.log('Checkout session response:', response);
+
       if (response?.url) {
         window.location.href = response.url;
+      } else {
+        throw new Error(response?.error || 'Não foi possível gerar a URL de pagamento.');
       }
     } catch (err: any) {
-      console.error(err);
-      alert(`Erro ao iniciar pagamento: ${err.message || JSON.stringify(err)}`);
+      console.error('Stripe Subscribe Error:', err);
+      const errorMsg = err.message || JSON.stringify(err);
+      alert(`Erro ao iniciar pagamento: ${errorMsg}`);
     } finally {
       setLoadingPrice(null);
     }

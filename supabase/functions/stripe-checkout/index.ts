@@ -23,7 +23,6 @@ function getNextBusinessDay(date: Date): Date {
         '15-11', // República
         '20-11', // Consciência Negra
         '25-12', // Natal
-        '01-01', // Confraternização
     ]
 
     let current = new Date(date)
@@ -58,13 +57,17 @@ serve(async (req) => {
         const body = await req.json()
         const { priceId, orgId, userId, successUrl, cancelUrl } = body
 
+        console.log(`Starting checkout for org: ${orgId}, user: ${userId}, price: ${priceId}`);
+
         const authHeader = req.headers.get('Authorization')
-        console.log('Auth Header present:', !!authHeader);
+        if (!authHeader) {
+            throw new Error('Missing Authorization header');
+        }
 
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: authHeader || '' } } }
+            { global: { headers: { Authorization: authHeader } } }
         )
 
         const supabaseAdmin = createClient(
@@ -79,8 +82,6 @@ serve(async (req) => {
             throw new Error('Unauthorized');
         }
 
-        console.log('User verified:', user.email);
-
         const { data: org, error: orgError } = await supabaseAdmin
             .from('organizations')
             .select('stripe_customer_id')
@@ -93,35 +94,50 @@ serve(async (req) => {
         }
 
         let customerId = org?.stripe_customer_id
+        let validCustomer = false
 
-        if (!customerId) {
+        if (customerId) {
+            try {
+                // Verifica se o cliente existe no ambiente atual do Stripe
+                const customer = await stripe.customers.retrieve(customerId);
+                if (!(customer as any).deleted) {
+                    validCustomer = true;
+                }
+            } catch (err) {
+                console.warn('Customer ID stored in DB is invalid for current Stripe environment:', customerId);
+                customerId = null;
+            }
+        }
+
+        if (!customerId || !validCustomer) {
             console.log('Creating new Stripe customer for:', user.email);
             const customer = await stripe.customers.create({
                 email: user.email,
+                name: user.user_metadata?.name || '',
                 metadata: { orgId, userId }
             })
             customerId = customer.id
 
-            const { error: updateError } = await supabaseAdmin
+            await supabaseAdmin
                 .from('organizations')
                 .update({ stripe_customer_id: customerId })
                 .eq('id', orgId)
-
-            if (updateError) {
-                console.error('Error updating org with customerId:', updateError.message);
-                throw new Error('Failed to save customer information');
-            }
         } else {
             // Se já existe cliente, cancela assinaturas ATIVAS anteriores para evitar duplicidade
             console.log('Checking for existing subscriptions for customer:', customerId);
-            const subscriptions = await stripe.subscriptions.list({
-                customer: customerId,
-                status: 'active'
-            });
+            try {
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: customerId,
+                    status: 'active'
+                });
 
-            for (const sub of subscriptions.data) {
-                console.log('Canceling previous active subscription:', sub.id);
-                await stripe.subscriptions.cancel(sub.id);
+                for (const sub of subscriptions.data) {
+                    console.log('Canceling previous active subscription:', sub.id);
+                    await stripe.subscriptions.cancel(sub.id);
+                }
+            } catch (subErr) {
+                console.error('Error managing existing subscriptions:', subErr.message);
+                // Not fatal, but good to know
             }
         }
 
@@ -155,6 +171,7 @@ serve(async (req) => {
         })
 
     } catch (error) {
+        console.error('Checkout error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400
