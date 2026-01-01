@@ -1201,7 +1201,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
             className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
           />
-          {mode === 'barcode' && (
+          {mode === 'barcode' && !isIOS && (
             <button
               onClick={() => setIsScannerOpen(true)}
               className="absolute right-4 md:hidden top-[28px] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-all"
@@ -2860,7 +2860,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       {isUpgradeModalOpen && renderUpgradeModal()}
       {isRequestModalOpen && renderRequestModal()}
       {isSelectionOpen && searchResults.length > 0 && renderSelectionModal()}
-      {isScannerOpen && renderScannerModal()}
+      {isScannerOpen && !isIOS && renderScannerModal()}
     </div>
   );
 };
