@@ -156,6 +156,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [isTorchOn, setIsTorchOn] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const fileScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,44 +221,46 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       setIsDecoding(true);
       setScannerError(null);
 
-      // Parar o leitor ao vivo se estiver rodando para liberar memória
-      if (scannerRef.current?.isScanning) {
-        await scannerRef.current.stop().catch(() => { });
+      // 1. Limpa qualquer tentativa anterior de scanner de arquivo
+      if (fileScannerRef.current) {
+        try { await fileScannerRef.current.clear(); } catch (e) { }
+        fileScannerRef.current = null;
       }
 
-      // Criar instância se necessário (usando um elemento oculto)
-      if (!scannerRef.current) {
-        const tempDiv = document.createElement('div');
-        tempDiv.id = "capture-reader";
-        tempDiv.style.display = "none";
-        document.body.appendChild(tempDiv);
-
-        scannerRef.current = new Html5Qrcode("capture-reader", {
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-          ],
-          verbose: false
-        });
+      // 2. Cria um elemento neutro e fixo para processamento
+      let captureDiv = document.getElementById("file-capture-container");
+      if (!captureDiv) {
+        captureDiv = document.createElement('div');
+        captureDiv.id = "file-capture-container";
+        captureDiv.style.display = "none";
+        document.body.appendChild(captureDiv);
       }
 
-      // Parar qualquer scanner ativo antes de processar arquivo
-      if (scannerRef.current.isScanning) {
-        await scannerRef.current.stop().catch(() => { });
-      }
+      // 3. Inicializa instância dedicada para o arquivo
+      fileScannerRef.current = new Html5Qrcode("file-capture-container", {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+        ],
+        verbose: false
+      });
 
-      const decodedText = await scannerRef.current.scanFile(file, true);
-      setQuery(decodedText);
-      setIsScannerOpen(false);
+      // 4. Decodifica (false no segundo parâmetro para evitar filtros pesados que travam no iPhone)
+      const decodedText = await fileScannerRef.current.scanFile(file, false);
+
+      if (decodedText) {
+        setQuery(decodedText);
+        setIsScannerOpen(false);
+      }
     } catch (err) {
       console.error("Capture Error:", err);
-      setScannerError("Não conseguimos ler esse código na foto. Tente tirar a foto bem próxima, focada e bem iluminada.");
+      setScannerError("Não conseguimos ler o código desta foto. Tente aproximar mais a câmera do código de barras.");
     } finally {
       setIsDecoding(false);
-      // Limpar o input para permitir selecionar o mesmo arquivo
+      if (fileScannerRef.current) {
+        fileScannerRef.current.clear().catch(() => { });
+      }
       if (e.target) e.target.value = '';
     }
   };
