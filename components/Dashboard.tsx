@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
@@ -155,6 +155,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
+
+  // Detectar se é iOS para desativar funções problemáticas (tela branca)
+  const isIOS = useMemo(() => {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  }, []);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileScannerRef = useRef<Html5Qrcode | null>(null);
@@ -2116,24 +2121,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               id="capture-input"
             />
 
-            <button
-              onClick={async () => {
-                // Parar o leitor de vídeo para liberar recursos antes de abrir a câmera nativa
-                if (scannerRef.current?.isScanning) {
-                  await scannerRef.current.stop().catch(() => { });
-                  setHasTorch(false);
-                  setIsTorchOn(false);
-                }
-                // Pequeno atraso para garantir que o dispositivo liberou a câmera
-                setTimeout(() => {
-                  document.getElementById('capture-input')?.click();
-                }, 200);
-              }}
-              className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 active:scale-95 flex items-center justify-center gap-3 group"
-            >
-              <i className="fa-solid fa-camera text-lg group-hover:scale-110 transition-transform"></i>
-              Tirar Foto e Ler
-            </button>
+            {!isIOS && (
+              <button
+                onClick={async () => {
+                  // Parar o leitor de vídeo para liberar recursos antes de abrir a câmera nativa
+                  if (scannerRef.current?.isScanning) {
+                    await scannerRef.current.stop().catch(() => { });
+                    setHasTorch(false);
+                    setIsTorchOn(false);
+                  }
+                  // Pequeno atraso para garantir que o dispositivo liberou a câmera
+                  setTimeout(() => {
+                    document.getElementById('capture-input')?.click();
+                  }, 200);
+                }}
+                className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 active:scale-95 flex items-center justify-center gap-3 group"
+              >
+                <i className="fa-solid fa-camera text-lg group-hover:scale-110 transition-transform"></i>
+                Tirar Foto e Ler
+              </button>
+            )}
 
             <div className="flex gap-2">
               <button
