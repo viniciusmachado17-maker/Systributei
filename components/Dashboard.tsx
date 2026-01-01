@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
@@ -167,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       img.onload = () => {
         URL.revokeObjectURL(objectUrl); // Libera memória
         const canvas = document.createElement('canvas');
-        const MAX_SIZE = 800; // Reduzido para 800px para máxima estabilidade (Chrome/iOS)
+        const MAX_SIZE = 1280; // Aumentado para 1280px para melhor nitidez no EAN-13
         let width = img.width;
         let height = img.height;
 
@@ -186,7 +186,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+        }
 
         canvas.toBlob((blob) => {
           if (blob) {
@@ -194,7 +198,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           } else {
             resolve(file);
           }
-        }, 'image/jpeg', 0.80);
+        }, 'image/jpeg', 0.90);
       };
 
       img.onerror = () => {
@@ -252,6 +256,73 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     }
   };
 
+  const startScanner = useCallback(async () => {
+    if (!isScannerOpen) return;
+
+    setScannerError(null);
+    const qrCodeSuccessCallback = (decodedText: string) => {
+      setQuery(decodedText);
+      setIsScannerOpen(false);
+    };
+
+    try {
+      const readerElement = document.getElementById("reader");
+      if (!readerElement) return;
+
+      const config = {
+        fps: 30,
+        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+          const width = Math.floor(viewfinderWidth * 0.85);
+          const height = Math.floor(width * 0.45);
+          return { width, height };
+        },
+      };
+
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode("reader", {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+          ],
+          verbose: false
+        });
+      }
+
+      const constraints = {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        advanced: [{ focusMode: "continuous" }] as any
+      };
+
+      // Tenta parar se já estiver rodando por segurança
+      try { await scannerRef.current.stop(); } catch (e) { }
+
+      await scannerRef.current.start(
+        { facingMode: "environment" },
+        { ...config, videoConstraints: constraints },
+        qrCodeSuccessCallback,
+        undefined
+      );
+
+      // Lanterna
+      setTimeout(async () => {
+        try {
+          const tracks = scannerRef.current?.getRunningTrack();
+          const capabilities = tracks ? (tracks as any).getCapabilities() : {};
+          if (capabilities.torch) setHasTorch(true);
+        } catch (err) { }
+      }, 1000);
+
+    } catch (err: any) {
+      console.error("Scanner Error:", err);
+      setScannerError("Não foi possível iniciar a câmera.");
+    }
+  }, [isScannerOpen]);
+
   const handleCapturePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
@@ -259,7 +330,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       if (isScannerOpen) startScanner();
       return;
     }
-
+    // 1. Mostra o loading imediatamente
     setIsDecoding(true);
     setScannerError(null);
 
@@ -285,13 +356,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           });
         }
 
-        const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
-        setQuery(decodedText);
-        setIsScannerOpen(false);
+        // Estratégia de tentativa dupla de reconhecimento
+        let decodedText = "";
+        try {
+          // Tentativa 1: Filtros leves
+          decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
+        } catch (e) {
+          // Tentativa 2: Filtros mais pesados da biblioteca
+          decodedText = await fileScannerRef.current.scanFile(optimizedFile, true);
+        }
+
+        if (decodedText) {
+          setQuery(decodedText);
+          setIsScannerOpen(false);
+        }
       } catch (err) {
         console.error("Capture Error:", err);
-        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular focado nas barras.");
-        // Retoma o scanner para não ficar travado
+        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular mais firme e focado nas barras.");
         startScanner();
       } finally {
         setIsDecoding(false);
@@ -300,106 +381,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     }, 150);
   };
 
-  // Tornar startScanner acessível
-  let startScanner: () => Promise<void> = async () => { };
-
   useEffect(() => {
     if (isScannerOpen) {
-      setScannerError(null);
-      startScanner = async () => {
-        const qrCodeSuccessCallback = (decodedText: string) => {
-          setQuery(decodedText);
-          setIsScannerOpen(false);
-        };
-
-        try {
-          const readerElement = document.getElementById("reader");
-          if (!readerElement) return;
-
-          // Configuração otimizada para EAN-13 (mais larga) e estabilidade máxima
-          const config = {
-            fps: 30,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              // Caixa retangular larga, ideal para EAN-13
-              const width = Math.floor(viewfinderWidth * 0.85);
-              const height = Math.floor(width * 0.45);
-              return { width, height };
-            },
-          };
-
-          // Ensure instance
-          if (!scannerRef.current) {
-            scannerRef.current = new Html5Qrcode("reader", {
-              formatsToSupport: [
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
-              ],
-              verbose: false
-            });
-          }
-
-          const constraints = {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            advanced: [{ focusMode: "continuous" }] as any
-          };
-
-          await scannerRef.current.stop().catch(() => { }); // Stop any existing scanner before starting
-          await scannerRef.current.start(
-            { facingMode: "environment" },
-            {
-              ...config,
-              videoConstraints: constraints
-            },
-            qrCodeSuccessCallback,
-            undefined
-          );
-
-          // Verificar suporte a lanterna após iniciar
-          setTimeout(async () => {
-            try {
-              const tracks = scannerRef.current?.getRunningTrack();
-              const capabilities = tracks ? (tracks as any).getCapabilities() : {};
-              if (capabilities.torch) {
-                setHasTorch(true);
-              }
-            } catch (err) {
-              console.log("Torch check failed:", err);
-            }
-          }, 1000);
-
-          // Feedback visual: Se não ler em 5 segundos, mostra uma dica
-          setTimeout(() => {
-            if (isScannerOpen && !scannerError) {
-              // Dica já presente no footer do modal
-            }
-          }, 5000);
-
-        } catch (err: any) {
-          console.error("Scanner Error:", err);
-          setScannerError("Não foi possível iniciar a câmera.");
-        }
-      };
-
       startScanner();
-
-      return () => {
-        if (scannerRef.current) {
-          if (scannerRef.current.isScanning) {
-            scannerRef.current.stop().catch(() => { });
-          }
-          scannerRef.current = null;
+    } else {
+      if (scannerRef.current) {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().catch(() => { });
         }
-        setHasTorch(false);
-        setIsTorchOn(false);
-        setScannerError(null);
-      };
+        scannerRef.current = null;
+      }
+      setHasTorch(false);
+      setIsTorchOn(false);
+      setScannerError(null);
     }
-  }, [isScannerOpen]);
+
+    return () => {
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.stop().catch(() => { });
+      }
+    };
+  }, [isScannerOpen, startScanner]);
 
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [isAdminActionLoading, setIsAdminActionLoading] = useState<string | null>(null);
