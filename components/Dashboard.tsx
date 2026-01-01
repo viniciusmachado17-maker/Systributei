@@ -152,6 +152,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
   const [isDecoding, setIsDecoding] = useState(false);
+  const [hasTorch, setHasTorch] = useState(false);
+  const [isTorchOn, setIsTorchOn] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -273,6 +275,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           const readerElement = document.getElementById("reader");
           if (!readerElement) return;
 
+          // Configuração otimizada para EAN-13 (mais larga) e estabilidade máxima
+          const config = {
+            fps: 30,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              // Caixa retangular larga, ideal para EAN-13
+              const width = Math.floor(viewfinderWidth * 0.85);
+              const height = Math.floor(width * 0.45);
+              return { width, height };
+            },
+          };
+
           // Ensure instance
           if (!scannerRef.current) {
             scannerRef.current = new Html5Qrcode("reader", {
@@ -286,18 +299,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               verbose: false
             });
           }
-
-          // Configuração de Estabilidade Máxima (Sem distorção)
-          const config = {
-            fps: 30,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              // Caixa retangular larga, ideal para EAN-13
-              const width = Math.floor(viewfinderWidth * 0.8);
-              const height = Math.floor(width * 0.4);
-              return { width, height };
-            },
-            // REMOVIDA a trava de aspectRatio que estava distorcendo as barras no iPhone
-          };
 
           const constraints = {
             facingMode: "environment",
@@ -315,6 +316,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             qrCodeSuccessCallback,
             undefined
           );
+
+          // Verificar suporte a lanterna após iniciar
+          setTimeout(async () => {
+            try {
+              const tracks = scannerRef.current?.getRunningTrack();
+              const capabilities = tracks ? (tracks as any).getCapabilities() : {};
+              if (capabilities.torch) {
+                setHasTorch(true);
+              }
+            } catch (err) {
+              console.log("Torch check failed:", err);
+            }
+          }, 1000);
 
           // Feedback visual: Se não ler em 5 segundos, mostra uma dica
           setTimeout(() => {
@@ -1970,7 +1984,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 <p className="text-slate-400 text-[10px] mt-2 font-medium">Analisando imagem em alta resolução</p>
               </div>
             ) : (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+              <>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+
+                {hasTorch && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const nextState = !isTorchOn;
+                        // @ts-ignore
+                        await scannerRef.current?.applyVideoConstraints({
+                          advanced: [{ torch: nextState }]
+                        });
+                        setIsTorchOn(nextState);
+                      } catch (err) {
+                        console.error("Flash error:", err);
+                      }
+                    }}
+                    className={`absolute bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center z-20 transition-all ${isTorchOn ? 'bg-amber-400 text-slate-900 shadow-lg shadow-amber-400/40' : 'bg-slate-900/50 text-white backdrop-blur-md'
+                      }`}
+                  >
+                    <i className={`fa-solid ${isTorchOn ? 'fa-lightbulb' : 'fa-bolt-slash'} text-lg`}></i>
+                  </button>
+                )}
+              </>
             )}
           </div>
 
