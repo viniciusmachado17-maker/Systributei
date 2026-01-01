@@ -2545,41 +2545,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
 
 
-          {/* Usage Limit Indicators */}
+          {/* Usage Limit Indicators - Desktop Only */}
           {organizationData && user?.role !== 'admin' && (
-            <div className="hidden md:flex items-center gap-4 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="hidden lg:flex items-center gap-4 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               {/* Badge: Buscas */}
               <div className="flex items-center gap-3 bg-slate-50/50 px-4 py-2 rounded-full border border-slate-200" title="Consumo de buscas de produtos">
                 <i className={`fa-solid fa-magnifying-glass text-sm ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-emerald-500'}`}></i>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Buscas Realizadas</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Buscas</span>
                   <div className="flex items-baseline gap-1 mt-0.5">
                     <span className="text-xs font-black text-slate-800">{organizationData.usage_count} / {organizationData.usage_limit}</span>
-                    <span className="text-[10px] text-slate-400 font-bold lowercase">buscas</span>
                   </div>
                 </div>
               </div>
 
-              {/* Badge: Consultas Técnicas */}
+              {/* Badge: Consultas Técnicas (Dúvidas) */}
               <div className="flex items-center gap-3 bg-slate-50/50 px-4 py-2 rounded-full border border-slate-200" title="Saldo de consultoria técnica">
                 <i className={`fa-solid fa-envelope-open-text text-sm ${organizationData.email_count >= organizationData.email_limit ? 'text-red-500' : 'text-blue-500'}`}></i>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Consultas Técnicas</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Dúvidas</span>
                   <div className="flex items-baseline gap-1 mt-0.5">
                     <span className="text-xs font-black text-slate-800">{organizationData.email_count} / {organizationData.email_limit}</span>
-                    <span className="text-[10px] text-slate-400 font-bold lowercase">usadas</span>
                   </div>
                 </div>
               </div>
 
-              {/* Badge: Solicitações */}
+              {/* Badge: Solicitações (Pedidos) */}
               <div className="flex items-center gap-3 bg-slate-50/50 px-4 py-2 rounded-full border border-slate-200" title="Solicitações de cadastro">
                 <i className={`fa-solid fa-clipboard-question text-sm ${organizationData.request_count >= organizationData.request_limit ? 'text-red-500' : 'text-orange-500'}`}></i>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Solicitações</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase leading-none tracking-tight">Pedidos</span>
                   <div className="flex items-baseline gap-1 mt-0.5">
                     <span className="text-xs font-black text-slate-800">{organizationData.request_count} / {organizationData.request_limit}</span>
-                    <span className="text-[10px] text-slate-400 font-bold lowercase">pedidos</span>
                   </div>
                 </div>
               </div>
@@ -2659,32 +2656,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
         {/* Mobile Usage Limit Indicators */}
         {organizationData && user?.role !== 'admin' && (
-          <div className="md:hidden h-14 bg-slate-50 border-b border-slate-200 flex items-center justify-center px-4 gap-2 overflow-x-auto no-scrollbar">
+          <div className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 gap-4 overflow-x-auto no-scrollbar shrink-0">
             {/* Badge: Buscas */}
-            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Buscas Realizadas">
-              <i className={`fa-solid fa-magnifying-glass text-[10px] ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-emerald-500'}`}></i>
-              <div className="flex flex-col">
-                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Buscas</span>
-                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.usage_count}/{organizationData.usage_limit}</span>
+            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Buscas Realizadas">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <i className={`fa-solid fa-magnifying-glass text-[10px] ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Buscas</span>
               </div>
+              <span className="text-[11px] font-black text-slate-800 leading-none">{organizationData.usage_count}/{organizationData.usage_limit}</span>
             </div>
 
-            {/* Badge: Consultas Técnicas */}
-            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Consultas Técnicas">
-              <i className={`fa-solid fa-envelope-open-text text-[10px] ${organizationData.email_count >= organizationData.email_limit ? 'text-red-500' : 'text-blue-500'}`}></i>
-              <div className="flex flex-col">
-                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Dúvidas</span>
-                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.email_count}/{organizationData.email_limit}</span>
+            {/* Badge: Dúvidas */}
+            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Dúvidas Técnicas">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <i className={`fa-solid fa-envelope-open-text text-[10px] ${organizationData.email_count >= organizationData.email_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Dúvidas</span>
               </div>
+              <span className="text-[11px] font-black text-slate-800 leading-none">{organizationData.email_count}/{organizationData.email_limit}</span>
             </div>
 
-            {/* Badge: Solicitações */}
-            <div className="flex-shrink-0 flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm" title="Solicitações de Cadastro">
-              <i className={`fa-solid fa-clipboard-question text-[10px] ${organizationData.request_count >= organizationData.request_limit ? 'text-red-500' : 'text-orange-500'}`}></i>
-              <div className="flex flex-col">
-                <span className="text-[7px] font-black text-slate-400 uppercase leading-none tracking-tighter">Pedidos</span>
-                <span className="text-[10px] font-black text-slate-800 leading-none mt-0.5">{organizationData.request_count}/{organizationData.request_limit}</span>
+            {/* Badge: Pedidos */}
+            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Pedidos de Cadastro">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <i className={`fa-solid fa-clipboard-question text-[10px] ${organizationData.request_count >= organizationData.request_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Pedidos</span>
               </div>
+              <span className="text-[11px] font-black text-slate-800 leading-none">{organizationData.request_count}/{organizationData.request_limit}</span>
             </div>
           </div>
         )}
