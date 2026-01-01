@@ -159,13 +159,72 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const fileScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const preprocessImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+            } else {
+              resolve(file);
+            }
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode("reader", {
+      setIsDecoding(true);
+      setScannerError(null);
+
+      // Liberar a câmera para poupar memória
+      if (scannerRef.current?.isScanning) {
+        try { await scannerRef.current.stop(); } catch (e) { }
+      }
+
+      const optimizedFile = await preprocessImage(file);
+
+      if (!fileScannerRef.current) {
+        const captureDiv = document.getElementById("file-capture-container") || document.createElement('div');
+        captureDiv.id = "file-capture-container";
+        // @ts-ignore
+        captureDiv.style.display = "none";
+        if (!document.getElementById("file-capture-container")) document.body.appendChild(captureDiv);
+
+        fileScannerRef.current = new Html5Qrcode("file-capture-container", {
           formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
@@ -177,39 +236,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         });
       }
 
-      if (scannerRef.current) {
-        try {
-          if (scannerRef.current.isScanning) {
-            await scannerRef.current.stop();
-          }
-        } catch (ignore) {
-          // Ignore if not scanning
-        }
-
-        const decodedText = await scannerRef.current.scanFile(file, true);
-        setQuery(decodedText);
-        setIsScannerOpen(false);
-      }
+      const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
+      setQuery(decodedText);
+      setIsScannerOpen(false);
     } catch (err) {
       console.error("File Scan Error:", err);
-      // Fallback: Tenta inicializar e ler novamente com configurações explícitas
-      try {
-        const tempScanner = new Html5Qrcode("reader", {
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-          ],
-          verbose: false
-        });
-        const decodedText = await tempScanner.scanFile(file, true);
-        setQuery(decodedText);
-        setIsScannerOpen(false);
-      } catch (innerErr) {
-        setScannerError("Não conseguimos identificar o código na imagem. Tente uma foto mais próxima e focada.");
-      }
+      setScannerError("Não conseguimos identificar o código na imagem. Tente uma foto mais próxima e focada.");
+    } finally {
+      setIsDecoding(false);
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -221,7 +256,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       setIsDecoding(true);
       setScannerError(null);
 
-      // 1. Limpa qualquer tentativa anterior de scanner de arquivo
+      // 0. Liberar a câmera IMEDIATAMENTE antes do processamento pesado
+      if (scannerRef.current?.isScanning) {
+        try { await scannerRef.current.stop(); } catch (e) { }
+      }
+
+      // 1. Redimensionar a imagem para não estourar a memória do iPhone
+      const optimizedFile = await preprocessImage(file);
+
+      // 2. Limpa qualquer tentativa anterior de scanner de arquivo
       if (fileScannerRef.current) {
         try { await fileScannerRef.current.clear(); } catch (e) { }
         fileScannerRef.current = null;
@@ -246,8 +289,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         verbose: false
       });
 
-      // 4. Decodifica (false no segundo parâmetro para evitar filtros pesados que travam no iPhone)
-      const decodedText = await fileScannerRef.current.scanFile(file, false);
+      // 4. Decodifica usando o arquivo otimizado (menor e mais leve)
+      const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
 
       if (decodedText) {
         setQuery(decodedText);
