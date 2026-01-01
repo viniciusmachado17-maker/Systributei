@@ -151,6 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [adminConsultations, setAdminConsultations] = useState<any[]>([]);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [isDecoding, setIsDecoding] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -188,7 +189,41 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       }
     } catch (err) {
       console.error("File Scan Error:", err);
-      setScannerError("Não conseguimos identificar o código. Tente tirar a foto mais de perto, focando apenas no código de barras.");
+    }
+  };
+
+  const handleCapturePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsDecoding(true);
+      setScannerError(null);
+
+      // Parar o leitor ao vivo se estiver rodando para liberar memória
+      if (scannerRef.current?.isScanning) {
+        await scannerRef.current.stop().catch(() => { });
+      }
+
+      // Criar instância se necessário (usando um elemento oculto)
+      if (!scannerRef.current) {
+        const tempDiv = document.createElement('div');
+        tempDiv.id = "temp-reader";
+        tempDiv.style.display = "none";
+        document.body.appendChild(tempDiv);
+        scannerRef.current = new Html5Qrcode("temp-reader");
+      }
+
+      const decodedText = await scannerRef.current.scanFile(file, true);
+      setQuery(decodedText);
+      setIsScannerOpen(false);
+    } catch (err) {
+      console.error("Capture Error:", err);
+      setScannerError("Não conseguimos ler esse código na foto. Tente tirar a foto bem próxima, focada e bem iluminada.");
+    } finally {
+      setIsDecoding(false);
+      // Limpar o input para permitir selecionar o mesmo arquivo
+      if (e.target) e.target.value = '';
     }
   };
 
@@ -1894,39 +1929,74 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         <div className="p-6 flex flex-col items-center">
           <div id="reader" className="w-full aspect-[3/4] bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
             <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10"></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+
+            {isDecoding ? (
+              <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                <div className="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-brand-600 font-black text-xs animate-pulse">Lendo código...</p>
+                <p className="text-slate-400 text-[10px] mt-2 font-medium">Analisando imagem em alta resolução</p>
+              </div>
+            ) : (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+            )}
           </div>
 
           {scannerError && (
-            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex items-center gap-2 w-full animate-shake">
+            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex items-center gap-2 w-full animate-shake border border-red-100">
               <i className="fa-solid fa-circle-exclamation"></i>
               {scannerError}
             </div>
           )}
 
           <div className="mt-6 w-full space-y-3">
+            {/* Input Oculto para Câmera Nativa (iPhone) */}
             <input
               type="file"
-              ref={fileInputRef}
+              ref={(el) => {
+                // @ts-ignore
+                if (el) el.setAttribute('capture', 'environment');
+              }}
               className="hidden"
               accept="image/*"
-              onChange={handleFileUpload}
+              onChange={handleCapturePhoto}
+              id="capture-input"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition border border-slate-200 flex items-center justify-center gap-2"
-            >
-              <i className="fa-regular fa-image text-lg"></i>
-              Ler da Galeria
-            </button>
 
             <button
-              onClick={() => setIsScannerOpen(false)}
-              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition shadow-lg shadow-slate-200 active:scale-95"
+              onClick={() => document.getElementById('capture-input')?.click()}
+              className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 active:scale-95 flex items-center justify-center gap-3 group"
             >
-              Fechar Scanner
+              <i className="fa-solid fa-camera text-lg group-hover:scale-110 transition-transform"></i>
+              Tirar Foto e Ler
             </button>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => handleFileUpload(e as any);
+                  input.click();
+                }}
+                className="flex-1 py-4 bg-slate-50 text-slate-600 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition flex items-center justify-center gap-2"
+              >
+                <i className="fa-regular fa-image text-sm"></i>
+                Galeria
+              </button>
+
+              <button
+                onClick={() => setIsScannerOpen(false)}
+                className="flex-1 py-4 bg-white text-slate-400 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition flex items-center justify-center gap-2"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
+
+          <p className="mt-6 text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest opacity-60">
+            Dica: Se a leitura automática falhar, use o botão azul <br /> para tirar uma foto do código.
+          </p>
         </div>
       </div>
     </div>
