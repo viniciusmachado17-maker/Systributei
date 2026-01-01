@@ -151,7 +151,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [adminConsultations, setAdminConsultations] = useState<any[]>([]);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
-  const [isDecoding, setIsDecoding] = useState(false);
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
@@ -165,113 +164,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const fileScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const preprocessImage = (file: File): Promise<File> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
 
-      img.onload = () => {
-        URL.revokeObjectURL(objectUrl);
-        const canvas = document.createElement('canvas');
-        const MAX_SIZE = 1000; // Reduzido para 1000px para garantir estabilidade no iOS/Chrome
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_SIZE) {
-            height *= MAX_SIZE / width;
-            width = MAX_SIZE;
-          }
-        } else {
-          if (height > MAX_SIZE) {
-            width *= MAX_SIZE / height;
-            height = MAX_SIZE;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, 0, 0, width, height);
-        }
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-          } else {
-            resolve(file);
-          }
-          // Cleanup imediato do canvas
-          canvas.width = 0;
-          canvas.height = 0;
-        }, 'image/jpeg', 0.85); // Qualidade ajustada para 85% para reduzir peso final
-      };
-
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        resolve(file);
-      };
-
-      img.src = objectUrl;
-    });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsDecoding(true);
-      setScannerError(null);
-
-      // Liberar a câmera para poupar memória
-      if (scannerRef.current?.isScanning) {
-        try { await scannerRef.current.stop(); } catch (e) { }
-      }
-
-      const optimizedFile = await preprocessImage(file);
-
-      if (!fileScannerRef.current) {
-        const captureDiv = document.getElementById("file-capture-container") || document.createElement('div');
-        captureDiv.id = "file-capture-container";
-        // @ts-ignore
-        captureDiv.style.display = "none";
-        if (!document.getElementById("file-capture-container")) document.body.appendChild(captureDiv);
-
-        fileScannerRef.current = new Html5Qrcode("file-capture-container", {
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-          ],
-          verbose: false
-        });
-      }
-
-      const decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
-      setQuery(decodedText);
-      setIsScannerOpen(false);
-    } catch (err) {
-      console.error("File Scan Error:", err);
-      setScannerError("Não conseguimos identificar o código na imagem. Tente uma foto mais próxima e focada.");
-    } finally {
-      setIsDecoding(false);
-      if (e.target) e.target.value = '';
-    }
-  };
 
   const startScanner = useCallback(async () => {
     if (!isScannerOpen) return;
 
     setScannerError(null);
-    const qrCodeSuccessCallback = (decodedText: string) => {
-      setQuery(decodedText);
+    const qrCodeSuccessCallback = async (decodedText: string) => {
+      // 1. Para imediatamente para liberar a câmera e evitar sobrecarga de GPU/CPU que causa o travamento
+      if (scannerRef.current?.isScanning) {
+        try { await scannerRef.current.stop(); } catch (e) { }
+      }
       setIsScannerOpen(false);
+      setQuery(decodedText);
+      // 2. Dispara a busca automaticamente com o código lido
+      handleSearch(undefined, undefined, decodedText);
     };
 
     try {
@@ -332,87 +239,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     }
   }, [isScannerOpen]);
 
-  const handleCapturePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      // Se cancelou a foto, tenta retomar o scanner ao vivo
-      if (isScannerOpen) startScanner();
-      return;
-    }
-    // 1. Mostra o loading imediatamente
-    setIsDecoding(true);
-    setScannerError(null);
 
-    // Pequeno atraso para o UI de loading aparecer
-    setTimeout(async () => {
-      try {
-        const optimizedFile = await preprocessImage(file);
-
-        if (!fileScannerRef.current) {
-          const captureDiv = document.getElementById("file-capture-container") || document.createElement('div');
-          captureDiv.id = "file-capture-container";
-          // @ts-ignore
-          captureDiv.style.display = "none";
-          if (!document.getElementById("file-capture-container")) document.body.appendChild(captureDiv);
-
-          fileScannerRef.current = new Html5Qrcode("file-capture-container", {
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.CODE_128,
-            ],
-            verbose: false
-          });
-        }
-
-        // Estratégia de tentativa: Zxing -> Gemini AI
-        let decodedText = "";
-        try {
-          // 1. Tenta leitura padrão (linhas)
-          decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
-        } catch (e) {
-          try {
-            // 2. Tenta leitura com filtros internos
-            decodedText = await fileScannerRef.current.scanFile(optimizedFile, true);
-          } catch (e2) {
-            // 3. FALLBACK: Inteligência Artificial (OCR dos números impressos)
-            // Converte para base64 APENAS se falhar as outras tentativas (poupando memória)
-            const aiBarcode = await new Promise<string | null>((resolve) => {
-              const reader = new FileReader();
-              reader.onload = async () => {
-                try {
-                  const base64 = reader.result as string;
-                  const result = await extractBarcodeFromImage(base64);
-                  resolve(result);
-                } catch (e) { resolve(null); }
-              };
-              reader.onerror = () => resolve(null);
-              reader.readAsDataURL(optimizedFile);
-            });
-
-            if (aiBarcode) {
-              decodedText = aiBarcode;
-            }
-          }
-        }
-
-        if (decodedText) {
-          setQuery(decodedText);
-          setIsScannerOpen(false);
-        } else {
-          setScannerError("Não conseguimos ler as barras nem os números da foto. Tente tirar a foto focando nos números impressos abaixo do código de barras.");
-          startScanner();
-        }
-      } catch (err) {
-        console.error("Capture Error:", err);
-        setScannerError("Não conseguimos ler o código. Tente tirar a foto com o celular mais firme e focado nas barras.");
-        startScanner();
-      } finally {
-        setIsDecoding(false);
-        if (e.target) e.target.value = '';
-      }
-    }, 150);
-  };
 
   useEffect(() => {
     if (isScannerOpen) {
@@ -686,7 +513,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     }
   };
 
-  const handleSearch = async (e?: React.FormEvent, itemToLoad?: Product) => {
+  const handleSearch = async (e?: React.FormEvent, itemToLoad?: Product, directQuery?: string) => {
     e?.preventDefault(); // Prevent default form submission if event is passed
 
     // Se passar um item direto (clique no histórico), carrega ele SEM consumir cota
@@ -696,7 +523,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       return;
     }
 
-    const searchQuery = query.trim();
+    const searchQuery = (directQuery || query).trim();
     if (!searchQuery) return;
 
     setLoading(true);
@@ -2038,37 +1865,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           <div id="reader" className="w-full aspect-[3/4] bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-inner relative">
             <div className="absolute inset-0 border-2 border-brand-500/30 rounded-3xl pointer-events-none z-10"></div>
 
-            {isDecoding ? (
-              <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                <div className="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-brand-600 font-black text-xs animate-pulse">Lendo código...</p>
-                <p className="text-slate-400 text-[10px] mt-2 font-medium">Analisando imagem em alta resolução</p>
-              </div>
-            ) : (
-              <>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-[2px] bg-red-500/50 animate-pulse z-10"></div>
 
-                {hasTorch && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const nextState = !isTorchOn;
-                        // @ts-ignore
-                        await scannerRef.current?.applyVideoConstraints({
-                          advanced: [{ torch: nextState }]
-                        });
-                        setIsTorchOn(nextState);
-                      } catch (err) {
-                        console.error("Flash error:", err);
-                      }
-                    }}
-                    className={`absolute bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center z-20 transition-all ${isTorchOn ? 'bg-amber-400 text-slate-900 shadow-lg shadow-amber-400/40' : 'bg-slate-900/50 text-white backdrop-blur-md'
-                      }`}
-                  >
-                    <i className={`fa-solid ${isTorchOn ? 'fa-lightbulb' : 'fa-bolt-slash'} text-lg`}></i>
-                  </button>
-                )}
-              </>
+            {hasTorch && (
+              <button
+                onClick={async () => {
+                  try {
+                    const nextState = !isTorchOn;
+                    // @ts-ignore
+                    await scannerRef.current?.applyVideoConstraints({
+                      advanced: [{ torch: nextState }]
+                    });
+                    setIsTorchOn(nextState);
+                  } catch (err) {
+                    console.error("Flash error:", err);
+                  }
+                }}
+                className={`absolute bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center z-20 transition-all ${isTorchOn ? 'bg-amber-400 text-slate-900 shadow-lg shadow-amber-400/40' : 'bg-slate-900/50 text-white backdrop-blur-md'
+                  }`}
+              >
+                <i className={`fa-solid ${isTorchOn ? 'fa-lightbulb' : 'fa-bolt-slash'} text-lg`}></i>
+              </button>
             )}
           </div>
 
@@ -2108,66 +1925,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           )}
 
           <div className="mt-6 w-full space-y-3">
-            {/* Input Oculto para Câmera Nativa (iPhone) */}
-            <input
-              type="file"
-              ref={(el) => {
-                // @ts-ignore
-                if (el) el.setAttribute('capture', 'environment');
-              }}
-              className="hidden"
-              accept="image/*"
-              onChange={handleCapturePhoto}
-              id="capture-input"
-            />
-
-            {!isIOS && (
-              <button
-                onClick={async () => {
-                  // Parar o leitor de vídeo para liberar recursos antes de abrir a câmera nativa
-                  if (scannerRef.current?.isScanning) {
-                    await scannerRef.current.stop().catch(() => { });
-                    setHasTorch(false);
-                    setIsTorchOn(false);
-                  }
-                  // Pequeno atraso para garantir que o dispositivo liberou a câmera
-                  setTimeout(() => {
-                    document.getElementById('capture-input')?.click();
-                  }, 200);
-                }}
-                className="w-full py-5 bg-brand-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-700 transition shadow-lg shadow-brand-500/20 active:scale-95 flex items-center justify-center gap-3 group"
-              >
-                <i className="fa-solid fa-camera text-lg group-hover:scale-110 transition-transform"></i>
-                Tirar Foto e Ler
-              </button>
-            )}
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.onchange = (e) => handleFileUpload(e as any);
-                  input.click();
-                }}
-                className="flex-1 py-4 bg-slate-50 text-slate-600 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition flex items-center justify-center gap-2"
-              >
-                <i className="fa-regular fa-image text-sm"></i>
-                Galeria
-              </button>
-
-              <button
-                onClick={() => setIsScannerOpen(false)}
-                className="flex-1 py-4 bg-white text-slate-400 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition flex items-center justify-center gap-2"
-              >
-                Fechar
-              </button>
-            </div>
+            <button
+              onClick={() => setIsScannerOpen(false)}
+              className="w-full py-4 bg-white text-slate-400 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition flex items-center justify-center gap-2"
+            >
+              Fechar
+            </button>
           </div>
 
           <p className="mt-6 text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest opacity-60">
-            Dica: Se a leitura automática falhar, use o botão azul <br /> para tirar uma foto do código.
+            Aponte a câmera para o código de barras <br /> para classificação automática.
           </p>
         </div>
       </div>
