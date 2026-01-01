@@ -158,7 +158,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
   // Detectar se é iOS para desativar funções problemáticas (tela branca)
   const isIOS = useMemo(() => {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    // Detecta iPhone, iPad e iPod, inclusive iPads mais novos que se identificam como Macintosh mas possuem touch
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }, []);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -2772,7 +2774,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       {isUpgradeModalOpen && renderUpgradeModal()}
       {isRequestModalOpen && renderRequestModal()}
       {isSelectionOpen && searchResults.length > 0 && renderSelectionModal()}
-      {isScannerOpen && !isIOS && renderScannerModal()}
+      {isScannerOpen && renderScannerModal()}
     </div>
   );
 };
