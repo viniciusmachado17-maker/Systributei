@@ -54,6 +54,49 @@ Forneça um "Insight Tributei":
       return "Erro de Autenticação: Verifique se sua VITE_GOOGLE_API_KEY está correta no .env.local e se o terminal foi reiniciado.";
     }
 
-    return "Houve um problema ao consultar a IA. Por favor, tente novamente ou verifique as configurações.";
+    return "Houve um problem ao consultar a IA. Por favor, tente novamente ou verifique as configurações.";
+  }
+};
+
+/**
+ * extractBarcodeFromImage uses Gemini Vision to extract barcode numbers from an image.
+ */
+export const extractBarcodeFromImage = async (base64Image: string): Promise<string | null> => {
+  try {
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    if (!apiKey) return null;
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    // Remove data:image/...;base64, prefix
+    const base64Data = base64Image.split(',')[1] || base64Image;
+
+    const prompt = "Analise esta imagem de um produto e identifique o número do código de barras (EAN-13, EAN-8 ou UPC). Foque nos dígitos impressos logo abaixo das barras se elas estiverem borradas. Retorne APENAS os números do código de barras encontrados, sem espaços ou texto adicional. Se não encontrar nenhum código, retorne 'FALSE'.";
+
+    const result = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: prompt },
+            { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
+          ]
+        }
+      ]
+    });
+
+    const text = result.text?.trim() || "";
+    if (text.toUpperCase().includes("FALSE") || text === "") {
+      return null;
+    }
+
+    // Limpar o número (remover qualquer caractere não numérico que a IA possa ter retornado por engano)
+    const barcode = text.replace(/\D/g, "");
+
+    return barcode.length >= 8 ? barcode : null;
+  } catch (error) {
+    console.error("Gemini OCR Error:", error);
+    return null;
   }
 };

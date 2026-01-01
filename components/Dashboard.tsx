@@ -4,7 +4,7 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
-import { explainTaxRule } from '../services/geminiService';
+import { explainTaxRule, extractBarcodeFromImage } from '../services/geminiService';
 import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus } from '../services/supabaseClient';
 import { UserProfile } from '../App';
 
@@ -154,6 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [isDecoding, setIsDecoding] = useState(false);
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState('');
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const fileScannerRef = useRef<Html5Qrcode | null>(null);
@@ -356,19 +357,42 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           });
         }
 
-        // Estratégia de tentativa dupla de reconhecimento
+        // Estratégia de tentativa: Zxing -> Gemini AI
         let decodedText = "";
         try {
-          // Tentativa 1: Filtros leves
+          // 1. Tenta leitura padrão (linhas)
           decodedText = await fileScannerRef.current.scanFile(optimizedFile, false);
         } catch (e) {
-          // Tentativa 2: Filtros mais pesados da biblioteca
-          decodedText = await fileScannerRef.current.scanFile(optimizedFile, true);
+          try {
+            // 2. Tenta leitura com filtros internos
+            decodedText = await fileScannerRef.current.scanFile(optimizedFile, true);
+          } catch (e2) {
+            // 3. FALLBACK: Inteligência Artificial (OCR dos números impressos)
+            // Converte para base64 para mandar pro Gemini
+            const reader = new FileReader();
+            const aiResultPromise = new Promise<string | null>((resolve) => {
+              reader.onload = async () => {
+                const base64 = reader.result as string;
+                const barcode = await extractBarcodeFromImage(base64);
+                resolve(barcode);
+              };
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(optimizedFile);
+            });
+
+            const aiBarcode = await aiResultPromise;
+            if (aiBarcode) {
+              decodedText = aiBarcode;
+            }
+          }
         }
 
         if (decodedText) {
           setQuery(decodedText);
           setIsScannerOpen(false);
+        } else {
+          setScannerError("Não conseguimos ler as barras nem os números da foto. Tente tirar a foto focando nos números impressos abaixo do código de barras.");
+          startScanner();
         }
       } catch (err) {
         console.error("Capture Error:", err);
@@ -2040,9 +2064,37 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
 
           {scannerError && (
-            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex items-center gap-2 w-full animate-shake border border-red-100">
-              <i className="fa-solid fa-circle-exclamation"></i>
-              {scannerError}
+            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-bold flex flex-col gap-2 w-full animate-shake border border-red-100">
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-circle-exclamation"></i>
+                {scannerError}
+              </div>
+
+              {/* Opção de Digitação Manual direto no erro */}
+              <div className="mt-2 pt-2 border-t border-red-100 space-y-2">
+                <p className="text-slate-500 uppercase tracking-tighter">Ou digite o código manualmente:</p>
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    placeholder="Código de barras..."
+                    value={manualBarcode}
+                    onChange={(e) => setManualBarcode(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <button
+                    onClick={() => {
+                      if (manualBarcode.length >= 8) {
+                        setQuery(manualBarcode);
+                        setIsScannerOpen(false);
+                        setManualBarcode('');
+                      }
+                    }}
+                    className="px-4 py-2 bg-brand-600 text-white rounded-xl text-[10px] font-black uppercase"
+                  >
+                    Ir
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
