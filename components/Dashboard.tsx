@@ -1093,7 +1093,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderSearch = () => (
     <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
       <div className={`space-y-6 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
-        <div className="text-center">
+        <div className={`text-center ${product ? 'hidden' : 'block'}`}>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Qual produto deseja classificar?</h1>
 
 
@@ -1296,7 +1296,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderConsultancy = () => (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
           <p className="text-slate-500 font-medium text-sm mt-1">
             {user?.role === 'admin' ? 'Área Administrativa: Gerenciamento de Consultas Recebidas.' : 'Tire suas dúvidas técnicas com nossos especialistas tributários.'}
@@ -1679,7 +1679,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       ) : (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-200 shadow-xl overflow-hidden relative">
+            <div className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-slate-200 shadow-xl overflow-hidden relative">
               {emailSuccess && (
                 <div className="mb-8 p-6 bg-emerald-50 border border-emerald-100 rounded-3xl flex items-center gap-4 animate-scale-up">
                   <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
@@ -1921,7 +1921,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
 
           <div className="space-y-6">
-            <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-8 text-white relative overflow-hidden shadow-2xl">
               <div className="absolute top-0 right-0 w-32 h-32 bg-brand-600/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
               <div className="relative z-10">
                 <h4 className="text-lg font-black mb-4 tracking-tight">Como funciona?</h4>
@@ -1942,7 +1942,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-lg">
+            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-8 shadow-lg">
               <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-50 pb-2">Precisa de urgência?</h4>
               <p className="text-[11px] text-slate-500 font-medium leading-relaxed mb-6">Nosso suporte prioritário está disponível exclusivamente para clientes do plano **Premium** via WhatsApp Business.</p>
               <button
@@ -2365,7 +2365,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     const org = organizationData || user?.organization;
     return (
       <div className="max-w-4xl mx-auto space-y-10 animate-slide-up">
-        <div className="space-y-6">
+        <div className="space-y-6 hidden md:block">
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
 
           <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-xl space-y-8">
@@ -2537,13 +2537,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       </aside>
 
       <main className="flex-grow flex flex-col h-full overflow-hidden pb-20 lg:pb-0">
-        <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between relative z-50">
+        <header className="h-20 bg-white border-b border-slate-200 px-6 lg:px-8 flex items-center justify-between relative z-50">
           <div className="flex items-center gap-3">
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${connStatus === 'online' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' :
               connStatus === 'testing' ? 'bg-blue-500 animate-pulse shadow-lg shadow-blue-500/20' :
                 'bg-red-500 shadow-lg shadow-red-500/20'
               }`} title={connStatus === 'online' ? 'Conectado à Base Live' : connStatus === 'testing' ? 'Verificando conexão...' : 'Modo Demo (Offline)'}></span>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">
+            <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">
               {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : 'Minha Conta'}
             </h2>
           </div>
@@ -2661,7 +2661,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
         {/* Mobile Usage Limit Indicators */}
         {organizationData && user?.role !== 'admin' && (
-          <div className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 gap-4 overflow-x-auto no-scrollbar shrink-0">
+          <div className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 gap-4 overflow-x-auto no-scrollbar shrink-0">
             {/* Badge: Buscas */}
             <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Buscas Realizadas">
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -2696,7 +2696,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           {activeTab === 'consultancy' && renderConsultancy()}
           {activeTab === 'history' && (
             <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
-              <div className="flex justify-between items-center mb-6">
+              <div className="hidden md:flex justify-between items-center mb-6">
                 <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
                 {history.length > 0 && (
                   <button
