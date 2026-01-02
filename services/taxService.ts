@@ -116,7 +116,7 @@ export const getProductDetails = async (identifier: string | number, type: 'id' 
   try {
     let productQuery = supabase
       .from('products')
-      .select('id, produto, ean, ncm, cest, category, price')
+      .select('id, produto, ean, ncm, cest')
       .limit(1);
 
     if (type === 'id') {
