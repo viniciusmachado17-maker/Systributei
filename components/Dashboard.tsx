@@ -1091,10 +1091,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
 
   const renderSearch = () => (
-    <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
+    <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
       <div className={`space-y-6 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
-        <div className={`text-center ${product ? 'hidden' : 'block'}`}>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Qual produto deseja classificar?</h1>
+        <div className="text-left">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Consulta de Produtos</h1>
+          <p className="text-slate-500 font-medium text-sm mt-1">Insira o código de barras ou o nome do produto para classificar.</p>
 
 
           {(connStatus === 'offline' || connStatus === 'mock') && (
@@ -1167,7 +1168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
 
       {product && taxes && (
-        <div className="animate-slide-up bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden">
+        <div className="animate-slide-up bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden mt-8">
           <div className="bg-brand-600 p-4 md:p-3 text-white flex flex-col md:flex-row justify-between items-center gap-4 md:gap-2">
             <div className="text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
@@ -1294,10 +1295,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const renderConsultancy = () => (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Consultoria Técnica</h2>
           <p className="text-slate-500 font-medium text-sm mt-1">
             {user?.role === 'admin' ? 'Área Administrativa: Gerenciamento de Consultas Recebidas.' : 'Tire suas dúvidas técnicas com nossos especialistas tributários.'}
           </p>
@@ -2364,8 +2365,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderSettings = () => {
     const org = organizationData || user?.organization;
     return (
-      <div className="max-w-4xl mx-auto space-y-6 md:space-y-10 animate-slide-up">
-        <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
+      <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
         <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 border border-slate-200 shadow-xl space-y-8">
           <div>
             <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Perfil</h3>
@@ -2696,9 +2697,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
           {activeTab === 'history' && (
-            <div className="max-w-4xl mx-auto space-y-6 animate-slide-up">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
+            <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Histórico de Consultas</h2>
                 {history.length > 0 && (
                   <button
                     onClick={handleClearHistory}
