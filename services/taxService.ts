@@ -1,5 +1,5 @@
 
-import { Product, TaxBreakdown } from '../types';
+import { Product, TaxBreakdown, ProductSummary } from '../types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { MOCK_PRODUCTS } from '../constants';
 
@@ -70,12 +70,12 @@ export const calculateTaxes = (product: Product, isCashback: boolean = false): T
 };
 
 // Busca lista de produtos (Resumo) para o primeiro passo
-export const searchProducts = async (query: string, searchType: 'name' | 'ncm' = 'name'): Promise<{ id: number; produto: string; ean: string; ncm: string }[]> => {
+export const searchProducts = async (query: string, searchType: 'name' | 'ncm' = 'name'): Promise<ProductSummary[]> => {
   if (!isSupabaseConfigured) return [];
 
   let queryBuilder = supabase
     .from('products')
-    .select('id, produto, ean, ncm');
+    .select('id, produto, ean, ncm, cest');
 
   if (searchType === 'ncm') {
     queryBuilder = queryBuilder.ilike('ncm', `%${query}%`);
@@ -116,7 +116,7 @@ export const getProductDetails = async (identifier: string | number, type: 'id' 
   try {
     let productQuery = supabase
       .from('products')
-      .select('id, produto, ean, ncm, cest')
+      .select('id, produto, ean, ncm, cest, category, price')
       .limit(1);
 
     if (type === 'id') {

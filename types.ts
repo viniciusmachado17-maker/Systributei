@@ -49,6 +49,7 @@ export interface ProductSummary {
   produto: string;
   ean: string;
   ncm: string;
+  cest?: string;
 }
 
 export type SearchMode = 'barcode' | 'name' | 'ncm';

@@ -1048,13 +1048,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                   <h4 className="font-bold text-slate-800 text-sm group-hover:text-brand-600 uppercase pr-4">{item.produto}</h4>
                   <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">ID: {item.id}</span>
                 </div>
-                <div className="flex gap-4 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2">
                   <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
                     <i className="fa-solid fa-barcode mr-1"></i> {item.ean || 'S/GTIN'}
                   </p>
                   <p className="text-[10px] text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded">
                     <i className="fa-solid fa-layer-group mr-1"></i> NCM: {item.ncm || '---'}
                   </p>
+                  {item.cest && (
+                    <p className="text-[10px] font-bold bg-brand-50 text-brand-600 px-2 py-1 rounded border border-brand-100">
+                      <i className="fa-solid fa-hashtag mr-1"></i> CEST: {item.cest}
+                    </p>
+                  )}
                 </div>
               </button>
             ))}
@@ -1173,17 +1178,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               <h3 className="text-xl md:text-xl font-black tracking-tighter uppercase leading-tight">{product.produtos}</h3>
               <p className="text-brand-100 text-[10px] mt-0.5">{product.category}</p>
             </div>
-            <div className="flex md:flex-col items-center md:items-end gap-6 md:gap-1 border-t border-brand-500/30 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-center">
-              <div>
+            <div className="flex md:flex-col items-center md:items-end gap-6 md:gap-1 border-t border-brand-500/30 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-center overflow-x-auto no-scrollbar pb-1 md:pb-0">
+              <div className="shrink-0">
                 <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">EAN Identificado</p>
                 <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ean}</p>
               </div>
-              <div>
+              <div className="shrink-0">
                 <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">NCM</p>
                 <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ncm}</p>
               </div>
               {product.cest && (
-                <div className="hidden sm:block">
+                <div className="shrink-0">
                   <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">CEST</p>
                   <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.cest}</p>
                 </div>
@@ -2709,7 +2714,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                   <div key={i} className="bg-white border border-slate-100 p-6 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-md transition cursor-pointer" onClick={() => handleHistoryClick(h)}>
                     <div>
                       <h4 className="font-bold text-slate-900 uppercase">{h.produtos}</h4>
-                      <p className="text-[10px] font-bold text-slate-400">EAN: {h.ean} | NCM: {h.ncm}</p>
+                      <p className="text-[10px] font-bold text-slate-400">EAN: {h.ean} | NCM: {h.ncm}{h.cest ? ` | CEST: ${h.cest}` : ''}</p>
                     </div>
                     <i className="fa-solid fa-chevron-right text-slate-200"></i>
                   </div>
