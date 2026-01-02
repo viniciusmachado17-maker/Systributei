@@ -1296,8 +1296,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderConsultancy = () => (
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="hidden md:block">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
+        <div>
+          <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
           <p className="text-slate-500 font-medium text-sm mt-1">
             {user?.role === 'admin' ? 'Área Administrativa: Gerenciamento de Consultas Recebidas.' : 'Tire suas dúvidas técnicas com nossos especialistas tributários.'}
           </p>
@@ -2364,123 +2364,120 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderSettings = () => {
     const org = organizationData || user?.organization;
     return (
-      <div className="max-w-4xl mx-auto space-y-10 animate-slide-up">
-        <div className="space-y-6 hidden md:block">
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
-
-          <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-xl space-y-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Perfil</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Nome</p>
-                  <p className="text-base font-bold text-slate-700">{user?.name}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Email</p>
-                  <p className="text-base font-bold text-slate-700">{user?.email}</p>
-                </div>
+      <div className="max-w-4xl mx-auto space-y-6 md:space-y-10 animate-slide-up">
+        <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
+        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 border border-slate-200 shadow-xl space-y-8">
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Perfil</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase">Nome</p>
+                <p className="text-base font-bold text-slate-700">{user?.name}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase">Email</p>
+                <p className="text-base font-bold text-slate-700">{user?.email}</p>
               </div>
             </div>
+          </div>
 
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Organização</h3>
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase">Empresa</p>
-                    <p className="text-xl font-black text-slate-800">{org?.name}</p>
-                  </div>
-                  <div className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black rounded-full uppercase">
-                    {org?.plan_type}
-                  </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Organização</h3>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase">Empresa</p>
+                  <p className="text-xl font-black text-slate-800">{org?.name}</p>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-slate-500">
-                    <span>Consumo do Plano</span>
-                    <span>{org?.usage_count} / {org?.usage_limit}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-brand-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.min(((org?.usage_count || 0) / (org?.usage_limit || 1)) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-[10px] text-slate-400 text-right">
-                    {org?.plan_type === 'gratis'
-                      ? `Expira em: ${org?.trial_ends_at ? new Date(org.trial_ends_at).toLocaleDateString() : 'N/A'}`
-                      : org?.cancel_at_period_end
-                        ? <span className="text-orange-600 font-bold">Acesso liberado até: {org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'N/A'}</span>
-                        : `Próxima cobrança: ${org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'N/A'}`}
-                  </p>
-                </div>
-
-                <div className="mt-8">
-                  <button
-                    onClick={() => onNavigate('pricing')}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-white border border-slate-200 rounded-2xl text-slate-700 font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition shadow-sm"
-                  >
-                    <i className="fa-solid fa-arrows-rotate text-brand-600"></i>
-                    {org?.plan_type === 'gratis' ? 'Fazer Upgrade para Pro' : 'Mudar de Plano / Gerenciar Assinatura'}
-                  </button>
+                <div className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black rounded-full uppercase">
+                  {org?.plan_type}
                 </div>
               </div>
-            </div>
 
-            {/* Seção de Cancelamento */}
-            {org?.plan_type !== 'gratis' && !org?.cancel_at_period_end && (
-              <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                <div>
-                  <p className="text-xs font-bold text-slate-800">
-                    {org?.has_commitment
-                      ? "Deseja solicitar o cancelamento ou alteração?"
-                      : "Deseja cancelar sua assinatura?"}
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    {org?.has_commitment
-                      ? "Planos com carência de 12 meses devem ser consultados com o financeiro."
-                      : "Você manterá o acesso até o fim do faturamento atual."}
-                  </p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold text-slate-500">
+                  <span>Consumo do Plano</span>
+                  <span>{org?.usage_count} / {org?.usage_limit}</span>
                 </div>
+                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-brand-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(((org?.usage_count || 0) / (org?.usage_limit || 1)) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-[10px] text-slate-400 text-right">
+                  {org?.plan_type === 'gratis'
+                    ? `Expira em: ${org?.trial_ends_at ? new Date(org.trial_ends_at).toLocaleDateString() : 'N/A'}`
+                    : org?.cancel_at_period_end
+                      ? <span className="text-orange-600 font-bold">Acesso liberado até: {org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'N/A'}</span>
+                      : `Próxima cobrança: ${org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'N/A'}`}
+                </p>
+              </div>
+
+              <div className="mt-8">
                 <button
-                  onClick={() => {
-                    if (org?.has_commitment) {
-                      window.open("https://wa.me/5534991564540", "_blank");
-                    } else {
-                      setIsCancelModalOpen(true);
-                    }
-                  }}
-                  className={`px-4 py-2 font-bold text-xs rounded-xl transition border ${org?.has_commitment
-                    ? "text-brand-600 bg-brand-50 border-brand-100 hover:bg-brand-100"
-                    : "text-red-500 hover:bg-red-50 border-transparent hover:border-red-100"
-                    }`}
+                  onClick={() => onNavigate('pricing')}
+                  className="w-full flex items-center justify-center gap-3 py-4 bg-white border border-slate-200 rounded-2xl text-slate-700 font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition shadow-sm"
                 >
-                  {org?.has_commitment ? "Falar com Consultor" : "Cancelar Assinatura"}
+                  <i className="fa-solid fa-arrows-rotate text-brand-600"></i>
+                  {org?.plan_type === 'gratis' ? 'Fazer Upgrade para Pro' : 'Mudar de Plano / Gerenciar Assinatura'}
                 </button>
               </div>
-            )}
+            </div>
+          </div>
 
-            {org?.cancel_at_period_end && (
-              <div className="p-6 bg-orange-50 border-2 border-orange-100 rounded-[2rem] flex flex-col md:flex-row items-center gap-4 animate-scale-up">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shrink-0">
-                  <i className="fa-solid fa-clock-rotate-left text-xl"></i>
-                </div>
-                <div className="text-center md:text-left">
-                  <p className="text-xs font-black text-orange-900 uppercase tracking-tighter">Assinatura em encerramento</p>
-                  <p className="text-[10px] font-medium text-orange-800/80 leading-tight">
-                    Você solicitou o cancelamento. Seu acesso premium continua garantido até o dia <span className="font-bold text-orange-900">{org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'final do período'}</span>. Após esta data, sua conta retornará ao plano Grátis.
-                  </p>
-                </div>
+          {/* Seção de Cancelamento */}
+          {org?.plan_type !== 'gratis' && !org?.cancel_at_period_end && (
+            <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+              <div>
+                <p className="text-xs font-bold text-slate-800">
+                  {org?.has_commitment
+                    ? "Deseja solicitar o cancelamento ou alteração?"
+                    : "Deseja cancelar sua assinatura?"}
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {org?.has_commitment
+                    ? "Planos com carência de 12 meses devem ser consultados com o financeiro."
+                    : "Você manterá o acesso até o fim do faturamento atual."}
+                </p>
               </div>
-            )}
-
-            <div className="pt-6">
-              <button onClick={onLogout} className="w-full py-4 border-2 border-red-100 text-red-500 font-black rounded-2xl hover:bg-red-50 transition">
-                <i className="fa-solid fa-right-from-bracket mr-2"></i>
-                Sair da Conta
+              <button
+                onClick={() => {
+                  if (org?.has_commitment) {
+                    window.open("https://wa.me/5534991564540", "_blank");
+                  } else {
+                    setIsCancelModalOpen(true);
+                  }
+                }}
+                className={`px-4 py-2 font-bold text-xs rounded-xl transition border ${org?.has_commitment
+                  ? "text-brand-600 bg-brand-50 border-brand-100 hover:bg-brand-100"
+                  : "text-red-500 hover:bg-red-50 border-transparent hover:border-red-100"
+                  }`}
+              >
+                {org?.has_commitment ? "Falar com Consultor" : "Cancelar Assinatura"}
               </button>
             </div>
+          )}
+
+          {org?.cancel_at_period_end && (
+            <div className="p-6 bg-orange-50 border-2 border-orange-100 rounded-[2rem] flex flex-col md:flex-row items-center gap-4 animate-scale-up">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shrink-0">
+                <i className="fa-solid fa-clock-rotate-left text-xl"></i>
+              </div>
+              <div className="text-center md:text-left">
+                <p className="text-xs font-black text-orange-900 uppercase tracking-tighter">Assinatura em encerramento</p>
+                <p className="text-[10px] font-medium text-orange-800/80 leading-tight">
+                  Você solicitou o cancelamento. Seu acesso premium continua garantido até o dia <span className="font-bold text-orange-900">{org?.current_period_end ? new Date(org.current_period_end).toLocaleDateString() : 'final do período'}</span>. Após esta data, sua conta retornará ao plano Grátis.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-6">
+            <button onClick={onLogout} className="w-full py-4 border-2 border-red-100 text-red-500 font-black rounded-2xl hover:bg-red-50 transition">
+              <i className="fa-solid fa-right-from-bracket mr-2"></i>
+              Sair da Conta
+            </button>
           </div>
         </div>
       </div>
@@ -2537,7 +2534,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       </aside>
 
       <main className="flex-grow flex flex-col h-full overflow-hidden pb-20 lg:pb-0">
-        <header className="h-20 bg-white border-b border-slate-200 px-6 lg:px-8 flex items-center justify-between relative z-50">
+        <header className="h-20 bg-white border-b border-slate-200 px-6 flex items-center justify-between relative z-50">
           <div className="flex items-center gap-3">
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${connStatus === 'online' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' :
               connStatus === 'testing' ? 'bg-blue-500 animate-pulse shadow-lg shadow-blue-500/20' :
@@ -2661,9 +2658,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
         {/* Mobile Usage Limit Indicators */}
         {organizationData && user?.role !== 'admin' && (
-          <div className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 gap-4 overflow-x-auto no-scrollbar shrink-0">
+          <div className="lg:hidden h-20 bg-white border-b border-slate-200 flex items-center justify-around px-6 gap-2 shrink-0">
             {/* Badge: Buscas */}
-            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Buscas Realizadas">
+            <div className="flex flex-col items-center justify-center py-1" title="Buscas Realizadas">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <i className={`fa-solid fa-magnifying-glass text-[10px] ${organizationData.usage_count >= organizationData.usage_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Buscas</span>
@@ -2671,8 +2668,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               <span className="text-[11px] font-black text-slate-800 leading-none">{organizationData.usage_count}/{organizationData.usage_limit}</span>
             </div>
 
+            <div className="w-px h-8 bg-slate-100"></div>
+
             {/* Badge: Dúvidas */}
-            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Dúvidas Técnicas">
+            <div className="flex flex-col items-center justify-center py-1" title="Dúvidas Técnicas">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <i className={`fa-solid fa-envelope-open-text text-[10px] ${organizationData.email_count >= organizationData.email_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Dúvidas</span>
@@ -2680,8 +2679,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               <span className="text-[11px] font-black text-slate-800 leading-none">{organizationData.email_count}/{organizationData.email_limit}</span>
             </div>
 
+            <div className="w-px h-8 bg-slate-100"></div>
+
             {/* Badge: Pedidos */}
-            <div className="flex-1 flex flex-col items-center justify-center py-1 border-r border-slate-100 last:border-0" title="Pedidos de Cadastro">
+            <div className="flex flex-col items-center justify-center py-1" title="Pedidos de Cadastro">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <i className={`fa-solid fa-clipboard-question text-[10px] ${organizationData.request_count >= organizationData.request_limit ? 'text-red-500' : 'text-brand-500'}`}></i>
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Pedidos</span>
@@ -2691,13 +2692,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
         )}
 
-        <div className="flex-grow overflow-y-auto p-6 lg:p-10">
+        <div className="flex-grow overflow-y-auto p-6 md:p-10">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
           {activeTab === 'history' && (
-            <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
-              <div className="hidden md:flex justify-between items-center mb-6">
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
+            <div className="max-w-4xl mx-auto space-y-6 animate-slide-up">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
                 {history.length > 0 && (
                   <button
                     onClick={handleClearHistory}
