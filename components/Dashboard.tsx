@@ -1091,10 +1091,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
 
   const renderSearch = () => (
-    <div className="max-w-4xl mx-auto space-y-2 animate-slide-up">
-      <div className={`space-y-2 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
+    <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
+      <div className={`space-y-6 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
         <div className="text-center">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">Qual produto deseja classificar?</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Qual produto deseja classificar?</h1>
 
 
           {(connStatus === 'offline' || connStatus === 'mock') && (
@@ -1297,7 +1297,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Consultoria Técnica</h2>
           <p className="text-slate-500 font-medium text-sm mt-1">
             {user?.role === 'admin' ? 'Área Administrativa: Gerenciamento de Consultas Recebidas.' : 'Tire suas dúvidas técnicas com nossos especialistas tributários.'}
           </p>
@@ -2366,7 +2366,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     return (
       <div className="max-w-4xl mx-auto space-y-10 animate-slide-up">
         <div className="space-y-6">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
 
           <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-xl space-y-8">
             <div>
@@ -2691,13 +2691,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
         )}
 
-        <div className="flex-grow overflow-y-auto p-1 lg:p-2">
+        <div className="flex-grow overflow-y-auto p-6 lg:p-10">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
           {activeTab === 'history' && (
-            <div className="max-w-4xl mx-auto space-y-4">
+            <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Buscas Recentes</h2>
                 {history.length > 0 && (
                   <button
                     onClick={handleClearHistory}
