@@ -1,0 +1,1162 @@
+[
+  {
+    "cClass":"000001",
+    "titulo_curto":"Situações tributadas integralmente pelo IBS e CBS.",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"000002",
+    "titulo_curto":"Exploração de via",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"000003",
+    "titulo_curto":"Regime automotivo - projetos incentivados",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"000004",
+    "titulo_curto":"Regime automotivo - projetos incentivados",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"10001",
+    "titulo_curto":"Operações do FGTS não realizadas pela Caixa Econômica Federal",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Política pública (FGTS)"
+  },
+  {
+    "cClass":"10002",
+    "titulo_curto":"Operações do serviço financeiro",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"11001",
+    "titulo_curto":"Planos de assistência funerária.",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"11002",
+    "titulo_curto":"Planos de assistência à saúde",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"11003",
+    "titulo_curto":"Intermediação de planos de assistência à saúde",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"11004",
+    "titulo_curto":"Concursos e prognósticos",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"11005",
+    "titulo_curto":"Planos de assistência à saúde de animais domésticos",
+    "badge":"PAGA UM POUCO MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200001",
+    "titulo_curto":"Aquisições realizadas entre empresas autorizadas a operar em...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"200002",
+    "titulo_curto":"Fornecimento ou importação para produtor rural não contribuin...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200003",
+    "titulo_curto":"Vendas de produtos destinados à alimentação humana",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item essencial (cesta básica).\nAtenção: vale só se o item\/serviço estiver no Anexo I.",
+    "anexo":"I",
+    "categoria":"Cesta básica \/ alimentação"
+  },
+  {
+    "cClass":"200004",
+    "titulo_curto":"Venda de dispositivos médicos",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo XII.",
+    "anexo":"XII",
+    "categoria":"Saúde (dispositivos médicos)"
+  },
+  {
+    "cClass":"200005",
+    "titulo_curto":"Venda de dispositivos médicos adquiridos por órgãos da admini...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo IV.",
+    "anexo":"IV",
+    "categoria":"Saúde (dispositivos médicos)"
+  },
+  {
+    "cClass":"200006",
+    "titulo_curto":"Situação de emergência de saúde pública reconhecida pelo Pode...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: vale só se o item\/serviço estiver no Anexo XII.",
+    "anexo":"XII",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200007",
+    "titulo_curto":"Fornecimento dos dispositivos de acessibilidade próprios para...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item de acessibilidade (PcD).\nAtenção: vale só se o item\/serviço estiver no Anexo XIII.",
+    "anexo":"XIII",
+    "categoria":"Inclusão (PcD\/acessibilidade)"
+  },
+  {
+    "cClass":"200008",
+    "titulo_curto":"Fornecimento dos dispositivos de acessibilidade próprios para...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item de acessibilidade (PcD).\nAtenção: vale só se o item\/serviço estiver no Anexo V.",
+    "anexo":"V",
+    "categoria":"Inclusão (PcD\/acessibilidade)"
+  },
+  {
+    "cClass":"200009",
+    "titulo_curto":"Fornecimento de medicamentos",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo XIV.",
+    "anexo":"XIV",
+    "categoria":"Saúde (medicamentos)"
+  },
+  {
+    "cClass":"200010",
+    "titulo_curto":"Fornecimento dos medicamentos registrados na Anvisa, adquirid...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Saúde (medicamentos)"
+  },
+  {
+    "cClass":"200011",
+    "titulo_curto":"Fornecimento das composições para nutrição enteral e parenter...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo VI.",
+    "anexo":"VI",
+    "categoria":"Saúde (nutrição especial)"
+  },
+  {
+    "cClass":"200012",
+    "titulo_curto":"Situação de emergência de saúde pública reconhecida pelo Pode...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo XIV.",
+    "anexo":"XIV",
+    "categoria":"Saúde (medicamentos)"
+  },
+  {
+    "cClass":"200013",
+    "titulo_curto":"Fornecimento de tampões higiênicos, absorventes higiênicos in...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200014",
+    "titulo_curto":"Fornecimento dos produtos hortícolas, frutas e ovos",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é alimento essencial\/in natura.\nAtenção: vale só se o item\/serviço estiver no Anexo XV.",
+    "anexo":"XV",
+    "categoria":"Alimentos in natura"
+  },
+  {
+    "cClass":"200015",
+    "titulo_curto":"Venda de automóveis de passageiros de fabricação nacional adq...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200016",
+    "titulo_curto":"Prestação de serviços de pesquisa e desenvolvimento por Insti...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200017",
+    "titulo_curto":"Operações relacionadas ao FGTS",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Política pública (FGTS)"
+  },
+  {
+    "cClass":"200018",
+    "titulo_curto":"Operações de resseguro e retrocessão",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200019",
+    "titulo_curto":"Importador dos serviços financeiros contribuinte",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200020",
+    "titulo_curto":"Operação praticada por sociedades cooperativas optantes por r...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque cooperativas têm regra própria.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Cooperativas"
+  },
+  {
+    "cClass":"200021",
+    "titulo_curto":"Serviços de transporte público coletivo de passageiros ferrov...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é serviço de interesse público.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Transporte"
+  },
+  {
+    "cClass":"200022",
+    "titulo_curto":"Operação originada fora da ZFM que destine bem material indus...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"200023",
+    "titulo_curto":"Operação realizada por indústria incentivada que destine bem...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"200024",
+    "titulo_curto":"Operação originada fora das Áreas de Livre Comércio destinada...",
+    "badge":"PAGA ZERO",
+    "texto_3_linhas":"IBS\/CBS: paga zero (na prática).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"200025",
+    "titulo_curto":"Fornecimento dos serviços de educação relacionados ao Program...",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva acesso à educação.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Educação"
+  },
+  {
+    "cClass":"200026",
+    "titulo_curto":"Locação de imóveis localizados nas zonas reabilitadas",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"200027",
+    "titulo_curto":"Operações de locação, cessão onerosa e arrendamento de bens i...",
+    "badge":"REGRA ESPECIAL",
+    "texto_3_linhas":"IBS\/CBS: regra especial (paga menos).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"200028",
+    "titulo_curto":"Fornecimento dos serviços de educação",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva acesso à educação.\nAtenção: vale só se o item\/serviço estiver no Anexo II.",
+    "anexo":"II",
+    "categoria":"Educação"
+  },
+  {
+    "cClass":"200029",
+    "titulo_curto":"Fornecimento dos serviços de saúde humana",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo III.",
+    "anexo":"III",
+    "categoria":"Saúde (serviços)"
+  },
+  {
+    "cClass":"200030",
+    "titulo_curto":"Venda dos dispositivos médicos",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo IV.",
+    "anexo":"IV",
+    "categoria":"Saúde (dispositivos médicos)"
+  },
+  {
+    "cClass":"200031",
+    "titulo_curto":"Fornecimento dos dispositivos de acessibilidade próprios para...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é item de acessibilidade (PcD).\nAtenção: vale só se o item\/serviço estiver no Anexo V.",
+    "anexo":"V",
+    "categoria":"Inclusão (PcD\/acessibilidade)"
+  },
+  {
+    "cClass":"200032",
+    "titulo_curto":"Fornecimento dos medicamentos registrados na Anvisa ou produz...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é item\/serviço essencial de saúde.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Saúde (medicamentos)"
+  },
+  {
+    "cClass":"200033",
+    "titulo_curto":"Fornecimento das composições para nutrição enteral e parenteral",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é item\/serviço essencial de saúde.\nAtenção: vale só se o item\/serviço estiver no Anexo VI.",
+    "anexo":"VI",
+    "categoria":"Saúde (nutrição especial)"
+  },
+  {
+    "cClass":"200034",
+    "titulo_curto":"Fornecimento dos alimentos destinados ao consumo humano",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: vale só se o item\/serviço estiver no Anexo VII.",
+    "anexo":"VII",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200035",
+    "titulo_curto":"Fornecimento dos produtos de higiene pessoal e limpeza",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: vale só se o item\/serviço estiver no Anexo VIII.",
+    "anexo":"VIII",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200036",
+    "titulo_curto":"Fornecimento de produtos agropecuários, aquícolas, pesqueiros...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva a produção\/agro.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Agro (insumos\/produção)"
+  },
+  {
+    "cClass":"200037",
+    "titulo_curto":"Fornecimento de serviços ambientais de conservação ou recuper...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Meio ambiente"
+  },
+  {
+    "cClass":"200038",
+    "titulo_curto":"Fornecimento dos insumos agropecuários e aquícolas",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva a produção\/agro.\nAtenção: vale só se o item\/serviço estiver no Anexo IX.",
+    "anexo":"IX",
+    "categoria":"Agro (insumos\/produção)"
+  },
+  {
+    "cClass":"200039",
+    "titulo_curto":"Fornecimento dos serviços e o licenciamento ou cessão dos dir...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva produções culturais.\nAtenção: vale só se o item\/serviço estiver no Anexo X.",
+    "anexo":"X",
+    "categoria":"Cultura"
+  },
+  {
+    "cClass":"200040",
+    "titulo_curto":"Fornecimento de serviços de comunicação institucional à admin...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200041",
+    "titulo_curto":"Fornecimento de serviço de educação desportiva",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200042",
+    "titulo_curto":"Fornecimento de serviço de educação desportiva",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200043",
+    "titulo_curto":"Fornecimento à administração pública dos serviços e dos bens...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: vale só se o item\/serviço estiver no Anexo XI.",
+    "anexo":"XI",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200044",
+    "titulo_curto":"Operações e prestações de serviços de segurança da informação...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: vale só se o item\/serviço estiver no Anexo XI.",
+    "anexo":"XI",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200045",
+    "titulo_curto":"Operações relacionadas a projetos de reabilitação urbana de z...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"200046",
+    "titulo_curto":"Operações com bens imóveis",
+    "badge":"REGRA ESPECIAL",
+    "texto_3_linhas":"IBS\/CBS: regra especial (paga menos).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"200047",
+    "titulo_curto":"Bares e Restaurantes",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é regra especial para o setor.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Alimentação fora do lar"
+  },
+  {
+    "cClass":"200048",
+    "titulo_curto":"Hotelaria, Parques de Diversão e Parques Temáticos",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é regra especial para turismo\/lazer.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Turismo e lazer"
+  },
+  {
+    "cClass":"200049",
+    "titulo_curto":"Transporte coletivo de passageiros rodoviário, ferroviário e...",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é serviço de interesse público.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Transporte"
+  },
+  {
+    "cClass":"200050",
+    "titulo_curto":"Serviços de transporte aéreo regional coletivo de passageiros...",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é serviço de interesse público.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Transporte"
+  },
+  {
+    "cClass":"200051",
+    "titulo_curto":"Agências de Turismo",
+    "badge":"PAGA MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é regra especial para turismo\/lazer.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Turismo e lazer"
+  },
+  {
+    "cClass":"200052",
+    "titulo_curto":"Prestação de serviços de profissões intelectuais",
+    "badge":"PAGA UM POUCO MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque é regra especial para serviços regulamentados.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Profissões regulamentadas"
+  },
+  {
+    "cClass":"220001",
+    "titulo_curto":"Incorporação imobiliária submetida ao regime especial de trib...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"220002",
+    "titulo_curto":"Incorporação imobiliária submetida ao regime especial de trib...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"220003",
+    "titulo_curto":"Alienação de imóvel decorrente de parcelamento do solo",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"221001",
+    "titulo_curto":"Locação, cessão onerosa ou arrendamento de bem imóvel com alí...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"222001",
+    "titulo_curto":"Transporte internacional de passageiros, caso os trechos de i...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é serviço de interesse público.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Transporte"
+  },
+  {
+    "cClass":"400001",
+    "titulo_curto":"Fornecimento de serviços de transporte público coletivo de pa...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é serviço de interesse público.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Transporte"
+  },
+  {
+    "cClass":"410001",
+    "titulo_curto":"Fornecimento de bonificações quando constem no documento fisc...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410002",
+    "titulo_curto":"Transferências entre estabelecimentos pertencentes ao mesmo c...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410003",
+    "titulo_curto":"Doações sem contraprestação em benefício do doador",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410004",
+    "titulo_curto":"Exportações de bens e serviços",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410005",
+    "titulo_curto":"Fornecimentos realizados pela União, pelos Estados, pelo Dist...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410006",
+    "titulo_curto":"Fornecimentos realizados por entidades religiosas e templos d...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410007",
+    "titulo_curto":"Fornecimentos realizados por partidos políticos",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410008",
+    "titulo_curto":"Fornecimentos de livros, jornais, periódicos e do papel desti...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410009",
+    "titulo_curto":"Fornecimentos de fonogramas e videofonogramas musicais produz...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410010",
+    "titulo_curto":"Fornecimentos de serviço de comunicação nas modalidades de ra...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410011",
+    "titulo_curto":"Fornecimentos de ouro, quando definido em lei como ativo fina...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410012",
+    "titulo_curto":"Fornecimento de condomínio edilício não optante pelo regime r...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410013",
+    "titulo_curto":"Exportações de combustíveis",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410014",
+    "titulo_curto":"Fornecimento de produtor rural não contribuinte",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410015",
+    "titulo_curto":"Fornecimento por transportador autônomo não contribuinte",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410016",
+    "titulo_curto":"Fornecimento ou aquisição de resíduos sólidos",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410017",
+    "titulo_curto":"Aquisição de bem móvel com crédito presumido sob condição de...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410018",
+    "titulo_curto":"Operações relacionadas aos fundos garantidores e executores d...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410019",
+    "titulo_curto":"Exclusão da gorjeta na base de cálculo no fornecimento de ali...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410020",
+    "titulo_curto":"Exclusão do valor de intermediação na base de cálculo no forn...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410021",
+    "titulo_curto":"Contribuição de que trata o art. 149-A da Constituição Federal",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410022",
+    "titulo_curto":"Consolidação da propriedade do bem pelo credor",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410023",
+    "titulo_curto":"Alienação de bens móveis ou imóveis que tenham sido objeto de...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"410024",
+    "titulo_curto":"Consolidação da propriedade do bem pelo grupo de consórcio",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410025",
+    "titulo_curto":"Alienação de bem que tenha sido objeto de garantia em que o p...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410026",
+    "titulo_curto":"Doação com anulação de crédito",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410027",
+    "titulo_curto":"Exportação de serviço ou de bem imaterial",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410028",
+    "titulo_curto":"Operações com bens imóveis realizadas por pessoas físicas não...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"410029",
+    "titulo_curto":"Operações acobertadas somente pelo ICMS",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410030",
+    "titulo_curto":"Estorno de crédito por perecimento, deteriorização, roubo, fu...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410031",
+    "titulo_curto":"Fornecimento em período anterior ao início de vigência de inc...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"410999",
+    "titulo_curto":"Operações não onerosas sem previsão de tributação, não especi...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"510001",
+    "titulo_curto":"Operações, sujeitas a diferimento, com energia elétrica, rela...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"515001",
+    "titulo_curto":"Operações, sujeitas a diferimento, com insumos agropecuários...",
+    "badge":"PAGA BEM MENOS",
+    "texto_3_linhas":"IBS\/CBS: paga menos.\nPorque incentiva a produção\/agro.\nAtenção: vale só se o item\/serviço estiver no Anexo IX.",
+    "anexo":"IX",
+    "categoria":"Agro (insumos\/produção)"
+  },
+  {
+    "cClass":"550001",
+    "titulo_curto":"Exportações de bens materiais",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550002",
+    "titulo_curto":"Regime de Trânsito",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550003",
+    "titulo_curto":"Regimes de Depósito",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550004",
+    "titulo_curto":"Regimes de Depósito",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550005",
+    "titulo_curto":"Regimes de Depósito",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550006",
+    "titulo_curto":"Regimes de Permanência Temporária",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550007",
+    "titulo_curto":"Regimes de Aperfeiçoamento",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550008",
+    "titulo_curto":"Importação de bens para o Regime de Repetro-Temporário",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550009",
+    "titulo_curto":"GNL-Temporário",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550010",
+    "titulo_curto":"Repetro-Permanente",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550011",
+    "titulo_curto":"Repetro-Industrialização",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550012",
+    "titulo_curto":"Repetro-Nacional",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550013",
+    "titulo_curto":"Repetro-Entreposto",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550014",
+    "titulo_curto":"Zona de Processamento de Exportação",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550015",
+    "titulo_curto":"Regime Tributário para Incentivo à Modernização e à Ampliação...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550016",
+    "titulo_curto":"Regime Especial de Incentivos para o Desenvolvimento da Infra...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550017",
+    "titulo_curto":"Regime Tributário para Incentivo à Atividade Econômica Naval",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550018",
+    "titulo_curto":"Desoneração da aquisição de bens de capital",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"550019",
+    "titulo_curto":"Importação de bem material por indústria incentivada para uti...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"550020",
+    "titulo_curto":"Áreas de livre comércio",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"550021",
+    "titulo_curto":"Industrialização destinada a exportações",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620001",
+    "titulo_curto":"Tributação monofásica sobre combustíveis",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620002",
+    "titulo_curto":"Tributação monofásica com responsabilidade pela retenção sobr...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620003",
+    "titulo_curto":"Tributação monofásica com tributos retidos por responsabilida...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620004",
+    "titulo_curto":"Tributação monofásica sobre mistura de EAC com gasolina A em...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620005",
+    "titulo_curto":"Tributação monofásica sobre mistura de EAC com gasolina A em...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"620006",
+    "titulo_curto":"Tributação monofásica sobre combustíveis cobrada anteriormente",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"800001",
+    "titulo_curto":"Fusão, cisão ou incorporação",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"800002",
+    "titulo_curto":"Transferência de crédito do associado, inclusive as cooperati...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque cooperativas têm regra própria.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Cooperativas"
+  },
+  {
+    "cClass":"810001",
+    "titulo_curto":"Crédito presumido sobre o valor apurado nos fornecimentos a p...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é incentivo\/regra especial.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Incentivos regionais\/exportação"
+  },
+  {
+    "cClass":"811001",
+    "titulo_curto":"Anulação de Crédito por Saídas Imunes\/Isentas",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"811002",
+    "titulo_curto":"Débitos de notas fiscais não processadas na apuração",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"811003",
+    "titulo_curto":"Desenquadramento do Simples Nacional",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820001",
+    "titulo_curto":"Documento com informações de fornecimento de serviços de plan...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820002",
+    "titulo_curto":"Documento com informações de fornecimento de serviços de plan...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820003",
+    "titulo_curto":"Documento com informações de fornecimento de serviços de plan...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820004",
+    "titulo_curto":"Documento com informações de prestação de serviços de consurs...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820005",
+    "titulo_curto":"Documento com informações de alienação de bens imóveis",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque é regra especial do setor imobiliário.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Imobiliário"
+  },
+  {
+    "cClass":"820006",
+    "titulo_curto":"Documento com informações de fornecimento de serviços de expl...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820007",
+    "titulo_curto":"Documento com informações de fornecimento de serviços finance...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"820008",
+    "titulo_curto":"Documento com informações de fornecimento, mas com tributação...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  },
+  {
+    "cClass":"830001",
+    "titulo_curto":"Documento com exclusão da BC da CBS e do IBS de energia elétr...",
+    "badge":"PAGA NORMAL",
+    "texto_3_linhas":"IBS\/CBS: paga normal (sem benefício aqui).\nPorque não existe uma regra especial na Reforma.\nAtenção: confirme o enquadramento (produto\/serviço) antes de emitir a nota.",
+    "anexo":"",
+    "categoria":"Geral \/ outros regimes"
+  }
+]

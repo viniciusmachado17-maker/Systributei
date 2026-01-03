@@ -8,6 +8,7 @@ import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '
 import { explainTaxRule, extractBarcodeFromImage } from '../services/geminiService';
 import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus } from '../services/supabaseClient';
 import insightsData from '../deps/cclasstrib_insights.json';
+import insightsSimplificado from '../deps/cclasstrib_simplificado.json';
 import { UserProfile } from '../App';
 
 interface DashboardProps {
@@ -608,22 +609,32 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
     setIsExplaining(true);
 
-    // Buscar insight estático baseado no cClass
+
+    // Buscar insight simplificado em primeiro lugar
     const db_cclass = calculatedTaxes.cClass_ibs || calculatedTaxes.cClass_cbs;
-    const staticInsight = (insightsData as any[]).find(item =>
+    const simpleInsight = (insightsSimplificado as any[]).find(item =>
       String(item.cClass) === String(db_cclass) ||
       String(item.cClass) === String(db_cclass).replace(/\./g, '')
     );
 
-    if (staticInsight) {
-      // Se temos o dado estático, não precisamos de IA (economia de cota e mais rápido)
-      // A própria UI vai cuidar de formatar os campos beneficio e porque
+    if (simpleInsight) {
       setExplanation(null);
       setIsExplaining(false);
     } else {
-      const aiText = await explainTaxRule(data.produtos, data.category, data.ncm, calculatedTaxes);
-      setExplanation(aiText);
-      setIsExplaining(false);
+      // Fallback para insight mais detalhado ou IA
+      const staticInsight = (insightsData as any[]).find(item =>
+        String(item.cClass) === String(db_cclass) ||
+        String(item.cClass) === String(db_cclass).replace(/\./g, '')
+      );
+
+      if (staticInsight) {
+        setExplanation(staticInsight.insight);
+        setIsExplaining(false);
+      } else {
+        const aiText = await explainTaxRule(data.produtos, data.category, data.ncm, calculatedTaxes);
+        setExplanation(aiText);
+        setIsExplaining(false);
+      }
     }
   };
 
@@ -635,22 +646,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     setActiveTab('search');
 
 
-    // Gerar explicação (Prioriza Estática > IA)
+    // Gerar explicação (Prioriza Simplificado > Detalhado > IA)
     setIsExplaining(true);
     const db_cclass = calculatedTaxes.cClass_ibs || calculatedTaxes.cClass_cbs;
-    const staticInsight = (insightsData as any[]).find(item =>
+
+    const simpleInsight = (insightsSimplificado as any[]).find(item =>
       String(item.cClass) === String(db_cclass) ||
       String(item.cClass) === String(db_cclass).replace(/\./g, '')
     );
 
-    if (staticInsight) {
+    if (simpleInsight) {
       setExplanation(null);
       setIsExplaining(false);
     } else {
-      explainTaxRule(item.produtos, item.category, item.ncm, calculatedTaxes).then(aiText => {
-        setExplanation(aiText);
+      const staticInsight = (insightsData as any[]).find(item =>
+        String(item.cClass) === String(db_cclass) ||
+        String(item.cClass) === String(db_cclass).replace(/\./g, '')
+      );
+
+      if (staticInsight) {
+        setExplanation(staticInsight.insight);
         setIsExplaining(false);
-      });
+      } else {
+        explainTaxRule(item.produtos, item.category, item.ncm, calculatedTaxes).then(aiText => {
+          setExplanation(aiText);
+          setIsExplaining(false);
+        });
+      }
     }
   };
 
@@ -1357,40 +1379,47 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                       </p>
                     ) : (() => {
                       const db_cclass = taxes?.cClass_ibs || taxes?.cClass_cbs;
-                      const insight = (insightsData as any[]).find(item =>
+                      const simple = (insightsSimplificado as any[]).find(item =>
                         String(item.cClass) === String(db_cclass) ||
                         String(item.cClass) === String(db_cclass).replace(/\./g, '')
                       );
 
-                      if (!insight) return <p className="text-xs text-slate-500">Nenhum insight disponível para este perfil fiscal.</p>;
+                      if (!simple) return <p className="text-xs text-slate-500">Nenhum insight disponível para este perfil fiscal.</p>;
+
+                      // Helper para cores do badge
+                      const getBadgeColor = (badge: string) => {
+                        const b = badge.toUpperCase();
+                        if (b.includes('ZERO')) return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20';
+                        if (b.includes('BEM MENOS')) return 'bg-amber-500/20 text-amber-400 border-amber-500/20';
+                        if (b.includes('POUCO MENOS') || b.includes('MENOS')) return 'bg-blue-500/20 text-blue-400 border-blue-500/20';
+                        if (b.includes('NORMAL')) return 'bg-slate-500/20 text-slate-400 border-slate-500/20';
+                        return 'bg-brand-500/20 text-brand-400 border-brand-500/20';
+                      };
 
                       return (
                         <div className="space-y-6 flex-grow">
-                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <h6 className="text-[9px] font-black text-brand-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                              <i className="fa-solid fa-star text-amber-400"></i>
-                              Benefício / Oportunidade
-                            </h6>
-                            <p className="text-xs font-bold text-white leading-relaxed">
-                              {insight.beneficio}
-                            </p>
-                          </div>
-
-                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <h6 className="text-[9px] font-black text-brand-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                              <i className="fa-solid fa-circle-question text-blue-400"></i>
-                              Por que isso acontece?
-                            </h6>
-                            <p className="text-[11px] font-medium text-slate-300 leading-relaxed">
-                              {insight.porque}
-                            </p>
-                          </div>
-
-                          <div className="mt-auto pt-4 border-t border-white/5">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[8px] font-black text-slate-500 uppercase">Base Legal: {insight.base_legal}</span>
-                              <span className="px-2 py-0.5 bg-brand-600/20 text-brand-400 rounded text-[8px] font-black uppercase">cClass: {insight.cClass}</span>
+                          <div className="flex flex-col gap-3">
+                            <div className={`self-start px-3 py-1 rounded-full text-[10px] font-black tracking-widest border ${getBadgeColor(simple.badge)} uppercase`}>
+                              {simple.badge}
                             </div>
+                            <h6 className="text-lg font-bold text-white leading-tight">
+                              {simple.titulo_curto}
+                            </h6>
+                          </div>
+
+                          <div className="bg-white/5 p-6 rounded-3xl border border-white/5 relative">
+                            <i className="fa-solid fa-quote-left absolute top-4 left-4 text-white/5 text-4xl"></i>
+                            <p className="text-sm font-medium text-slate-300 leading-relaxed relative z-10 whitespace-pre-wrap italic">
+                              {simple.texto_3_linhas}
+                            </p>
+                          </div>
+
+                          <div className="mt-auto pt-4 border-t border-white/5 flex flex-wrap gap-2 justify-between items-center text-[8px] font-black uppercase tracking-widest text-slate-500">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-slate-800 rounded">SETOR: {simple.categoria}</span>
+                              {simple.anexo && <span className="px-2 py-0.5 bg-brand-900/30 text-brand-400 rounded">ANEXO {simple.anexo}</span>}
+                            </div>
+                            <span className="px-2 py-0.5 bg-white/5 rounded">Ref: #{simple.cClass}</span>
                           </div>
                         </div>
                       );
