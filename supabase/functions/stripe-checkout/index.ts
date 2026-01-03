@@ -106,6 +106,19 @@ serve(async (req) => {
         }
 
         // --- Lógica do Segundo Dia Útil ---
+        // REGRA: Só aplicamos o "Trial de Feriado/Fim de Semana" se o cliente NÃO tiver assinatura ativa.
+        // Isso impede que alguém fique cancelando e assinando todo fim de semana para não pagar.
+        let hasActiveSubscription = false;
+        if (customerId) {
+            const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: 'active', limit: 1 });
+            hasActiveSubscription = activeSubs.data.length > 0;
+            if (!hasActiveSubscription) {
+                // Check past_due as well to prevent abuse from defaulters
+                const pastDueSubs = await stripe.subscriptions.list({ customer: customerId, status: 'past_due', limit: 1 });
+                hasActiveSubscription = pastDueSubs.data.length > 0;
+            }
+        }
+
         const now = new Date()
         const isTodayBusiness = isBusinessDay(now)
 
@@ -121,13 +134,14 @@ serve(async (req) => {
             }
         }
 
-        // Se hoje NÃO for dia útil (feriado ou fim de semana), damos o trial até o 2º dia útil
-        if (!isTodayBusiness) {
+        // Se hoje NÃO for dia útil E o cliente for NOVO (sem assinatura ativa), damos o trial.
+        // Se já for cliente (upgrade/downgrade), cobra na hora (sem trial).
+        if (!isTodayBusiness && !hasActiveSubscription) {
             const secondBusinessDay = getNthBusinessDay(now, 2)
             sessionConfig.subscription_data.trial_end = Math.floor(secondBusinessDay.getTime() / 1000)
-            console.log(`Holiday detection: Trial set until ${secondBusinessDay.toISOString()} (2nd business day)`);
+            console.log(`Holiday detection (New Customer): Trial set until ${secondBusinessDay.toISOString()} (2nd business day)`);
         } else {
-            console.log('Business day detection: Processing immediate payment.');
+            console.log('Immediate payment required (Business day OR Existing Customer).');
         }
 
         const session = await stripe.checkout.sessions.create(sessionConfig)

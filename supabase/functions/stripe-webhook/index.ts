@@ -74,6 +74,28 @@ serve(async (req) => {
                 } else {
                     console.log(`Org ${orgId} updated successfully after checkout.`);
                 }
+
+                // --- AUTO-CANCELAMENTO DE DUPLICIDADES ---
+                // Verifica se o cliente possui outras assinaturas ativas e as cancela/remove
+                // para garantir que ele fique apenas com a nova (upgrade/downgrade via checkout).
+                if (customerId) {
+                    try {
+                        const activeSubs = await stripe.subscriptions.list({
+                            customer: customerId,
+                            status: 'active',
+                            limit: 10
+                        })
+
+                        for (const sub of activeSubs.data) {
+                            if (sub.id !== subscriptionId) {
+                                console.log(`Auto-canceling duplicate subscription: ${sub.id}`);
+                                await stripe.subscriptions.cancel(sub.id);
+                            }
+                        }
+                    } catch (errCancel) {
+                        console.error('Error auto-canceling old subscriptions:', errCancel);
+                    }
+                }
                 break
             }
 
