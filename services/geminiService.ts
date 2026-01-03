@@ -6,7 +6,8 @@ export const explainTaxRule = async (
   productName: string,
   category: string,
   ncm: string,
-  taxes?: TaxBreakdown
+  taxes?: TaxBreakdown,
+  baseInsight?: string // Opcional: Insight técnico para ser simplificado
 ): Promise<string> => {
   try {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
@@ -23,19 +24,31 @@ Detalhes Tributários Atuais (Simulação):
 - CBS: ${(taxes.aliquotaCbs * 100).toFixed(2)}% (CST: ${taxes.cst_cbs})
 - Alíquota Final Combinada: ${(taxes.aliquotaFinalIbs * 100 + taxes.aliquotaFinalCbs * 100).toFixed(2)}%
 - Cesta Básica: ${taxes.isCestaBasica ? 'Sim' : 'Não'}
+- cClass: ${taxes.cClass_ibs || taxes.cClass_cbs}
+` : '';
+
+    const baseInsightContext = baseInsight ? `
+Regra Técnica (Traduza isso para linguagem simples):
+${baseInsight}
 ` : '';
 
     const prompt = `
-Atue como um especialista em Reforma Tributária Brasileira.
+Atue como um Consultor de Negócios especializado em varejo e Reforma Tributária. 
+Seu objetivo é traduzir termos técnicos complexos para uma linguagem que um **empresário lojista/varejista** entenda perfeitamente.
+
 Produto: ${productName}
 Categoria: ${category}
 NCM: ${ncm}
-${taxContext}
 
-Forneça um "Insight Tributei":
-1. Traga um fato interessante ou relevante sobre como a Reforma Tributária (IBS/CBS) afeta especificamente este tipo de produto ou sua categoria.
-2. Seja conciso (máximo 3 frases).
-3. Use um tom profissional e informativo.
+${taxContext}
+${baseInsightContext}
+
+Forneça um "Insight TributeiClass":
+1. Foque no IMPACTO PRÁTICO para o negócio do lojista (Preço, competitividade ou burocracia).
+2. Se houver uma redução de alíquota ou benefício (como Cesta Básica), destaque isso como uma oportunidade.
+3. Use uma linguagem direta, amigável e SEM jargões excessivos como "cClassTrib" ou "LC 214/2025" a menos que seja para explicar como agir.
+4. Mantenha entre 2 a 4 frases curtas e impactantes.
+5. Se o produto for Cesta Básica, mencione que ele tem Alíquota Zero (ou reduzida) e o que isso significa para o consumidor final.
 `;
 
     console.log("Gemini: Enviando prompt...");

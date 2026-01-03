@@ -7,6 +7,7 @@ import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
 import { explainTaxRule, extractBarcodeFromImage } from '../services/geminiService';
 import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus } from '../services/supabaseClient';
+import insightsData from '../deps/cclasstrib_insights.json';
 import { UserProfile } from '../App';
 
 interface DashboardProps {
@@ -604,10 +605,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       saveSearchHistory(user.id, user.organization.id, data);
     }
 
+
     setIsExplaining(true);
-    const aiText = await explainTaxRule(data.produtos, data.category, data.ncm, calculatedTaxes);
-    setExplanation(aiText);
-    setIsExplaining(false);
+
+    // Buscar insight estático baseado no cClass
+    const db_cclass = calculatedTaxes.cClass_ibs || calculatedTaxes.cClass_cbs;
+    const staticInsight = (insightsData as any[]).find(item =>
+      String(item.cClass) === String(db_cclass) ||
+      String(item.cClass) === String(db_cclass).replace(/\./g, '')
+    );
+
+    if (staticInsight) {
+      // Se temos o dado estático, não precisamos de IA (economia de cota e mais rápido)
+      // A própria UI vai cuidar de formatar os campos beneficio e porque
+      setExplanation(null);
+      setIsExplaining(false);
+    } else {
+      const aiText = await explainTaxRule(data.produtos, data.category, data.ncm, calculatedTaxes);
+      setExplanation(aiText);
+      setIsExplaining(false);
+    }
   };
 
   // Função para visualizar item do histórico sem fazer nova busca
@@ -617,12 +634,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     setTaxes(calculatedTaxes);
     setActiveTab('search');
 
-    // Gerar explicação novamente (não cobra, apenas IA local)
+
+    // Gerar explicação (Prioriza Estática > IA)
     setIsExplaining(true);
-    explainTaxRule(item.produtos, item.category, item.ncm, calculatedTaxes).then(aiText => {
-      setExplanation(aiText);
+    const db_cclass = calculatedTaxes.cClass_ibs || calculatedTaxes.cClass_cbs;
+    const staticInsight = (insightsData as any[]).find(item =>
+      String(item.cClass) === String(db_cclass) ||
+      String(item.cClass) === String(db_cclass).replace(/\./g, '')
+    );
+
+    if (staticInsight) {
+      setExplanation(null);
       setIsExplaining(false);
-    });
+    } else {
+      explainTaxRule(item.produtos, item.category, item.ncm, calculatedTaxes).then(aiText => {
+        setExplanation(aiText);
+        setIsExplaining(false);
+      });
+    }
   };
 
   const handleClearHistory = async () => {
@@ -1310,17 +1339,62 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               <div className="flex flex-col space-y-6">
                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
                   <i className="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
-                  Análise com IA
+                  Análise Contextual
                 </h4>
 
                 <div className="flex-grow bg-slate-900 text-white p-8 rounded-[2.5rem] relative overflow-hidden group shadow-xl">
-                  <div className="relative z-10">
-                    <h5 className="text-[11px] font-black uppercase text-brand-400 tracking-widest mb-6">Insight Tributei</h5>
-                    <p className="text-sm leading-relaxed font-medium text-slate-200 italic min-h-[100px]">
-                      {isExplaining ? "Processando explicação via IA..." : explanation}
-                    </p>
+                  <div className="relative z-10 h-full flex flex-col">
+                    <h5 className="text-[11px] font-black uppercase text-brand-400 tracking-widest mb-6 border-b border-white/10 pb-2">Insight TributeiClass</h5>
 
+                    {isExplaining ? (
+                      <div className="flex flex-col items-center justify-center py-10 gap-3">
+                        <i className="fa-solid fa-circle-notch fa-spin text-2xl text-brand-400"></i>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Analisando impacto...</p>
+                      </div>
+                    ) : explanation ? (
+                      <p className="text-sm leading-relaxed font-medium text-slate-200 italic">
+                        {explanation}
+                      </p>
+                    ) : (() => {
+                      const db_cclass = taxes?.cClass_ibs || taxes?.cClass_cbs;
+                      const insight = (insightsData as any[]).find(item =>
+                        String(item.cClass) === String(db_cclass) ||
+                        String(item.cClass) === String(db_cclass).replace(/\./g, '')
+                      );
 
+                      if (!insight) return <p className="text-xs text-slate-500">Nenhum insight disponível para este perfil fiscal.</p>;
+
+                      return (
+                        <div className="space-y-6 flex-grow">
+                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <h6 className="text-[9px] font-black text-brand-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                              <i className="fa-solid fa-star text-amber-400"></i>
+                              Benefício / Oportunidade
+                            </h6>
+                            <p className="text-xs font-bold text-white leading-relaxed">
+                              {insight.beneficio}
+                            </p>
+                          </div>
+
+                          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <h6 className="text-[9px] font-black text-brand-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                              <i className="fa-solid fa-circle-question text-blue-400"></i>
+                              Por que isso acontece?
+                            </h6>
+                            <p className="text-[11px] font-medium text-slate-300 leading-relaxed">
+                              {insight.porque}
+                            </p>
+                          </div>
+
+                          <div className="mt-auto pt-4 border-t border-white/5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[8px] font-black text-slate-500 uppercase">Base Legal: {insight.base_legal}</span>
+                              <span className="px-2 py-0.5 bg-brand-600/20 text-brand-400 rounded text-[8px] font-black uppercase">cClass: {insight.cClass}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
