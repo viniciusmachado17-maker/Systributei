@@ -6,7 +6,7 @@ import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
 import { explainTaxRule, extractBarcodeFromImage } from '../services/geminiService';
-import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus } from '../services/supabaseClient';
+import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus, markRequestsAsSeen, markConsultationsAsSeen } from '../services/supabaseClient';
 import insightsData from '../deps/cclasstrib_insights.json';
 import insightsSimplificado from '../deps/cclasstrib_simplificado.json';
 import { UserProfile } from '../App';
@@ -161,41 +161,65 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   // Estados para contadores de pendências (Badges)
   const [pendingCounts, setPendingCounts] = useState({ requests: 0, consultations: 0, demos: 0 });
 
-  // Buscar contadores de pendências ao montar ou alterar usuário
-  useEffect(() => {
+  // Função para buscar contadores de pendências (reutilizável)
+  const refreshPendingCounts = useCallback(async () => {
     if (!user) return;
-    const fetchPending = async () => {
-      try {
-        let reqCount = 0;
-        let consultCount = 0;
+    try {
+      let reqCount = 0;
+      let consultCount = 0;
 
-        if (user.role === 'admin') {
-          const [reqs, consults, demos] = await Promise.all([
-            getProductRequests(),
-            getAllConsultations(),
-            getDemoRequests()
-          ]);
-          reqCount = reqs.filter(r => r.status === 'pending').length;
-          consultCount = consults.filter(c => c.status === 'pending').length;
-          const demoCount = demos.filter(d => d.status === 'pending').length;
-          setPendingCounts({ requests: reqCount, consultations: consultCount, demos: demoCount });
-        } else {
-          const [reqs, consults] = await Promise.all([
-            getUserProductRequests(user.id),
-            getUserConsultations(user.organization?.id || '')
-          ]);
-          // Para user, 'pending' pedidos é o que está em aberto
-          reqCount = reqs.filter(r => r.status === 'pending').length;
-          // Para consultas, 'pending' e 'clarification' são pendências (aguardando resolução)
-          consultCount = consults.filter(c => c.status !== 'replied').length;
-          setPendingCounts({ requests: reqCount, consultations: consultCount, demos: 0 });
-        }
-      } catch (e) {
-        console.error("Error fetching pending counts:", e);
+      if (user.role === 'admin') {
+        const [reqs, consults, demos] = await Promise.all([
+          getProductRequests(),
+          getAllConsultations(),
+          getDemoRequests()
+        ]);
+        reqCount = reqs.filter(r => r.status === 'pending').length;
+        consultCount = consults.filter(c => c.status === 'pending').length;
+        const demoCount = demos.filter(d => d.status === 'pending').length;
+        setPendingCounts({ requests: reqCount, consultations: consultCount, demos: demoCount });
+      } else {
+        const [reqs, consults] = await Promise.all([
+          getUserProductRequests(user.id),
+          getUserConsultations(user.organization?.id || '')
+        ]);
+        // Para o usuário final, as "notificações" são itens que o admin mexeu e ele ainda não viu
+        reqCount = reqs.filter(r => !r.user_seen).length;
+        consultCount = consults.filter(c => !c.user_seen).length;
+        setPendingCounts({ requests: reqCount, consultations: consultCount, demos: 0 });
       }
-    };
-    fetchPending();
-  }, [user, user?.organization?.id]);
+    } catch (e) {
+      console.error("Error fetching pending counts:", e);
+    }
+  }, [user]);
+
+  // Buscar contadores de pendências ao montar ou alterar usuário/tab
+  useEffect(() => {
+    if (user) {
+      refreshPendingCounts();
+    }
+  }, [user, user?.organization?.id, refreshPendingCounts]);
+
+  // Efeito para marcar como visto quando o usuário navega nas abas de pedido/consultoria
+  useEffect(() => {
+    if (user && user.role !== 'admin' && activeTab === 'consultancy') {
+      if (userConsultancyView === 'requests' && pendingCounts.requests > 0) {
+        console.log("Marking requests as seen for user", user.id);
+        markRequestsAsSeen(user.id).then(() => {
+          refreshPendingCounts();
+          // Também atualizamos a lista local para refletir a mudança visual se necessário
+          setUserRequests(prev => prev.map(r => ({ ...r, user_seen: true })));
+        });
+      } else if (userConsultancyView === 'consultas' && pendingCounts.consultations > 0) {
+        console.log("Marking consultations as seen for user", user.id);
+        markConsultationsAsSeen(user.id).then(() => {
+          refreshPendingCounts();
+          // Também atualizamos a lista local
+          setAdminConsultations(prev => prev.map(c => ({ ...c, user_seen: true })));
+        });
+      }
+    }
+  }, [user, activeTab, userConsultancyView, pendingCounts.requests, pendingCounts.consultations]);
 
   // Detectar se é iOS para desativar funções problemáticas (tela branca)
   const isIOS = useMemo(() => {
@@ -458,6 +482,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     if (success) {
       alert("Status atualizado!");
       setAdminDemos(prev => prev.map(d => d.id === id ? { ...d, status } : d));
+      refreshPendingCounts();
     } else {
       alert("Erro ao atualizar!");
     }
@@ -470,6 +495,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     if (success) {
       alert("Status atualizado com sucesso!");
       setAdminRequests(prev => prev.map(req => req.id === id ? { ...req, status } : req));
+      refreshPendingCounts();
     } else {
       alert("Erro ao atualizar status.");
     }
@@ -883,6 +909,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         setEmailMessage('');
         // Atualizar estado local do contador
         user.organization.email_count += 1;
+        refreshPendingCounts();
       } else {
         alert(res.message || "Erro ao enviar consulta.");
       }
@@ -936,6 +963,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             return newMap;
           });
         }
+        refreshPendingCounts();
       } else {
         alert("Erro ao atualizar status da consulta no servidor.");
       }
@@ -968,6 +996,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         delete newMap[id];
         return newMap;
       });
+      refreshPendingCounts();
     } else {
       alert("Erro ao enviar resposta.");
     }
@@ -1009,6 +1038,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       }
       setIsRequestModalOpen(false);
       setRequestObs('');
+      refreshPendingCounts();
     } else {
       alert('Erro ao enviar solicitação: ' + result.message);
     }
@@ -1962,6 +1992,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                               {req.status === 'completed' ? 'Atendido' :
                                 req.status === 'rejected' ? 'Rejeitado' : 'Em Análise'}
                             </span>
+                            {!req.user_seen && (
+                              <span className="bg-brand-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-md animate-bounce">
+                                NOVO
+                              </span>
+                            )}
                             <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">{req.product_name}</h4>
                           </div>
                           <span className="text-[10px] text-slate-400 font-bold">
@@ -2009,6 +2044,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                                 {consult.status === 'replied' ? 'Respondido' :
                                   consult.status === 'clarification' ? 'Aguardando sua Resposta' : 'Em Análise'}
                               </span>
+                              {!consult.user_seen && (
+                                <span className="bg-brand-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-md animate-bounce">
+                                  NOVO
+                                </span>
+                              )}
                               <h4 className="font-extrabold text-slate-900 text-sm tracking-tight">{consult.subject}</h4>
                             </div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">

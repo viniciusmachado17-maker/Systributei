@@ -36,6 +36,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: window.location.origin,
           data: {
             name: formData.name,
             phone: formData.phone,

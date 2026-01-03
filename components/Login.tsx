@@ -58,12 +58,14 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       }
 
       // 3. Sucesso
+      const userRole = profile.email === 'adm@tributeiclass.com.br' ? 'admin' : 'user';
+
       onNavigate('dashboard', {
         id: authData.user.id,
         organization_id: (profile as any).organization?.id,
         name: profile.name || 'Usuário',
         email: profile.email || formData.email,
-        role: (profile.role as any) || 'user',
+        role: userRole,
         organization: (profile as any).organization
       });
 

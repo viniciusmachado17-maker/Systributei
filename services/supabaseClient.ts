@@ -158,7 +158,8 @@ export const createProductRequest = async (request: ProductRequest): Promise<{ s
         ean: request.ean,
         ncm: request.ncm,
         observation: request.observation,
-        status: 'pending'
+        status: 'pending',
+        user_seen: true
       }]);
 
     if (error) throw error;
@@ -232,7 +233,7 @@ export const sendEmailConsultation = async (consultation: {
     // 2. Se incrementou com sucesso, insere a consulta
     const { error } = await supabase
       .from('email_consultations')
-      .insert([consultation]);
+      .insert([{ ...consultation, user_seen: true }]);
 
     if (error) {
       // Opcional: Reverter o incremento se a inserção falhar
@@ -337,6 +338,14 @@ export const updateConsultationStatus = async (
 
     updateData.updated_at = new Date().toISOString();
 
+    // Se a ação for do admin (replied ou clarification), marca como não visto pelo usuário
+    if (status === 'replied' || status === 'clarification') {
+      updateData.user_seen = false;
+    } else if (userReply !== undefined) {
+      // Se o usuário está respondendo, ele obviamente já viu a solicitação anterior
+      updateData.user_seen = true;
+    }
+
     const { error } = await supabase
       .from('email_consultations')
       .update(updateData)
@@ -389,7 +398,11 @@ export const updateProductRequestStatus = async (
   try {
     const { error } = await supabase
       .from('product_requests')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({
+        status,
+        updated_at: new Date().toISOString(),
+        user_seen: false // Admin atualizou, usuário precisa ser notificado
+      })
       .eq('id', id);
 
     if (error) {
@@ -589,5 +602,37 @@ export const createCheckoutSession = async (params: {
   } catch (err) {
     console.error('Erro ao criar sessão de checkout:', err);
     throw err;
+  }
+};
+
+/**
+ * Marca todas as solicitações de produto de um usuário como vistas.
+ */
+export const markRequestsAsSeen = async (userId: string): Promise<void> => {
+  if (!isSupabaseConfigured) return;
+  try {
+    await supabase
+      .from('product_requests')
+      .update({ user_seen: true })
+      .eq('user_id', userId)
+      .eq('user_seen', false);
+  } catch (err) {
+    console.error("Erro ao marcar pedidos como vistos:", err);
+  }
+};
+
+/**
+ * Marca todas as consultas de e-mail de um usuário como vistas.
+ */
+export const markConsultationsAsSeen = async (userId: string): Promise<void> => {
+  if (!isSupabaseConfigured) return;
+  try {
+    await supabase
+      .from('email_consultations')
+      .update({ user_seen: true })
+      .eq('user_id', userId)
+      .eq('user_seen', false);
+  } catch (err) {
+    console.error("Erro ao marcar consultas como vistas:", err);
   }
 };

@@ -75,12 +75,16 @@ const App: React.FC = () => {
             .single();
 
           if (profile && !profileError) {
+            const userRole = profile.email === 'adm@tributeiclass.com.br'
+              ? 'admin'
+              : 'user';
+
             const userProfile: UserProfile = {
               id: session.user.id,
               organization_id: (profile as any).organization?.id,
               name: profile.name || 'Usuário',
               email: profile.email || session.user.email || '',
-              role: (profile.role as any) || 'user',
+              role: userRole,
               organization: (profile as any).organization
             };
             setUser(userProfile);
