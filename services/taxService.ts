@@ -73,40 +73,48 @@ export const calculateTaxes = (product: Product, isCashback: boolean = false): T
 export const searchProducts = async (query: string, searchType: 'name' | 'ncm' = 'name'): Promise<ProductSummary[]> => {
   if (!isSupabaseConfigured) return [];
 
-  let queryBuilder = supabase
-    .from('products')
-    .select('id, produto, ean, ncm, cest');
+  try {
+    // Usamos a nova função RPC que lida com unaccent e busca avançada
+    const { data, error } = await supabase.rpc('search_products_v2', {
+      search_term: query,
+      limit_val: 50
+    });
 
-  if (searchType === 'ncm') {
-    queryBuilder = queryBuilder.ilike('ncm', `%${query}%`);
-  } else {
-    // Busca inteligente: quebra a query em palavras e busca por TODAS elas
-    const words = query.trim().split(/\s+/).filter(w => w.length > 0);
+    if (error) {
+      console.error("Erro ao chamar RPC search_products_v2:", error);
 
-    if (words.length === 0) {
-      return [];
+      // Fallback para busca tradicional se o RPC falhar (ex: função não existe ainda)
+      let queryBuilder = supabase
+        .from('products')
+        .select('id, produto, ean, ncm, cest');
+
+      if (searchType === 'ncm') {
+        queryBuilder = queryBuilder.ilike('ncm', `%${query}%`);
+      } else {
+        const words = query.trim().split(/\s+/).filter(w => w.length > 0);
+        if (words.length === 0) return [];
+        words.forEach(word => {
+          queryBuilder = queryBuilder.ilike('produto', `%${word}%`);
+        });
+      }
+
+      const { data: fallbackData, error: fallbackError } = await queryBuilder.limit(50);
+      if (fallbackError) throw fallbackError;
+      return fallbackData || [];
     }
 
-    // Aplica um filtro ILIKE para cada palavra (AND logic)
-    // Isso garante que o produto contenha TODAS as palavras, independente da ordem
-    words.forEach(word => {
-      queryBuilder = queryBuilder.ilike('produto', `%${word}%`);
-    });
-  }
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      produto: item.produto,
+      ean: item.ean,
+      ncm: item.ncm,
+      cest: item.cest
+    }));
 
-  const { data, error } = await queryBuilder.limit(50);
-
-  if (error) {
-    console.error("Erro ao buscar lista de produtos:", error);
+  } catch (err) {
+    console.error("Erro ao buscar lista de produtos:", err);
     return [];
   }
-
-  console.log(`✅ Encontrados ${data?.length || 0} produtos`);
-  if (data && data.length > 0) {
-    console.log('Primeiros 5 resultados:', data.slice(0, 5).map(p => p.produto));
-  }
-
-  return data || [];
 };
 
 // Busca detalhes completos de um produto específico (pelo ID ou EAN exato)

@@ -821,8 +821,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           // Se só tem 1, já carrega direto
           await loadProductDetails(results[0].id);
         } else {
-          // Se tem vários, abre modal de seleção
-          setSearchResults(results);
+          // Se tem vários, ordena alfabeticamente e abre modal de seleção
+          const sortedResults = [...results].sort((a, b) =>
+            a.produto.localeCompare(b.produto)
+          );
+          setSearchResults(sortedResults);
           setIsSelectionOpen(true);
         }
       } else {
@@ -1123,9 +1126,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 placeholder="Refinar termo de busca (Nova consulta)..."
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 bg-white shadow-sm"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  if (mode === 'barcode') {
+                    val = val.replace(/\D/g, '').slice(0, 14);
+                  } else if (mode === 'ncm') {
+                    val = val.replace(/\D/g, '').slice(0, 8);
+                  }
+                  setQuery(val);
+                }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
+              {(mode === 'barcode' || mode === 'ncm') && (
+                <p className="text-[9px] text-brand-600 font-bold mt-1 ml-1 uppercase tracking-tighter">
+                  <i className="fa-solid fa-circle-info mr-1"></i>
+                  Apenas números são aceitos neste campo
+                </p>
+              )}
             </div>
             <button
               onClick={() => handleSearch()}
@@ -1260,13 +1277,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               val = val.replace(/\D/g, '').slice(0, 8);
               if (val.length > 4) val = val.slice(0, 4) + '.' + val.slice(4);
               if (val.length > 7) val = val.slice(0, 7) + '.' + val.slice(7);
+            } else if (mode === 'barcode') {
+              val = val.replace(/\D/g, '').slice(0, 14);
             }
             setQuery(val);
           }}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-          placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
+          placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN (Apenas números)..." : "Informe o NCM (Apenas números)..."}
           className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
         />
+        {(mode === 'barcode' || mode === 'ncm') && (
+          <div className="absolute left-14 -bottom-6 flex items-center gap-1.5 text-[10px] font-black text-brand-600 uppercase tracking-tighter animate-fade-in">
+            <i className="fa-solid fa-circle-info"></i>
+            <span>Este campo aceita apenas números</span>
+          </div>
+        )}
         {mode === 'barcode' && (
           <button
             onClick={() => setIsScannerOpen(true)}
@@ -2266,9 +2291,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                     type="tel"
                     placeholder="Código de barras..."
                     value={manualBarcode}
-                    onChange={(e) => setManualBarcode(e.target.value)}
+                    onChange={(e) => setManualBarcode(e.target.value.replace(/\D/g, '').slice(0, 14))}
                     className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
+                  <p className="text-[8px] text-red-400 font-bold uppercase tracking-tighter mt-1">
+                    Aceita apenas números
+                  </p>
                   <button
                     onClick={() => {
                       if (manualBarcode.length >= 8) {
