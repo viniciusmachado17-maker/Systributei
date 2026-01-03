@@ -156,6 +156,45 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
 
+  // Estados para contadores de pendências (Badges)
+  const [pendingCounts, setPendingCounts] = useState({ requests: 0, consultations: 0, demos: 0 });
+
+  // Buscar contadores de pendências ao montar ou alterar usuário
+  useEffect(() => {
+    if (!user) return;
+    const fetchPending = async () => {
+      try {
+        let reqCount = 0;
+        let consultCount = 0;
+
+        if (user.role === 'admin') {
+          const [reqs, consults, demos] = await Promise.all([
+            getProductRequests(),
+            getAllConsultations(),
+            getDemoRequests()
+          ]);
+          reqCount = reqs.filter(r => r.status === 'pending').length;
+          consultCount = consults.filter(c => c.status === 'pending').length;
+          const demoCount = demos.filter(d => d.status === 'pending').length;
+          setPendingCounts({ requests: reqCount, consultations: consultCount, demos: demoCount });
+        } else {
+          const [reqs, consults] = await Promise.all([
+            getUserProductRequests(user.id),
+            getUserConsultations(user.organization?.id || '')
+          ]);
+          // Para user, 'pending' pedidos é o que está em aberto
+          reqCount = reqs.filter(r => r.status === 'pending').length;
+          // Para consultas, 'pending' e 'clarification' são pendências (aguardando resolução)
+          consultCount = consults.filter(c => c.status !== 'replied').length;
+          setPendingCounts({ requests: reqCount, consultations: consultCount, demos: 0 });
+        }
+      } catch (e) {
+        console.error("Error fetching pending counts:", e);
+      }
+    };
+    fetchPending();
+  }, [user, user?.organization?.id]);
+
   // Detectar se é iOS para desativar funções problemáticas (tela branca)
   const isIOS = useMemo(() => {
     // Detecta iPhone, iPad e iPod, inclusive iPads mais novos que se identificam como Macintosh mas possuem touch
@@ -1087,219 +1126,221 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         </div>
       </div>
     </div>
-  );
-
-
-  const renderSearch = () => (
-    <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
-      <div className={`space-y-6 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
-        <div className="text-left">
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Consulta de Produtos</h1>
-          <p className="text-slate-500 font-medium text-sm mt-1">Insira o código de barras ou o nome do produto para classificar.</p>
-
-
-          {(connStatus === 'offline' || connStatus === 'mock') && (
-            <p className="text-[11px] text-slate-500 mt-2 max-w-lg mx-auto">
-              <i className="fa-solid fa-circle-info mr-1 text-brand-500"></i>
-              {connMessage}
-            </p>
-          )}
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center justify-center gap-3 text-red-600 animate-slide-up mx-auto max-w-lg">
-              <i className="fa-solid fa-triangle-exclamation"></i>
-              <p className="text-xs font-bold">{error}</p>
-            </div>
-          )}
+  ); const renderSearch = () => (
+    <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-slide-up">
+      <div className={`space-y-4 md:space-y-6 transition-all duration-500 ${isSelectionOpen ? 'pt-96' : 'pt-0'}`}>
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">Consulta de Produtos</h1>
+          <p className="text-[13px] md:text-sm text-slate-500 font-medium">Insira o código de barras ou o nome do produto para classificar.</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          {(['name', 'barcode', 'ncm'] as SearchMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => { setMode(m); setQuery(''); }}
-              className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${mode === m ? 'border-brand-600 bg-brand-50 text-brand-600 shadow-sm' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'}`}
-            >
-              <i className={`fa-solid ${m === 'name' ? 'fa-font' : m === 'barcode' ? 'fa-barcode' : 'fa-list-ol'} text-xl`}></i>
-              <span className="text-[11px] font-black uppercase tracking-wider">{m === 'name' ? 'Descrição' : m === 'barcode' ? 'Código (EAN)' : 'NCM'}</span>
-            </button>
-          ))}
-        </div>
 
-        <div className="relative group flex flex-col md:block gap-3">
-          <div className="absolute left-6 top-[28px] md:top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-600 transition-colors">
-            {mode === 'name' ? <i className="fa-solid fa-magnifying-glass"></i> : mode === 'barcode' ? <i className="fa-solid fa-barcode"></i> : <i className="fa-solid fa-hashtag"></i>}
+
+
+        {(connStatus === 'offline' || connStatus === 'mock') && (
+          <p className="text-[11px] text-slate-500 mt-2 max-w-lg mx-auto">
+            <i className="fa-solid fa-circle-info mr-1 text-brand-500"></i>
+            {connMessage}
+          </p>
+        )}
+
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center justify-center gap-3 text-red-600 animate-slide-up mx-auto max-w-lg">
+            <i className="fa-solid fa-triangle-exclamation"></i>
+            <p className="text-xs font-bold">{error}</p>
           </div>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => {
-              let val = e.target.value;
-              if (mode === 'ncm') {
-                // Máscara NCM: xxxx.xx.xx
-                val = val.replace(/\D/g, '').slice(0, 8);
-                if (val.length > 4) val = val.slice(0, 4) + '.' + val.slice(4);
-                if (val.length > 7) val = val.slice(0, 7) + '.' + val.slice(7);
-              }
-              setQuery(val);
-            }}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-            placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
-            className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
-          />
-          {mode === 'barcode' && (
-            <button
-              onClick={() => setIsScannerOpen(true)}
-              className="absolute right-4 md:hidden top-[28px] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-all"
-              title="Escanear Código"
-            >
-              <i className="fa-solid fa-camera"></i>
-            </button>
-          )}
+        )}
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        {(['name', 'barcode', 'ncm'] as SearchMode[]).map((m) => (
           <button
-            onClick={(e) => handleSearch(e)}
-            disabled={loading || connStatus === 'testing'}
-            className="md:absolute right-3 md:top-1/2 md:-translate-y-1/2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 md:py-3.5 rounded-xl md:rounded-2xl font-black text-sm transition shadow-lg shadow-brand-500/30 active:scale-95 disabled:opacity-50 w-full md:w-auto"
+            key={m}
+            onClick={() => { setMode(m); setQuery(''); }}
+            className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${mode === m ? 'border-brand-600 bg-brand-50 text-brand-600 shadow-sm' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'}`}
           >
-            {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Consultar'}
+            <i className={`fa-solid ${m === 'name' ? 'fa-font' : m === 'barcode' ? 'fa-barcode' : 'fa-list-ol'} text-xl`}></i>
+            <span className="text-[11px] font-black uppercase tracking-wider">{m === 'name' ? 'Descrição' : m === 'barcode' ? 'Código (EAN)' : 'NCM'}</span>
           </button>
+        ))}
+      </div>
+
+      <div className="relative group flex flex-col md:block gap-3">
+        <div className="absolute left-6 top-[28px] md:top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-600 transition-colors">
+          {mode === 'name' ? <i className="fa-solid fa-magnifying-glass"></i> : mode === 'barcode' ? <i className="fa-solid fa-barcode"></i> : <i className="fa-solid fa-hashtag"></i>}
         </div>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            let val = e.target.value;
+            if (mode === 'ncm') {
+              // Máscara NCM: xxxx.xx.xx
+              val = val.replace(/\D/g, '').slice(0, 8);
+              if (val.length > 4) val = val.slice(0, 4) + '.' + val.slice(4);
+              if (val.length > 7) val = val.slice(0, 7) + '.' + val.slice(7);
+            }
+            setQuery(val);
+          }}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+          placeholder={mode === 'name' ? "Ex: 'Refrigerante', 'Arroz'..." : mode === 'barcode' ? "Digite o EAN..." : "Informe o NCM..."}
+          className="w-full bg-white border border-slate-200 rounded-[1.5rem] md:rounded-3xl py-4 md:py-6 pl-14 pr-14 md:pr-40 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-600 transition-all text-base md:text-lg font-medium shadow-sm"
+        />
+        {mode === 'barcode' && (
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            className="absolute right-4 md:hidden top-[28px] md:top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:bg-brand-50 hover:text-brand-600 transition-all"
+            title="Escanear Código"
+          >
+            <i className="fa-solid fa-camera"></i>
+          </button>
+        )}
+        <button
+          onClick={(e) => handleSearch(e)}
+          disabled={loading || connStatus === 'testing'}
+          className="md:absolute right-3 md:top-1/2 md:-translate-y-1/2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 md:py-3.5 rounded-xl md:rounded-2xl font-black text-sm transition shadow-lg shadow-brand-500/30 active:scale-95 disabled:opacity-50 w-full md:w-auto"
+        >
+          {loading ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Consultar'}
+        </button>
       </div>
 
 
-      {product && taxes && (
-        <div className="animate-slide-up bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden mt-8">
-          <div className="bg-brand-600 p-4 md:p-3 text-white flex flex-col md:flex-row justify-between items-center gap-4 md:gap-2">
-            <div className="text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest">
-                  RESULTADO DA CONSULTA
-                </span>
+
+      {
+        product && taxes && (
+          <div className="animate-slide-up bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden mt-8">
+            <div className="bg-brand-600 p-4 md:p-3 text-white flex flex-col md:flex-row justify-between items-center gap-4 md:gap-2">
+              <div className="text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                  <span className="bg-white/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest">
+                    RESULTADO DA CONSULTA
+                  </span>
+                </div>
+                <h3 className="text-xl md:text-xl font-black tracking-tighter uppercase leading-tight">{product.produtos}</h3>
+                <p className="text-brand-100 text-[10px] mt-0.5">{product.category}</p>
               </div>
-              <h3 className="text-xl md:text-xl font-black tracking-tighter uppercase leading-tight">{product.produtos}</h3>
-              <p className="text-brand-100 text-[10px] mt-0.5">{product.category}</p>
-            </div>
-            <div className="flex md:flex-col items-center md:items-end gap-6 md:gap-1 border-t border-brand-500/30 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-center overflow-x-auto no-scrollbar pb-1 md:pb-0">
-              <div className="shrink-0">
-                <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">EAN Identificado</p>
-                <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ean}</p>
-              </div>
-              <div className="shrink-0">
-                <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">NCM</p>
-                <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ncm}</p>
-              </div>
-              {product.cest && (
+              <div className="flex md:flex-col items-center md:items-end gap-6 md:gap-1 border-t border-brand-500/30 md:border-0 pt-4 md:pt-0 w-full md:w-auto justify-center overflow-x-auto no-scrollbar pb-1 md:pb-0">
                 <div className="shrink-0">
-                  <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">CEST</p>
-                  <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.cest}</p>
+                  <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">EAN Identificado</p>
+                  <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ean}</p>
                 </div>
-              )}
+                <div className="shrink-0">
+                  <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">NCM</p>
+                  <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.ncm}</p>
+                </div>
+                {product.cest && (
+                  <div className="shrink-0">
+                    <p className="text-[8px] md:text-[9px] font-black text-brand-200 uppercase tracking-widest text-center md:text-right">CEST</p>
+                    <p className="text-sm md:text-base font-mono font-bold text-center md:text-right">{product.cest}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-8 grid md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+                  <i className="fa-solid fa-file-invoice text-brand-600"></i>
+                  Detalhamento IBS / CBS
+                </h4>
+
+                {/* IBS Section */}
+                <div className="bg-brand-50/50 border border-brand-100 p-4 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-[11px] text-white font-black">I</div>
+                      <span className="text-[10px] font-black text-brand-700 uppercase tracking-widest">IBS</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white/50 px-2.5 py-1.5 rounded-lg border border-brand-100">
+                      <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">CST: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cst_ibs}</span></p>
+                      <div className="w-px h-2.5 bg-brand-200"></div>
+                      <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">cClass: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cClass_ibs}</span></p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 pt-1.5 border-t border-brand-100/50">
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Alíquota</p>
+                      <p className="text-lg font-black text-brand-600">{(taxes.aliquotaIbs * 100).toFixed(2)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Redução</p>
+                      <p className="text-lg font-black text-brand-600">{taxes.reducaoIbs}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Aliq. Final</p>
+                      <p className="text-lg font-black text-brand-600">{(taxes.aliquotaFinalIbs * 100).toFixed(2)}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CBS Section */}
+                <div className="bg-brand-50/50 border border-brand-100 p-4 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-[11px] text-white font-black">C</div>
+                      <span className="text-[10px] font-black text-brand-700 uppercase tracking-widest">CBS</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-white/50 px-2.5 py-1.5 rounded-lg border border-brand-100">
+                      <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">CST: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cst_cbs}</span></p>
+                      <div className="w-px h-2.5 bg-brand-200"></div>
+                      <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">cClass: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cClass_cbs}</span></p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 pt-1.5 border-t border-brand-100/50">
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Alíquota</p>
+                      <p className="text-lg font-black text-brand-600">{(taxes.aliquotaCbs * 100).toFixed(2)}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Redução</p>
+                      <p className="text-lg font-black text-brand-600">{taxes.reducaoCbs}%</p>
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Aliq. Final</p>
+                      <p className="text-lg font-black text-brand-600">{(taxes.aliquotaFinalCbs * 100).toFixed(2)}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 text-center">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">INFORMAÇÕES DE IBS E CBS PARA O ANO DE 2026</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-6">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
+                  <i className="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
+                  Análise com IA
+                </h4>
+
+                <div className="flex-grow bg-slate-900 text-white p-8 rounded-[2.5rem] relative overflow-hidden group shadow-xl">
+                  <div className="relative z-10">
+                    <h5 className="text-[11px] font-black uppercase text-brand-400 tracking-widest mb-6">Insight Tributei</h5>
+                    <p className="text-sm leading-relaxed font-medium text-slate-200 italic min-h-[100px]">
+                      {isExplaining ? "Processando explicação via IA..." : explanation}
+                    </p>
+
+
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
-
-          <div className="p-8 grid md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
-                <i className="fa-solid fa-file-invoice text-brand-600"></i>
-                Detalhamento IBS / CBS
-              </h4>
-
-              {/* IBS Section */}
-              <div className="bg-brand-50/50 border border-brand-100 p-4 rounded-2xl space-y-3">
-                <div className="flex justify-between items-center mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-[11px] text-white font-black">I</div>
-                    <span className="text-[10px] font-black text-brand-700 uppercase tracking-widest">IBS</span>
-                  </div>
-                  <div className="flex items-center gap-3 bg-white/50 px-2.5 py-1.5 rounded-lg border border-brand-100">
-                    <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">CST: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cst_ibs}</span></p>
-                    <div className="w-px h-2.5 bg-brand-200"></div>
-                    <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">cClass: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cClass_ibs}</span></p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 pt-1.5 border-t border-brand-100/50">
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Alíquota</p>
-                    <p className="text-lg font-black text-brand-600">{(taxes.aliquotaIbs * 100).toFixed(2)}%</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Redução</p>
-                    <p className="text-lg font-black text-brand-600">{taxes.reducaoIbs}%</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Aliq. Final</p>
-                    <p className="text-lg font-black text-brand-600">{(taxes.aliquotaFinalIbs * 100).toFixed(2)}%</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* CBS Section */}
-              <div className="bg-brand-50/50 border border-brand-100 p-4 rounded-2xl space-y-3">
-                <div className="flex justify-between items-center mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-brand-600 rounded-lg flex items-center justify-center text-[11px] text-white font-black">C</div>
-                    <span className="text-[10px] font-black text-brand-700 uppercase tracking-widest">CBS</span>
-                  </div>
-                  <div className="flex items-center gap-3 bg-white/50 px-2.5 py-1.5 rounded-lg border border-brand-100">
-                    <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">CST: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cst_cbs}</span></p>
-                    <div className="w-px h-2.5 bg-brand-200"></div>
-                    <p className="text-[9px] font-bold text-brand-400 uppercase tracking-wider">cClass: <span className="text-xs font-black text-brand-700 ml-0.5">{taxes.cClass_cbs}</span></p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 pt-1.5 border-t border-brand-100/50">
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Alíquota</p>
-                    <p className="text-lg font-black text-brand-600">{(taxes.aliquotaCbs * 100).toFixed(2)}%</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Redução</p>
-                    <p className="text-lg font-black text-brand-600">{taxes.reducaoCbs}%</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold text-brand-600/60 uppercase mb-0.5">Aliq. Final</p>
-                    <p className="text-lg font-black text-brand-600">{(taxes.aliquotaFinalCbs * 100).toFixed(2)}%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 text-center">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">INFORMAÇÕES DE IBS E CBS PARA O ANO DE 2026</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-6">
-              <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center gap-2">
-                <i className="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
-                Análise com IA
-              </h4>
-
-              <div className="flex-grow bg-slate-900 text-white p-8 rounded-[2.5rem] relative overflow-hidden group shadow-xl">
-                <div className="relative z-10">
-                  <h5 className="text-[11px] font-black uppercase text-brand-400 tracking-widest mb-6">Insight Tributei</h5>
-                  <p className="text-sm leading-relaxed font-medium text-slate-200 italic min-h-[100px]">
-                    {isExplaining ? "Processando explicação via IA..." : explanation}
-                  </p>
-
-
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 
   // Dropdown Menu State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const renderConsultancy = () => (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Consultoria Técnica</h2>
-          <p className="text-slate-500 font-medium text-sm mt-1">
+        <div className="space-y-2">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">Consultoria Técnica</h2>
+          <p className="text-[13px] md:text-sm text-slate-500 font-medium">
             {user?.role === 'admin' ? 'Área Administrativa: Gerenciamento de Consultas Recebidas.' : 'Tire suas dúvidas técnicas com nossos especialistas tributários.'}
           </p>
         </div>
@@ -1337,21 +1378,36 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                   <div className="w-px bg-slate-200 mx-1"></div>
                   <button
                     onClick={() => setAdminViewMode('consultas')}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${adminViewMode === 'consultas' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'consultas' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                   >
                     Consultas
+                    {pendingCounts.consultations > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${adminViewMode === 'consultas' ? 'bg-white text-slate-900' : 'bg-brand-100 text-brand-600'}`}>
+                        {pendingCounts.consultations}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => setAdminViewMode('requests')}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${adminViewMode === 'requests' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'requests' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                   >
                     Cadastros
+                    {pendingCounts.requests > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${adminViewMode === 'requests' ? 'bg-white text-slate-900' : 'bg-orange-100 text-orange-600'}`}>
+                        {pendingCounts.requests}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => setAdminViewMode('demos')}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${adminViewMode === 'demos' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${adminViewMode === 'demos' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                   >
                     Demos
+                    {pendingCounts.demos > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${adminViewMode === 'demos' ? 'bg-white text-slate-900' : 'bg-emerald-100 text-emerald-600'}`}>
+                        {pendingCounts.demos}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -1744,15 +1800,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 <div className="flex bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
                   <button
                     onClick={() => setUserConsultancyView('consultas')}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${userConsultancyView === 'consultas' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${userConsultancyView === 'consultas' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                   >
                     Minhas Dúvidas
+                    {pendingCounts.consultations > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${userConsultancyView === 'consultas' ? 'bg-white text-brand-600' : 'bg-brand-100 text-brand-600'}`}>
+                        {pendingCounts.consultations}
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => setUserConsultancyView('requests')}
-                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${userConsultancyView === 'requests' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${userConsultancyView === 'requests' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                   >
                     Meus Pedidos
+                    {pendingCounts.requests > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${userConsultancyView === 'requests' ? 'bg-white text-brand-600' : 'bg-brand-100 text-brand-600'}`}>
+                        {pendingCounts.requests}
+                      </span>
+                    )}
                   </button>
                 </div>
 
@@ -2365,9 +2431,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const renderSettings = () => {
     const org = organizationData || user?.organization;
     return (
-      <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Configurações da Conta</h1>
-        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 border border-slate-200 shadow-xl space-y-8">
+      <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-slide-up">
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">Configurações da Conta</h1>
+          <p className="text-[13px] md:text-sm text-slate-500 font-medium">Gerencie seu perfil, assinatura e preferências da conta.</p>
+        </div>
+        <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-12 border border-slate-200 shadow-xl space-y-8">
           <div>
             <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Perfil</h3>
             <div className="grid md:grid-cols-2 gap-6">
@@ -2511,8 +2580,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             </div>
             {user?.organization?.plan_type === 'gratis' && <i className="fa-solid fa-lock text-[10px] opacity-40"></i>}
           </button>
-          <button onClick={() => setActiveTab('consultancy')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'consultancy' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
-            <i className="fa-solid fa-envelope-open-text"></i> Consultoria
+          <button onClick={() => setActiveTab('consultancy')} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'consultancy' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
+            <div className="flex items-center gap-3">
+              <i className="fa-solid fa-envelope-open-text"></i> Consultoria
+            </div>
+            {(pendingCounts.requests + pendingCounts.consultations) > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">
+                {pendingCounts.requests + pendingCounts.consultations}
+              </span>
+            )}
           </button>
           <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'settings' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
             <i className="fa-solid fa-gear"></i> Minha Conta
@@ -2535,7 +2611,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       </aside>
 
       <main className="flex-grow flex flex-col h-full overflow-hidden pb-20 lg:pb-0">
-        <header className="h-20 bg-white border-b border-slate-200 px-6 flex items-center justify-between relative z-50">
+        <header className="h-24 bg-white border-b border-slate-200 px-6 flex items-center justify-between relative z-50 shrink-0">
           <div className="flex items-center gap-3">
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${connStatus === 'online' ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' :
               connStatus === 'testing' ? 'bg-blue-500 animate-pulse shadow-lg shadow-blue-500/20' :
@@ -2693,13 +2769,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </div>
         )}
 
-        <div className="flex-grow overflow-y-auto p-6 md:p-10">
+        <div className="flex-grow overflow-y-auto p-5 md:p-10">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
           {activeTab === 'history' && (
-            <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter mb-2">Histórico de Consultas</h2>
+            <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-slide-up">
+              <div className="flex justify-between items-baseline gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">Histórico de Consultas</h2>
+                  <p className="text-[13px] md:text-sm text-slate-500 font-medium">Visualize e acesse rapidamente suas consultas anteriores.</p>
+                </div>
                 {history.length > 0 && (
                   <button
                     onClick={handleClearHistory}
@@ -2760,7 +2839,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           onClick={() => setActiveTab('consultancy')}
           className={`flex flex-col items-center gap-1 ${activeTab === 'consultancy' ? 'text-brand-600' : 'text-slate-400'}`}
         >
-          <i className="fa-solid fa-envelope-open-text text-lg"></i>
+          <div className="relative">
+            <i className="fa-solid fa-envelope-open-text text-lg"></i>
+            {(pendingCounts.requests + pendingCounts.consultations) > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                {pendingCounts.requests + pendingCounts.consultations}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-black uppercase tracking-tighter">Dúvidas</span>
         </button>
         <button
