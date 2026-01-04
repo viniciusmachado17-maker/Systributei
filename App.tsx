@@ -92,12 +92,17 @@ const App: React.FC = () => {
 
             // 4. Se estiver voltando do Stripe, vai direto pro Dashboard
             const params = new URLSearchParams(window.location.search);
+            const isRecovery = window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery');
+
             if (params.get('session') === 'success') {
               setCurrentView('dashboard');
               const newUrl = window.location.pathname;
               window.history.replaceState({}, document.title, newUrl);
+            } else if (isRecovery) {
+              // Se for recuperação de senha, prioriza a tela de reset
+              setCurrentView('reset-password');
             } else {
-              // Se já estiver logado, cai no dash por padrão em vez da landing (opcional)
+              // Se já estiver logado (normal), cai no dash por padrão
               setCurrentView('dashboard');
             }
           }

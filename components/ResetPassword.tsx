@@ -30,6 +30,9 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ onComplete }) => {
 
             if (updateError) throw updateError;
 
+            // Desloga a sessão temporária de recuperação para forçar o login com a nova senha
+            await supabase.auth.signOut();
+
             setSuccess(true);
             setTimeout(() => {
                 onComplete();
