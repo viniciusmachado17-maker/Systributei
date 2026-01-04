@@ -80,61 +80,77 @@ serve(async (req) => {
         let customerId = org?.stripe_customer_id
         console.log(`Initial customerId for org ${orgId}: ${customerId}`);
 
-        // --- UPGRADE/DOWNGRADE LOGIC (Keep Billing Date) ---
+        // --- UPGRADE/DOWNGRADE LOGIC (Option A) ---
         if (org?.stripe_subscription_id && (org.subscription_status === 'active' || org.subscription_status === 'trialing')) {
             try {
                 console.log(`Checking existing subscription: ${org.stripe_subscription_id}`);
                 const existingSub = await stripe.subscriptions.retrieve(org.stripe_subscription_id);
 
-                if (existingSub && existingSub.status === 'active') { // only upgrade active, not past_due
+                if (existingSub && existingSub.status === 'active') {
                     const currentPriceId = existingSub.items.data[0].price.id;
 
                     if (currentPriceId === priceId) {
-                        console.log("User already on this plan.");
                         return new Response(JSON.stringify({ updated: true, message: 'Você já está neste plano' }), {
                             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                             status: 200
                         })
                     }
 
-                    console.log(`Updating active subscription ${existingSub.id} from ${currentPriceId} to ${priceId}`);
+                    const { rank: currentRank } = getPlanDetails(currentPriceId);
+                    const { rank: newRank, planType: newPlanType, limits: newLimits } = getPlanDetails(priceId);
 
-                    // Update the subscription item to the new price
-                    // 'always_invoice' ensures immediate charge for proration if upgrade
-                    const updatedSub = await stripe.subscriptions.update(existingSub.id, {
-                        items: [{
-                            id: existingSub.items.data[0].id,
-                            price: priceId,
-                        }],
-                        proration_behavior: 'always_invoice',
-                        metadata: { orgId, userId }
-                    });
+                    if (newRank >= currentRank) {
+                        // --- UPGRADE: Immediate charge, immediate benefits ---
+                        console.log(`UPGRADE: ${currentPriceId} -> ${priceId}. Charging difference immediately.`);
 
-                    // --- IMMEDIATE DB UPDATE FOR UPGRADES ---
-                    // Since we are in the edge function and the update was successful,
-                    // we update the DB here directly to avoid race conditions with webhooks
-                    // and ensure the frontend reloads with the correct data.
-                    const { planType, limits } = mapPriceToPlan(priceId);
+                        const updatedSub = await stripe.subscriptions.update(existingSub.id, {
+                            items: [{
+                                id: existingSub.items.data[0].id,
+                                price: priceId,
+                            }],
+                            proration_behavior: 'always_invoice',
+                            metadata: { orgId, userId }
+                        });
 
-                    await supabaseAdmin
-                        .from('organizations')
-                        .update({
-                            plan_type: planType,
-                            price_id: priceId,
-                            subscription_status: 'active',
-                            current_period_end: new Date(updatedSub.current_period_end * 1000).toISOString(),
-                            usage_limit: limits.usage,
-                            email_limit: limits.email,
-                            request_limit: limits.requests
-                        })
-                        .eq('id', orgId);
-                    // ----------------------------------------
+                        await supabaseAdmin
+                            .from('organizations')
+                            .update({
+                                plan_type: newPlanType,
+                                price_id: priceId,
+                                subscription_status: 'active',
+                                current_period_end: new Date(updatedSub.current_period_end * 1000).toISOString(),
+                                usage_limit: newLimits.usage,
+                                email_limit: newLimits.email,
+                                request_limit: newLimits.requests
+                            })
+                            .eq('id', orgId);
 
-                    console.log(`Subscription ${existingSub.id} updated successfully to ${planType} via API.`);
-                    return new Response(JSON.stringify({ updated: true }), {
-                        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                        status: 200
-                    })
+                        return new Response(JSON.stringify({ updated: true, message: 'Upgrade realizado com sucesso!' }), {
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                            status: 200
+                        });
+                    } else {
+                        // --- DOWNGRADE (Option A): Change at end of period, no immediate DB update ---
+                        console.log(`DOWNGRADE: ${currentPriceId} -> ${priceId}. Scheduling for next cycle.`);
+
+                        await stripe.subscriptions.update(existingSub.id, {
+                            items: [{
+                                id: existingSub.items.data[0].id,
+                                price: priceId,
+                            }],
+                            proration_behavior: 'none', // No refund, no immediate charge
+                            metadata: { orgId, userId }
+                        });
+
+                        // We DON'T update the DB here. User keeps current benefits until next invoice.
+                        return new Response(JSON.stringify({
+                            updated: true,
+                            message: 'Plano alterado! Você manterá seus benefícios atuais até o fim do período já pago.'
+                        }), {
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                            status: 200
+                        });
+                    }
                 } else {
                     console.log("Existing subscription found but not active (status: " + existingSub?.status + "). Creating new session.");
                 }
@@ -211,20 +227,21 @@ serve(async (req) => {
     }
 })
 
-function mapPriceToPlan(priceId: string): {
+function getPlanDetails(priceId: string): {
     planType: string,
+    rank: number,
     limits: { usage: number, email: number, requests: number }
 } {
-    const mapping: Record<string, string> = {
-        'price_1SjRiwFkPBkTRBNfsjxZBscY': 'start',
-        'price_1SjmM3FkPBkTRBNfqvA7GBuF': 'start',
-        'price_1SjmRKFkPBkTRBNflIqVvWzE': 'pro',
-        'price_1SjmRuFkPBkTRBNfGsl9dfau': 'pro',
-        'price_1SjmT9FkPBkTRBNfuN3mH65n': 'premium',
-        'price_1SjmSeFkPBkTRBNf0xExnXGD': 'premium'
+    const mapping: Record<string, { type: string, rank: number }> = {
+        'price_1SjRiwFkPBkTRBNfsjxZBscY': { type: 'start', rank: 1 },
+        'price_1SjmM3FkPBkTRBNfqvA7GBuF': { type: 'start', rank: 1 },
+        'price_1SjmRKFkPBkTRBNflIqVvWzE': { type: 'pro', rank: 2 },
+        'price_1SjmRuFkPBkTRBNfGsl9dfau': { type: 'pro', rank: 2 },
+        'price_1SjmT9FkPBkTRBNfuN3mH65n': { type: 'premium', rank: 3 },
+        'price_1SjmSeFkPBkTRBNf0xExnXGD': { type: 'premium', rank: 3 }
     }
 
-    const planType = mapping[priceId] || 'gratis'
+    const details = mapping[priceId] || { type: 'gratis', rank: 0 }
 
     const limitsConfig: Record<string, { usage: number, email: number, requests: number }> = {
         'gratis': { usage: 10, email: 1, requests: 1 },
@@ -233,7 +250,11 @@ function mapPriceToPlan(priceId: string): {
         'premium': { usage: 999999, email: 999999, requests: 100 }
     }
 
-    return { planType, limits: limitsConfig[planType] || limitsConfig['gratis'] }
+    return {
+        planType: details.type,
+        rank: details.rank,
+        limits: limitsConfig[details.type] || limitsConfig['gratis']
+    }
 }
 
 function isCommitmentPrice(priceId: string): boolean {

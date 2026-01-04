@@ -49,7 +49,7 @@ serve(async (req) => {
                     return new Response(JSON.stringify({ error: 'OrgId not found' }), { status: 400 })
                 }
 
-                const { planType, limits } = mapPriceToPlan(subscription.items.data[0].price.id)
+                const { planType, limits } = getPlanDetails(subscription.items.data[0].price.id)
 
                 console.log(`Updating org ${orgId} to plan ${planType}`);
 
@@ -115,7 +115,7 @@ serve(async (req) => {
                     }
 
                     if (orgId) {
-                        const { planType, limits } = mapPriceToPlan(subscription.items.data[0].price.id)
+                        const { planType, limits } = getPlanDetails(subscription.items.data[0].price.id)
                         await supabaseAdmin
                             .from('organizations')
                             .update({
@@ -165,43 +165,60 @@ serve(async (req) => {
 
                 if (!orgId) {
                     console.log("OrgId missing in metadata. Attempting lookup by customer ID:", subscription.customer);
-                    const { data: org, error: findError } = await supabaseAdmin
+                    const { data: org } = await supabaseAdmin
                         .from('organizations')
-                        .select('id')
+                        .select('id, plan_type, price_id')
                         .eq('stripe_customer_id', subscription.customer)
                         .single();
 
                     if (org) {
                         orgId = org.id;
-                        console.log("Found orgId via customer lookup:", orgId);
                     } else {
-                        console.error("Could not find organization for customer:", subscription.customer, findError);
+                        console.error("Could not find organization for customer:", subscription.customer);
                         return new Response(JSON.stringify({ error: 'Organization not found' }), { status: 400 });
                     }
                 }
 
-                const { planType, limits } = mapPriceToPlan(subscription.items.data[0].price.id)
-                console.log(`Mapped Price ${subscription.items.data[0].price.id} to Plan ${planType}`);
+                // Get current state from DB to check if it's a downgrade
+                const { data: currentOrg } = await supabaseAdmin
+                    .from('organizations')
+                    .select('price_id')
+                    .eq('id', orgId)
+                    .single();
+
+                const newPriceId = subscription.items.data[0].price.id;
+                const { planType: newPlanType, rank: newRank, limits: newLimits } = getPlanDetails(newPriceId);
+                const { rank: currentRank } = getPlanDetails(currentOrg?.price_id || '');
+
+                const updateData: any = {
+                    subscription_status: subscription.status,
+                    cancel_at_period_end: subscription.cancel_at_period_end,
+                    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                };
+
+                // OPTION A: Only update benefits immediately IF it is an UPGRADE
+                // Downgrades are ignored here and handled only on the next 'invoice.paid'
+                if (newRank >= currentRank) {
+                    console.log(`UPGRADE or equality detected. Updating benefits now. (${currentRank} -> ${newRank})`);
+                    updateData.plan_type = newPlanType;
+                    updateData.price_id = newPriceId;
+                    updateData.usage_limit = newLimits.usage;
+                    updateData.email_limit = newLimits.email;
+                    updateData.request_limit = newLimits.requests;
+                    updateData.has_commitment = isCommitmentPrice(newPriceId);
+                } else {
+                    console.log(`DOWNGRADE detected (${currentRank} -> ${newRank}). Keeping current benefits until next invoice.`);
+                }
 
                 const { error: updateError } = await supabaseAdmin
                     .from('organizations')
-                    .update({
-                        subscription_status: subscription.status,
-                        cancel_at_period_end: subscription.cancel_at_period_end,
-                        plan_type: planType,
-                        price_id: subscription.items.data[0].price.id,
-                        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                        has_commitment: isCommitmentPrice(subscription.items.data[0].price.id),
-                        usage_limit: limits.usage,
-                        email_limit: limits.email,
-                        request_limit: limits.requests
-                    })
+                    .update(updateData)
                     .eq('id', orgId)
 
                 if (updateError) {
                     console.error(`Error updating organization ${orgId}:`, updateError);
                 } else {
-                    console.log(`Organization ${orgId} updated successfully via webhook.`);
+                    console.log(`Organization ${orgId} processed successfully via webhook.`);
                 }
                 break
             }
@@ -247,20 +264,21 @@ serve(async (req) => {
     }
 })
 
-function mapPriceToPlan(priceId: string): {
+function getPlanDetails(priceId: string): {
     planType: string,
+    rank: number,
     limits: { usage: number, email: number, requests: number }
 } {
-    const mapping: Record<string, string> = {
-        'price_1SjRiwFkPBkTRBNfsjxZBscY': 'start',
-        'price_1SjmM3FkPBkTRBNfqvA7GBuF': 'start',
-        'price_1SjmRKFkPBkTRBNflIqVvWzE': 'pro',
-        'price_1SjmRuFkPBkTRBNfGsl9dfau': 'pro',
-        'price_1SjmT9FkPBkTRBNfuN3mH65n': 'premium',
-        'price_1SjmSeFkPBkTRBNf0xExnXGD': 'premium'
+    const mapping: Record<string, { type: string, rank: number }> = {
+        'price_1SjRiwFkPBkTRBNfsjxZBscY': { type: 'start', rank: 1 },
+        'price_1SjmM3FkPBkTRBNfqvA7GBuF': { type: 'start', rank: 1 },
+        'price_1SjmRKFkPBkTRBNflIqVvWzE': { type: 'pro', rank: 2 },
+        'price_1SjmRuFkPBkTRBNfGsl9dfau': { type: 'pro', rank: 2 },
+        'price_1SjmT9FkPBkTRBNfuN3mH65n': { type: 'premium', rank: 3 },
+        'price_1SjmSeFkPBkTRBNf0xExnXGD': { type: 'premium', rank: 3 }
     }
 
-    const planType = mapping[priceId] || 'gratis'
+    const details = mapping[priceId] || { type: 'gratis', rank: 0 }
 
     const limitsConfig: Record<string, { usage: number, email: number, requests: number }> = {
         'gratis': { usage: 10, email: 1, requests: 1 },
@@ -269,7 +287,11 @@ function mapPriceToPlan(priceId: string): {
         'premium': { usage: 999999, email: 999999, requests: 100 }
     }
 
-    return { planType, limits: limitsConfig[planType] || limitsConfig['gratis'] }
+    return {
+        planType: details.type,
+        rank: details.rank,
+        limits: limitsConfig[details.type] || limitsConfig['gratis']
+    }
 }
 
 function isCommitmentPrice(priceId: string): boolean {
@@ -280,3 +302,4 @@ function isCommitmentPrice(priceId: string): boolean {
     ]
     return commitments.includes(priceId)
 }
+
