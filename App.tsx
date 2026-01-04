@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Features from './components/Features';
@@ -54,6 +54,13 @@ const App: React.FC = () => {
   const [nextView, setNextView] = useState<ViewState | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
+  // Captura imediata se é um link de recuperação ANTES do Supabase limpar o hash
+  const isRecoveryLink = useMemo(() => {
+    return window.location.hash.includes('type=recovery') ||
+      window.location.hash.includes('access_token=') ||
+      window.location.href.includes('type=recovery');
+  }, []);
+
   React.useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -92,14 +99,12 @@ const App: React.FC = () => {
 
             // 4. Decisão de Navegação
             const params = new URLSearchParams(window.location.search);
-            const isRecovery = window.location.hash.includes('type=recovery') ||
-              window.location.href.includes('type=recovery') ||
-              window.location.hash.includes('access_token');
 
-            if (isRecovery) {
-              console.log("🔒 Modo de recuperação detectado. Forçando tela de reset.");
+            // Prioridade máxima: se detectamos que é um link de recuperação, NUNCA vai pro Dashboard agora
+            if (isRecoveryLink) {
+              console.log("🔒 Modo de recuperação detectado na inicialização.");
               setCurrentView('reset-password');
-              return; // PARA AQUI. Não deixa ir pro Dashboard.
+              return;
             }
 
             if (params.get('session') === 'success') {
@@ -121,11 +126,16 @@ const App: React.FC = () => {
 
     initializeAuth();
 
-    // Listener para eventos de Auth (importante para Password Recovery)
+    // Listener para eventos de Auth (importante para Password Recovery e Sincronia entre Abas)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // APENAS muda para reset-password se o evento for PASSWORD_RECOVERY 
-      // E SE a aba atual for a que contém o token de recuperação (evita mudar a aba antiga por acidente)
+      console.log("Auth Event:", event);
+
       if (event === 'PASSWORD_RECOVERY') {
+        setCurrentView('reset-password');
+      }
+
+      // Se houver um login em outra aba mas a aba atual está no modo recovery, NÃO navega
+      if (event === 'SIGNED_IN' && isRecoveryLink) {
         setCurrentView('reset-password');
       }
     });
