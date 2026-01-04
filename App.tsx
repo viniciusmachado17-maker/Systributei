@@ -12,10 +12,11 @@ import Signup from './components/Signup';
 import Pricing from './components/Pricing';
 import Dashboard from './components/Dashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import ResetPassword from './components/ResetPassword';
 
 import { testSupabaseConnection, supabase } from './services/supabaseClient';
 
-export type ViewState = 'landing' | 'login' | 'signup' | 'pricing' | 'dashboard' | 'admin';
+export type ViewState = 'landing' | 'login' | 'signup' | 'pricing' | 'dashboard' | 'admin' | 'reset-password';
 
 export interface Organization {
   id: string;
@@ -109,6 +110,17 @@ const App: React.FC = () => {
     };
 
     initializeAuth();
+
+    // Listener para eventos de Auth (importante para Password Recovery)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setCurrentView('reset-password');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const navigateTo = (view: ViewState, profile?: UserProfile) => {
@@ -171,6 +183,9 @@ const App: React.FC = () => {
           />
         )}
         {currentView === 'admin' && <AdminDashboard onNavigate={navigateTo} />}
+        {currentView === 'reset-password' && (
+          <ResetPassword onComplete={() => setCurrentView('login')} />
+        )}
       </main>
 
       {currentView !== 'dashboard' && <Footer />}

@@ -11,6 +11,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +87,103 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: window.location.origin,
+      });
+
+      if (resetError) throw resetError;
+
+      setResetSent(true);
+    } catch (err: any) {
+      console.error("Erro reset:", err);
+      setError(err.message || "Falha ao enviar e-mail de recuperação.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-40">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-200 rounded-full mix-blend-multiply filter blur-3xl animate-float"></div>
+        </div>
+
+        <div className="w-full max-w-md relative z-10 animate-slide-up">
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 md:p-10 border border-slate-100">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Recuperar Senha</h2>
+              <p className="text-slate-500 text-xs mt-2">Enviaremos um link para resetar sua senha</p>
+            </div>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-slide-up">
+                <i className="fa-solid fa-triangle-exclamation"></i>
+                <p className="text-[10px] font-bold uppercase tracking-tight">{error}</p>
+              </div>
+            )}
+
+            {resetSent ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto text-2xl">
+                  <i className="fa-solid fa-check"></i>
+                </div>
+                <p className="text-sm font-medium text-slate-600">
+                  E-mail enviado! Verifique sua caixa de entrada e siga as instruções.
+                </p>
+                <button
+                  onClick={() => setIsForgotPassword(false)}
+                  className="text-brand-600 font-bold text-xs hover:underline"
+                >
+                  Voltar para o login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-wider">Seu E-mail</label>
+                  <div className="relative">
+                    <input
+                      required
+                      type="email"
+                      placeholder="seu@email.com.br"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-xs font-medium"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                    />
+                    <i className="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-brand-600 hover:bg-brand-700 text-white py-4 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/30 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {isLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Enviar Link de Recuperação'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPassword(false)}
+                  className="w-full text-center text-slate-400 font-bold text-xs hover:text-slate-600 transition"
+                >
+                  Cancelar e voltar
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
       {/* Background Decorativo */}
@@ -125,7 +225,17 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
             <div className="space-y-1.5">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Senha</label>
-                <button type="button" className="text-[10px] font-bold text-brand-600 hover:underline">Esqueceu a senha?</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(true);
+                    setResetSent(false);
+                    setError(null);
+                  }}
+                  className="text-[10px] font-bold text-brand-600 hover:underline"
+                >
+                  Esqueceu a senha?
+                </button>
               </div>
               <div className="relative">
                 <input
