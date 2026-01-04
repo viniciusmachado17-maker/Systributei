@@ -90,19 +90,21 @@ const App: React.FC = () => {
             };
             setUser(userProfile);
 
-            // 4. Se estiver voltando do Stripe, vai direto pro Dashboard
+            // 4. Decisão de Navegação
             const params = new URLSearchParams(window.location.search);
-            const isRecovery = window.location.hash.includes('type=recovery') || window.location.href.includes('type=recovery');
+            const isRecovery = window.location.hash.includes('type=recovery') ||
+              window.location.href.includes('type=recovery') ||
+              window.location.hash.includes('access_token'); // Link de recovery contém access_token no hash
 
-            if (params.get('session') === 'success') {
+            if (isRecovery) {
+              console.log("🔒 Modo de recuperação detectado. Impedindo login automático.");
+              setCurrentView('reset-password');
+            } else if (params.get('session') === 'success') {
               setCurrentView('dashboard');
               const newUrl = window.location.pathname;
               window.history.replaceState({}, document.title, newUrl);
-            } else if (isRecovery) {
-              // Se for recuperação de senha, prioriza a tela de reset
-              setCurrentView('reset-password');
             } else {
-              // Se já estiver logado (normal), cai no dash por padrão
+              // Se já estiver logado (fluxo normal), cai no dash
               setCurrentView('dashboard');
             }
           }
