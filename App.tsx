@@ -162,7 +162,12 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Erro ao deslogar:", err);
+    }
     setUser(null);
     setCurrentView('landing');
     setNextView(null);
