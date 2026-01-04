@@ -8,6 +8,7 @@ import { createDemoRequest } from '../services/supabaseClient';
 const Hero: React.FC = () => {
   const [demoProduct, setDemoProduct] = useState<Product | null>(null);
   const [demoTaxes, setDemoTaxes] = useState<TaxBreakdown | null>(null);
+  const [consultingCount, setConsultingCount] = useState(1000);
   const [isLoading, setIsLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isBtnPressed, setIsBtnPressed] = useState(false);
@@ -39,6 +40,10 @@ const Hero: React.FC = () => {
   };
 
   useEffect(() => {
+    // Definir um número randômico entre 300 e 1500
+    const randomCount = Math.floor(Math.random() * (1500 - 300 + 1)) + 300;
+    setConsultingCount(randomCount);
+
     const initialTimeout = setTimeout(() => simulateSearch(true), 1500);
     const interval = setInterval(() => {
       simulateSearch(true);
@@ -112,13 +117,16 @@ const Hero: React.FC = () => {
               </button>
             </div>
 
-            <div className="pt-6 flex items-center gap-6">
-              <div className="flex -space-x-3">
-                <img className="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://picsum.photos/seed/user1/100/100" alt="User" />
-                <img className="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://picsum.photos/seed/user2/100/100" alt="User" />
-                <img className="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://picsum.photos/seed/user3/100/100" alt="User" />
+            <div className="pt-6 flex items-center gap-3">
+              <div className="flex items-center gap-2.5 bg-white/50 backdrop-blur-sm border border-slate-100 px-4 py-2 rounded-2xl shadow-sm">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-500"></span>
+                </span>
+                <p className="text-sm text-slate-600 font-semibold tracking-tight">
+                  Mais de <span className="text-brand-600 font-black text-lg">{consultingCount.toLocaleString('pt-BR')} consultas</span> realizadas hoje.
+                </p>
               </div>
-              <p className="text-sm text-slate-500 font-semibold tracking-tight">Mais de <span className="text-brand-600 font-black">1.000 consultas</span> realizadas hoje.</p>
             </div>
           </div>
 
