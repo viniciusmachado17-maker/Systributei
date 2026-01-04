@@ -94,12 +94,15 @@ const App: React.FC = () => {
             const params = new URLSearchParams(window.location.search);
             const isRecovery = window.location.hash.includes('type=recovery') ||
               window.location.href.includes('type=recovery') ||
-              window.location.hash.includes('access_token'); // Link de recovery contém access_token no hash
+              window.location.hash.includes('access_token');
 
             if (isRecovery) {
-              console.log("🔒 Modo de recuperação detectado. Impedindo login automático.");
+              console.log("🔒 Modo de recuperação detectado. Forçando tela de reset.");
               setCurrentView('reset-password');
-            } else if (params.get('session') === 'success') {
+              return; // PARA AQUI. Não deixa ir pro Dashboard.
+            }
+
+            if (params.get('session') === 'success') {
               setCurrentView('dashboard');
               const newUrl = window.location.pathname;
               window.history.replaceState({}, document.title, newUrl);
@@ -120,6 +123,8 @@ const App: React.FC = () => {
 
     // Listener para eventos de Auth (importante para Password Recovery)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // APENAS muda para reset-password se o evento for PASSWORD_RECOVERY 
+      // E SE a aba atual for a que contém o token de recuperação (evita mudar a aba antiga por acidente)
       if (event === 'PASSWORD_RECOVERY') {
         setCurrentView('reset-password');
       }
