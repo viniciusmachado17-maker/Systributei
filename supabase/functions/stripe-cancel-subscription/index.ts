@@ -18,7 +18,7 @@ serve(async (req) => {
 
     try {
         const authHeader = req.headers.get('Authorization')
-        if (!authHeader) throw new Error('Missing Authorization header')
+        if (!authHeader) throw new Error('Cabeçalho de autorização ausente')
 
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,7 +27,7 @@ serve(async (req) => {
         )
 
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-        if (userError || !user) throw new Error('Unauthorized')
+        if (userError || !user) throw new Error('Não autorizado')
 
         const { orgId } = await req.json()
 
@@ -38,8 +38,8 @@ serve(async (req) => {
             .eq('id', orgId)
             .single()
 
-        if (orgError || !org) throw new Error('Organization not found')
-        if (!org.stripe_subscription_id) throw new Error('No active subscription found')
+        if (orgError || !org) throw new Error('Organização não encontrada')
+        if (!org.stripe_subscription_id) throw new Error('Nenhuma assinatura ativa encontrada')
 
         // Stripe Cancellation
         await stripe.subscriptions.update(org.stripe_subscription_id, {

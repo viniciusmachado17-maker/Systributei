@@ -142,7 +142,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
   const [requestObs, setRequestObs] = useState('');
   const [requestLoading, setRequestLoading] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState<'trial' | 'usage' | 'history' | 'email' | 'whatsapp' | 'payment_failed'>('usage');
+  const [upgradeReason, setUpgradeReason] = useState<'trial' | 'usage' | 'history' | 'email' | 'whatsapp' | 'payment_failed' | 'request'>('usage');
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
 
@@ -1010,6 +1010,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
     // 0. Verificar Trial
     if (isTrialExpired()) {
+      setIsRequestModalOpen(false);
       setUpgradeReason('trial');
       setIsUpgradeModalOpen(true);
       return;
@@ -1017,7 +1018,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
     // Validar limite de solicitações
     if (user.organization.request_count >= user.organization.request_limit) {
-      alert(`Você atingiu o limite de ${user.organization.request_limit} solicitações. Atualize seu plano.`);
+      setIsRequestModalOpen(false);
+      setUpgradeReason('request');
+      setIsUpgradeModalOpen(true);
       return;
     }
 
@@ -1090,7 +1093,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </button>
           <button
             onClick={handleProductRequest}
-            disabled={requestLoading || (user?.organization && user.organization.request_count >= user.organization.request_limit)}
+            disabled={requestLoading}
             className="flex-1 py-3.5 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition text-xs flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {requestLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Solicitar Cadastro'}
@@ -1937,15 +1940,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
                 <button
                   type="submit"
-                  disabled={emailLoading || (!['premium', 'enterprise'].includes(user.organization?.plan_type || '') && (user.organization?.email_count || 0) >= (user.organization?.email_limit || 0))}
+                  disabled={emailLoading}
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-slate-900/10 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {emailLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : (
                     <>
                       <i className="fa-solid fa-paper-plane"></i>
-                      {(!['premium', 'enterprise'].includes(user.organization?.plan_type || '') && (user.organization?.email_count || 0) >= (user.organization?.email_limit || 0))
-                        ? 'Limite Atingido'
-                        : 'Enviar Dúvida para Especialistas'}
+                      Enviar Dúvida para Especialistas
                     </>
                   )}
                 </button>
@@ -2365,6 +2366,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 {upgradeReason === 'email' && "Você atingiu o limite de consultoria por e-mail do seu plano."}
                 {upgradeReason === 'whatsapp' && "O Suporte VIP via WhatsApp é exclusivo para clientes do plano Premium."}
                 {upgradeReason === 'payment_failed' && "Aguardando confirmação de pagamento. Regularize sua assinatura para continuar."}
+                {upgradeReason === 'request' && "Você atingiu o limite de solicitações de cadastro de novos produtos."}
               </p>
               <p className="text-[11px] text-orange-700 mt-0.5 font-medium leading-relaxed">
                 {upgradeReason === 'payment_failed'

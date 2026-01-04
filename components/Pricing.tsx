@@ -7,16 +7,13 @@ interface PricingProps {
   user: UserProfile | null;
 }
 
-type BillingCycle = 'monthly' | 'yearly';
-
 const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('yearly');
   const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
 
   const plans = [
     {
       name: 'Grátis',
-      price: { monthly: '0,00', yearly: '0,00' },
+      price: '0,00',
       description: 'Ideal para quem está começando a entender a reforma.',
       features: [
         '10 consultas de produtos',
@@ -27,15 +24,14 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       buttonText: 'Começar Grátis',
       highlight: false,
       color: 'slate',
-      id: 'gratis'
+      id: 'gratis',
+      priceId: null
     },
     {
       name: 'Start',
-      price: { monthly: '74,90', yearly: '59,90' },
-      priceIds: {
-        monthly: 'price_1SjmM3FkPBkTRBNfqvA7GBuF',
-        yearly: 'price_1SjRiwFkPBkTRBNfsjxZBscY'
-      },
+      price: '59,90',
+      // Using the Price ID that corresponds to 59.90 (formerly yearly)
+      priceId: 'price_1SjRiwFkPBkTRBNfsjxZBscY',
       description: 'Perfeito para pequenos negócios e autônomos.',
       features: [
         '300 Consultas por mês',
@@ -51,11 +47,9 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     },
     {
       name: 'Pro',
-      price: { monthly: '99,90', yearly: '74,90' },
-      priceIds: {
-        monthly: 'price_1SjmRuFkPBkTRBNfGsl9dfau',
-        yearly: 'price_1SjmRKFkPBkTRBNflIqVvWzE'
-      },
+      price: '74,90',
+      // Using the Price ID that corresponds to 74.90 (formerly yearly)
+      priceId: 'price_1SjmRKFkPBkTRBNflIqVvWzE',
       description: 'A solução completa para empresas em crescimento.',
       features: [
         'Consultas ilimitadas',
@@ -71,11 +65,9 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     },
     {
       name: 'Premium',
-      price: { monthly: '129,90', yearly: '99,90' },
-      priceIds: {
-        monthly: 'price_1SjmSeFkPBkTRBNf0xExnXGD',
-        yearly: 'price_1SjmT9FkPBkTRBNfuN3mH65n'
-      },
+      price: '99,90',
+      // Using the Price ID that corresponds to 99.90 (formerly yearly)
+      priceId: 'price_1SjmT9FkPBkTRBNfuN3mH65n',
       description: 'Gestão fiscal de alta performance para grandes volumes.',
       features: [
         'Consultas ilimitadas',
@@ -92,15 +84,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     }
   ];
 
-  const planOrder: Record<string, number> = {
-    'gratis': 0,
-    'start': 1,
-    'pro': 2,
-    'premium': 3,
-    'enterprise': 4
-  };
-
-  const handleSubscribe = async (planId: string, priceId?: string) => {
+  const handleSubscribe = async (planId: string, priceId?: string | null) => {
     if (planId === 'gratis') {
       onNavigate('signup');
       return;
@@ -109,25 +93,6 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     if (!user) {
       onNavigate('login');
       return;
-    }
-
-    // Regra de Carência: Bloquear Downgrades (Tier ou Ciclo)
-    const currentPlan = user.organization?.plan_type || 'gratis';
-    const currentIsCommitment = user.organization?.has_commitment;
-
-    if (currentIsCommitment) {
-      const currentLevel = planOrder[currentPlan] || 0;
-      const targetLevel = planOrder[planId] || 0;
-
-      // Se tentar diminuir o nível do plano OU mudar de Anual para Mensal
-      const isTierDowngrade = targetLevel < currentLevel;
-      const isCommitmentDowngrade = billingCycle === 'monthly';
-
-      if (isTierDowngrade || isCommitmentDowngrade) {
-        alert("Para alterar para um plano inferior ou sem carência, por favor entre em contato com nossa equipe financeira/comercial pelo WhatsApp.");
-        window.open("https://wa.me/5534991564540", "_blank");
-        return;
-      }
     }
 
     if (!priceId) return;
@@ -149,6 +114,12 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       });
 
       console.log('Checkout session response:', response);
+
+      if (response?.updated) {
+        alert("Plano atualizado com sucesso!");
+        window.location.reload();
+        return;
+      }
 
       if (response?.url) {
         window.location.href = response.url;
@@ -179,20 +150,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
             Preços exclusivos de lançamento. Simplifique sua gestão tributária hoje.
           </p>
 
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-slate-900' : 'text-slate-400'}`}>
-              Mês - Sem Carência
-            </span>
-            <button
-              onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative w-12 h-6 bg-slate-200 rounded-full p-1 transition-colors hover:bg-slate-300"
-            >
-              <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 transform ${billingCycle === 'yearly' ? 'translate-x-6 bg-brand-500' : ''}`} />
-            </button>
-            <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${billingCycle === 'yearly' ? 'text-brand-600' : 'text-slate-400'}`}>
-              12 Meses - Com Carência <span className="ml-1 text-[8px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-md">Economize 20%</span>
-            </span>
-          </div>
+          {/* Toggle removed as simplified to single pricing model */}
 
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl text-[10px] font-bold shadow-sm border border-emerald-100 mb-8">
             <i className="fa-solid fa-shield-check text-emerald-500"></i>
@@ -222,7 +180,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-slate-400 text-sm font-black">R$</span>
                   <span className="text-4xl font-black text-slate-900 tracking-tighter">
-                    {billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly}
+                    {plan.price}
                   </span>
                   <span className="text-slate-400 text-[9px] font-black uppercase tracking-widest">/mês</span>
                 </div>
@@ -242,13 +200,13 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
 
               <button
                 disabled={loadingPrice !== null}
-                onClick={() => handleSubscribe(plan.id, plan.priceIds?.[billingCycle as keyof typeof plan.priceIds])}
+                onClick={() => handleSubscribe(plan.id, plan.priceId)}
                 className={`w-full py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all transform active:scale-95 disabled:opacity-50 ${plan.highlight
                   ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-700'
                   : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                   }`}
               >
-                {loadingPrice === plan.priceIds?.[billingCycle as keyof typeof plan.priceIds] ? (
+                {loadingPrice === plan.priceId && plan.priceId ? (
                   <i className="fa-solid fa-circle-notch animate-spin mr-2"></i>
                 ) : null}
                 {plan.buttonText}

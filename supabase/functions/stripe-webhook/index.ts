@@ -103,19 +103,32 @@ serve(async (req) => {
                 const invoice = event.data.object
                 if (invoice.subscription) {
                     const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
-                    const { orgId } = subscription.metadata
-                    const { limits } = mapPriceToPlan(subscription.items.data[0].price.id)
+                    let orgId = subscription.metadata?.orgId
 
-                    await supabaseAdmin
-                        .from('organizations')
-                        .update({
-                            subscription_status: 'active',
-                            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                            usage_limit: limits.usage,
-                            email_limit: limits.email,
-                            request_limit: limits.requests
-                        })
-                        .eq('id', orgId)
+                    if (!orgId) {
+                        const { data: org } = await supabaseAdmin
+                            .from('organizations')
+                            .select('id')
+                            .eq('stripe_customer_id', subscription.customer)
+                            .single();
+                        if (org) orgId = org.id;
+                    }
+
+                    if (orgId) {
+                        const { planType, limits } = mapPriceToPlan(subscription.items.data[0].price.id)
+                        await supabaseAdmin
+                            .from('organizations')
+                            .update({
+                                subscription_status: 'active',
+                                plan_type: planType,
+                                price_id: subscription.items.data[0].price.id,
+                                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                                usage_limit: limits.usage,
+                                email_limit: limits.email,
+                                request_limit: limits.requests
+                            })
+                            .eq('id', orgId)
+                    }
                 }
                 break
             }
@@ -124,21 +137,51 @@ serve(async (req) => {
                 const invoice = event.data.object
                 if (invoice.subscription) {
                     const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
-                    const { orgId } = subscription.metadata
-                    await supabaseAdmin
-                        .from('organizations')
-                        .update({ subscription_status: 'past_due' })
-                        .eq('id', orgId)
+                    let orgId = subscription.metadata?.orgId
+
+                    if (!orgId) {
+                        const { data: org } = await supabaseAdmin
+                            .from('organizations')
+                            .select('id')
+                            .eq('stripe_customer_id', subscription.customer)
+                            .single();
+                        if (org) orgId = org.id;
+                    }
+
+                    if (orgId) {
+                        await supabaseAdmin
+                            .from('organizations')
+                            .update({ subscription_status: 'past_due' })
+                            .eq('id', orgId)
+                    }
                 }
                 break
             }
 
             case 'customer.subscription.updated': {
                 const subscription = event.data.object
-                const { orgId } = subscription.metadata
-                console.log(`Processing subscription updated for org: ${orgId}`, { cancel: subscription.cancel_at_period_end });
+                let orgId = subscription.metadata?.orgId
+                console.log(`Processing subscription updated. Metadata OrgId: ${orgId}, Price: ${subscription.items.data[0].price.id}`);
+
+                if (!orgId) {
+                    console.log("OrgId missing in metadata. Attempting lookup by customer ID:", subscription.customer);
+                    const { data: org, error: findError } = await supabaseAdmin
+                        .from('organizations')
+                        .select('id')
+                        .eq('stripe_customer_id', subscription.customer)
+                        .single();
+
+                    if (org) {
+                        orgId = org.id;
+                        console.log("Found orgId via customer lookup:", orgId);
+                    } else {
+                        console.error("Could not find organization for customer:", subscription.customer, findError);
+                        return new Response(JSON.stringify({ error: 'Organization not found' }), { status: 400 });
+                    }
+                }
 
                 const { planType, limits } = mapPriceToPlan(subscription.items.data[0].price.id)
+                console.log(`Mapped Price ${subscription.items.data[0].price.id} to Plan ${planType}`);
 
                 const { error: updateError } = await supabaseAdmin
                     .from('organizations')
@@ -166,16 +209,33 @@ serve(async (req) => {
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object
                 const { orgId } = subscription.metadata
-                await supabaseAdmin
+
+                const { data: org, error: fetchError } = await supabaseAdmin
                     .from('organizations')
-                    .update({
-                        subscription_status: 'canceled',
-                        plan_type: 'gratis',
-                        usage_limit: 10,
-                        request_limit: 1,
-                        email_limit: 1
-                    })
+                    .select('stripe_subscription_id')
                     .eq('id', orgId)
+                    .single()
+
+                if (fetchError || !org) {
+                    console.error('Error fetching org for delete event:', fetchError)
+                    break
+                }
+
+                if (org.stripe_subscription_id === subscription.id) {
+                    console.log(`Canceling active subscription ${subscription.id} for org ${orgId}`);
+                    await supabaseAdmin
+                        .from('organizations')
+                        .update({
+                            subscription_status: 'canceled',
+                            plan_type: 'gratis',
+                            usage_limit: 10,
+                            request_limit: 1,
+                            email_limit: 1
+                        })
+                        .eq('id', orgId)
+                } else {
+                    console.log(`Ignoring deletion of old/mismatched subscription ${subscription.id} for org ${orgId}. Current active: ${org.stripe_subscription_id}`);
+                }
                 break
             }
         }
