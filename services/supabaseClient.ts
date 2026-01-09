@@ -591,15 +591,23 @@ export const createCheckoutSession = async (params: {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
-    const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-      body: params,
+    // Usando fetch nativo para garantir que os headers não sejam ignorados
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-checkout`, {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`
-      }
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(params)
     });
-    if (error) throw error;
-    return data;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Erro na Edge Function: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (err) {
     console.error('Erro ao criar sessão de checkout:', err);
     throw err;
