@@ -589,16 +589,18 @@ export const createCheckoutSession = async (params: {
   if (!isSupabaseConfigured) return { url: '#' };
   try {
     const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
 
-    const { priceId, orgId, userId, successUrl, cancelUrl } = params;
+    // @ts-ignore - Acessando a chave anon interna do cliente para garantir o envio
+    const anonKey = supabase.supabaseKey;
+
     const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-      body: { priceId, orgId, userId, successUrl, cancelUrl },
+      body: params,
       headers: {
-        Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        'x-client-info': 'supabase-js-web',
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+        Authorization: `Bearer ${token}`,
+        'apikey': anonKey
       }
-    })
+    });
     if (error) throw error;
     return data;
   } catch (err) {
