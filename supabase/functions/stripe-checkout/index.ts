@@ -1,13 +1,12 @@
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
-import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
+import Stripe from 'npm:stripe@^14'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -32,7 +31,7 @@ serve(async (req) => {
         }
 
         const stripe = new Stripe(stripeKey, {
-            httpClient: Stripe.createFetchHttpClient(),
+            apiVersion: '2023-10-16', // Versão estável
         })
 
         const body = await req.json()
@@ -43,7 +42,6 @@ serve(async (req) => {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
             console.error("Missing Authorization header");
-            // but if it is disabled or bypassed, this check is good.
             throw new Error('Cabeçalho de autorização ausente');
         }
 
@@ -80,7 +78,7 @@ serve(async (req) => {
         let customerId = org?.stripe_customer_id
         console.log(`Initial customerId for org ${orgId}: ${customerId}`);
 
-        // --- UPGRADE/DOWNGRADE LOGIC (Option A) ---
+        // --- UPGRADE/DOWNGRADE LOGIC ---
         if (org?.stripe_subscription_id && (org.subscription_status === 'active' || org.subscription_status === 'trialing')) {
             try {
                 console.log(`Checking existing subscription: ${org.stripe_subscription_id}`);
@@ -130,7 +128,7 @@ serve(async (req) => {
                             status: 200
                         });
                     } else {
-                        // --- DOWNGRADE (Option A): Change at end of period, no immediate DB update ---
+                        // --- DOWNGRADE: Change at end of period ---
                         console.log(`DOWNGRADE: ${currentPriceId} -> ${priceId}. Scheduling for next cycle.`);
 
                         await stripe.subscriptions.update(existingSub.id, {
@@ -138,11 +136,10 @@ serve(async (req) => {
                                 id: existingSub.items.data[0].id,
                                 price: priceId,
                             }],
-                            proration_behavior: 'none', // No refund, no immediate charge
+                            proration_behavior: 'none',
                             metadata: { orgId, userId }
                         });
 
-                        // We DON'T update the DB here. User keeps current benefits until next invoice.
                         return new Response(JSON.stringify({
                             updated: true,
                             message: 'Plano alterado! Você manterá seus benefícios atuais até o fim do período já pago.'
@@ -151,53 +148,37 @@ serve(async (req) => {
                             status: 200
                         });
                     }
-                } else {
-                    console.log("Existing subscription found but not active (status: " + existingSub?.status + "). Creating new session.");
                 }
             } catch (err) {
                 console.error("Error updating existing subscription (fallback to new session):", err);
                 customerId = org.stripe_customer_id;
             }
         }
-        // ----------------------------------------------------
 
         if (customerId) {
             try {
-                // Verify if customer exists in Stripe
                 const customer = await stripe.customers.retrieve(customerId);
                 if (customer.deleted) {
-                    console.log("Customer was deleted in Stripe, creating new one.");
                     customerId = null;
                 }
             } catch (e) {
-                console.log("Error retrieving customer (likely missing), creating new one:", e.message);
                 customerId = null;
             }
         }
 
         if (!customerId) {
-            console.log("Creating new Stripe customer...");
             const customer = await stripe.customers.create({
                 email: user.email,
                 metadata: { orgId, userId }
             })
             customerId = customer.id
-            console.log(`New customer created: ${customerId}`);
-
-            const { error: updateError } = await supabaseAdmin
+            await supabaseAdmin
                 .from('organizations')
                 .update({ stripe_customer_id: customerId })
                 .eq('id', orgId);
-
-            if (updateError) {
-                console.error("Error saving stripe_customer_id:", updateError);
-                // Continue anyway
-            }
         }
 
-        console.log(`Creating session for user ${userId} and price ${priceId}`);
-
-        const sessionConfig: any = {
+        const session = await stripe.checkout.sessions.create({
             customer: customerId,
             line_items: [{ price: priceId, quantity: 1 }],
             mode: 'subscription',
@@ -208,10 +189,7 @@ serve(async (req) => {
                 metadata: { orgId, userId }
             },
             locale: 'pt-BR'
-        }
-
-        const session = await stripe.checkout.sessions.create(sessionConfig)
-        console.log("Session created successfully:", session.url);
+        })
 
         return new Response(JSON.stringify({ url: session.url }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -256,9 +234,9 @@ function getPlanDetails(priceId: string): {
 
 function isCommitmentPrice(priceId: string): boolean {
     const commitments = [
-        'price_1SnTgNFkPBkTRBNfbrMpB1Qr', // Start
-        'price_1SnTjVFkPBkTRBNfm1ZxQfdn', // Pro
-        'price_1SnTmZFkPBkTRBNfAzqkRru9'  // Premium
+        'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
+        'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
+        'price_1SnTmZFkPBkTRBNfAzqkRru9'
     ]
     return commitments.includes(priceId)
 }

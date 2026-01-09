@@ -1,14 +1,11 @@
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
-import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno'
+import Stripe from 'npm:stripe@^14'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-    httpClient: Stripe.createFetchHttpClient(),
+    apiVersion: '2023-10-16',
 })
 
-const cryptoProvider = Stripe.createSubtleCryptoProvider()
-
-serve(async (req) => {
+Deno.serve(async (req) => {
     const signature = req.headers.get('stripe-signature')
 
     try {
@@ -16,9 +13,7 @@ serve(async (req) => {
         const event = await stripe.webhooks.constructEventAsync(
             body,
             signature!,
-            Deno.env.get('STRIPE_WEBHOOK_SECRET')!,
-            undefined,
-            cryptoProvider
+            Deno.env.get('STRIPE_WEBHOOK_SECRET')!
         )
 
         const supabaseAdmin = createClient(
@@ -39,7 +34,6 @@ serve(async (req) => {
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
                 if (!orgId) {
-                    console.log(`OrgId not found in session metadata, checking subscription metadata...`);
                     orgId = subscription.metadata?.orgId
                     userId = subscription.metadata?.userId
                 }
@@ -50,8 +44,6 @@ serve(async (req) => {
                 }
 
                 const { planType, limits } = getPlanDetails(subscription.items.data[0].price.id)
-
-                console.log(`Updating org ${orgId} to plan ${planType}`);
 
                 const { error: updateError } = await supabaseAdmin
                     .from('organizations')
@@ -70,14 +62,9 @@ serve(async (req) => {
                     .eq('id', orgId)
 
                 if (updateError) {
-                    console.error(`Error updating org ${orgId} after checkout:`, updateError);
-                } else {
-                    console.log(`Org ${orgId} updated successfully after checkout.`);
+                    console.error(`Error updating org ${orgId}:`, updateError);
                 }
 
-                // --- AUTO-CANCELAMENTO DE DUPLICIDADES ---
-                // Verifica se o cliente possui outras assinaturas ativas e as cancela/remove
-                // para garantir que ele fique apenas com a nova (upgrade/downgrade via checkout).
                 if (customerId) {
                     try {
                         const activeSubs = await stripe.subscriptions.list({
@@ -88,7 +75,6 @@ serve(async (req) => {
 
                         for (const sub of activeSubs.data) {
                             if (sub.id !== subscriptionId) {
-                                console.log(`Auto-canceling duplicate subscription: ${sub.id}`);
                                 await stripe.subscriptions.cancel(sub.id);
                             }
                         }
@@ -161,97 +147,74 @@ serve(async (req) => {
             case 'customer.subscription.updated': {
                 const subscription = event.data.object
                 let orgId = subscription.metadata?.orgId
-                console.log(`Processing subscription updated. Metadata OrgId: ${orgId}, Price: ${subscription.items.data[0].price.id}`);
 
                 if (!orgId) {
-                    console.log("OrgId missing in metadata. Attempting lookup by customer ID:", subscription.customer);
                     const { data: org } = await supabaseAdmin
                         .from('organizations')
                         .select('id, plan_type, price_id')
                         .eq('stripe_customer_id', subscription.customer)
                         .single();
 
-                    if (org) {
-                        orgId = org.id;
-                    } else {
-                        console.error("Could not find organization for customer:", subscription.customer);
-                        return new Response(JSON.stringify({ error: 'Organization not found' }), { status: 400 });
+                    if (org) orgId = org.id;
+                }
+
+                if (orgId) {
+                    const { data: currentOrg } = await supabaseAdmin
+                        .from('organizations')
+                        .select('price_id')
+                        .eq('id', orgId)
+                        .single();
+
+                    const newPriceId = subscription.items.data[0].price.id;
+                    const { planType: newPlanType, rank: newRank, limits: newLimits } = getPlanDetails(newPriceId);
+                    const { rank: currentRank } = getPlanDetails(currentOrg?.price_id || '');
+
+                    const updateData: any = {
+                        subscription_status: subscription.status,
+                        cancel_at_period_end: subscription.cancel_at_period_end,
+                        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                    };
+
+                    if (newRank >= currentRank) {
+                        updateData.plan_type = newPlanType;
+                        updateData.price_id = newPriceId;
+                        updateData.usage_limit = newLimits.usage;
+                        updateData.email_limit = newLimits.email;
+                        updateData.request_limit = newLimits.requests;
+                        updateData.has_commitment = isCommitmentPrice(newPriceId);
                     }
-                }
 
-                // Get current state from DB to check if it's a downgrade
-                const { data: currentOrg } = await supabaseAdmin
-                    .from('organizations')
-                    .select('price_id')
-                    .eq('id', orgId)
-                    .single();
-
-                const newPriceId = subscription.items.data[0].price.id;
-                const { planType: newPlanType, rank: newRank, limits: newLimits } = getPlanDetails(newPriceId);
-                const { rank: currentRank } = getPlanDetails(currentOrg?.price_id || '');
-
-                const updateData: any = {
-                    subscription_status: subscription.status,
-                    cancel_at_period_end: subscription.cancel_at_period_end,
-                    current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                };
-
-                // OPTION A: Only update benefits immediately IF it is an UPGRADE
-                // Downgrades are ignored here and handled only on the next 'invoice.paid'
-                if (newRank >= currentRank) {
-                    console.log(`UPGRADE or equality detected. Updating benefits now. (${currentRank} -> ${newRank})`);
-                    updateData.plan_type = newPlanType;
-                    updateData.price_id = newPriceId;
-                    updateData.usage_limit = newLimits.usage;
-                    updateData.email_limit = newLimits.email;
-                    updateData.request_limit = newLimits.requests;
-                    updateData.has_commitment = isCommitmentPrice(newPriceId);
-                } else {
-                    console.log(`DOWNGRADE detected (${currentRank} -> ${newRank}). Keeping current benefits until next invoice.`);
-                }
-
-                const { error: updateError } = await supabaseAdmin
-                    .from('organizations')
-                    .update(updateData)
-                    .eq('id', orgId)
-
-                if (updateError) {
-                    console.error(`Error updating organization ${orgId}:`, updateError);
-                } else {
-                    console.log(`Organization ${orgId} processed successfully via webhook.`);
+                    await supabaseAdmin
+                        .from('organizations')
+                        .update(updateData)
+                        .eq('id', orgId)
                 }
                 break
             }
 
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object
-                const { orgId } = subscription.metadata
+                const orgId = subscription.metadata?.orgId
 
-                const { data: org, error: fetchError } = await supabaseAdmin
-                    .from('organizations')
-                    .select('stripe_subscription_id')
-                    .eq('id', orgId)
-                    .single()
-
-                if (fetchError || !org) {
-                    console.error('Error fetching org for delete event:', fetchError)
-                    break
-                }
-
-                if (org.stripe_subscription_id === subscription.id) {
-                    console.log(`Canceling active subscription ${subscription.id} for org ${orgId}`);
-                    await supabaseAdmin
+                if (orgId) {
+                    const { data: org } = await supabaseAdmin
                         .from('organizations')
-                        .update({
-                            subscription_status: 'canceled',
-                            plan_type: 'gratis',
-                            usage_limit: 10,
-                            request_limit: 1,
-                            email_limit: 1
-                        })
+                        .select('stripe_subscription_id')
                         .eq('id', orgId)
-                } else {
-                    console.log(`Ignoring deletion of old/mismatched subscription ${subscription.id} for org ${orgId}. Current active: ${org.stripe_subscription_id}`);
+                        .single()
+
+                    if (org && org.stripe_subscription_id === subscription.id) {
+                        await supabaseAdmin
+                            .from('organizations')
+                            .update({
+                                subscription_status: 'canceled',
+                                plan_type: 'gratis',
+                                usage_limit: 10,
+                                request_limit: 1,
+                                email_limit: 1
+                            })
+                            .eq('id', orgId)
+                    }
                 }
                 break
             }
@@ -293,10 +256,9 @@ function getPlanDetails(priceId: string): {
 
 function isCommitmentPrice(priceId: string): boolean {
     const commitments = [
-        'price_1SnTgNFkPBkTRBNfbrMpB1Qr', // Start
-        'price_1SnTjVFkPBkTRBNfm1ZxQfdn', // Pro
-        'price_1SnTmZFkPBkTRBNfAzqkRru9'  // Premium
+        'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
+        'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
+        'price_1SnTmZFkPBkTRBNfAzqkRru9'
     ]
     return commitments.includes(priceId)
 }
-
