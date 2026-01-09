@@ -590,10 +590,15 @@ export const createCheckoutSession = async (params: {
   try {
     const { data: { session } } = await supabase.auth.getSession();
 
+    const { priceId, orgId, userId, successUrl, cancelUrl } = params;
     const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-      body: params
-    });
-
+      body: { priceId, orgId, userId, successUrl, cancelUrl },
+      headers: {
+        Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        'x-client-info': 'supabase-js-web',
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+      }
+    })
     if (error) throw error;
     return data;
   } catch (err) {
