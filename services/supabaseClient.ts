@@ -591,10 +591,7 @@ export const createCheckoutSession = async (params: {
     const { data: { session } } = await supabase.auth.getSession();
 
     const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-      body: params,
-      headers: {
-        Authorization: `Bearer ${session?.access_token || ''}`
-      }
+      body: params
     });
 
     if (error) throw error;
