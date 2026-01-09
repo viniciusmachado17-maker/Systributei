@@ -1,8 +1,11 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
-import Stripe from 'https://esm.sh/stripe@14.23.0?target=deno'
+import { createClient } from 'npm:@supabase/supabase-js@2.39.8'
+import Stripe from 'npm:stripe@16.12.0'
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY') || ''
+const stripe = new Stripe(stripeSecret, {
+    apiVersion: '2024-06-20',
     httpClient: Stripe.createFetchHttpClient(),
+    telemetry: false,
 })
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider()
