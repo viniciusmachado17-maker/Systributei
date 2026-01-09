@@ -18,7 +18,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       features: [
         '10 consultas de produtos',
         'Acesso por 7 dias',
-        '1 Consulta via e-mail',
+        '1 Consulta via plataforma',
         '1 Solicitação de Cadastro/atualização'
       ],
       buttonText: 'Começar Grátis',
@@ -30,14 +30,14 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     {
       name: 'Start',
       price: '59,90',
-      // Using the Price ID that corresponds to 59.90 (formerly yearly)
-      priceId: 'price_1SjRiwFkPBkTRBNfsjxZBscY',
+      // Using the Real Price ID
+      priceId: 'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
       description: 'Perfeito para pequenos negócios e autônomos.',
       features: [
         '300 Consultas por mês',
         '1 Usuário logado',
         'Histórico de buscas',
-        '5 Consultas via e-mail',
+        '5 Consultas via plataforma',
         '30 Solicitações de Cadastro'
       ],
       buttonText: 'Assinar Start',
@@ -48,14 +48,14 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     {
       name: 'Pro',
       price: '74,90',
-      // Using the Price ID that corresponds to 74.90 (formerly yearly)
-      priceId: 'price_1SjmRKFkPBkTRBNflIqVvWzE',
+      // Using the Real Price ID
+      priceId: 'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
       description: 'A solução completa para empresas em crescimento.',
       features: [
         'Consultas ilimitadas',
         '1 Usuário logado',
         'Histórico de buscas',
-        '15 Consultas via e-mail',
+        '15 Consultas via plataforma',
         '50 Solicitações de Cadastro'
       ],
       buttonText: 'Assinar Pro',
@@ -66,8 +66,8 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
     {
       name: 'Premium',
       price: '99,90',
-      // Using the Price ID that corresponds to 99.90 (formerly yearly)
-      priceId: 'price_1SjmT9FkPBkTRBNfuN3mH65n',
+      // Using the Real Price ID
+      priceId: 'price_1SnTmZFkPBkTRBNfAzqkRru9',
       description: 'Gestão fiscal de alta performance para grandes volumes.',
       features: [
         'Consultas ilimitadas',

@@ -233,12 +233,9 @@ function getPlanDetails(priceId: string): {
     limits: { usage: number, email: number, requests: number }
 } {
     const mapping: Record<string, { type: string, rank: number }> = {
-        'price_1SjRiwFkPBkTRBNfsjxZBscY': { type: 'start', rank: 1 },
-        'price_1SjmM3FkPBkTRBNfqvA7GBuF': { type: 'start', rank: 1 },
-        'price_1SjmRKFkPBkTRBNflIqVvWzE': { type: 'pro', rank: 2 },
-        'price_1SjmRuFkPBkTRBNfGsl9dfau': { type: 'pro', rank: 2 },
-        'price_1SjmT9FkPBkTRBNfuN3mH65n': { type: 'premium', rank: 3 },
-        'price_1SjmSeFkPBkTRBNf0xExnXGD': { type: 'premium', rank: 3 }
+        'price_1SnTgNFkPBkTRBNfbrMpB1Qr': { type: 'start', rank: 1 },
+        'price_1SnTjVFkPBkTRBNfm1ZxQfdn': { type: 'pro', rank: 2 },
+        'price_1SnTmZFkPBkTRBNfAzqkRru9': { type: 'premium', rank: 3 }
     }
 
     const details = mapping[priceId] || { type: 'gratis', rank: 0 }
@@ -259,9 +256,9 @@ function getPlanDetails(priceId: string): {
 
 function isCommitmentPrice(priceId: string): boolean {
     const commitments = [
-        'price_1SjRiwFkPBkTRBNfsjxZBscY', // Start 12m
-        'price_1SjmRKFkPBkTRBNflIqVvWzE', // Pro 12m
-        'price_1SjmT9FkPBkTRBNfuN3mH65n'  // Premium 12m
+        'price_1SnTgNFkPBkTRBNfbrMpB1Qr', // Start
+        'price_1SnTjVFkPBkTRBNfm1ZxQfdn', // Pro
+        'price_1SnTmZFkPBkTRBNfAzqkRru9'  // Premium
     ]
     return commitments.includes(priceId)
 }
