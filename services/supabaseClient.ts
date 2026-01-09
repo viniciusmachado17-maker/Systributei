@@ -591,14 +591,11 @@ export const createCheckoutSession = async (params: {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
-    // @ts-ignore - Acessando a chave anon interna do cliente para garantir o envio
-    const anonKey = supabase.supabaseKey;
-
     const { data, error } = await supabase.functions.invoke('stripe-checkout', {
       body: params,
       headers: {
-        Authorization: `Bearer ${token}`,
-        'apikey': anonKey
+        'apikey': SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token}`
       }
     });
     if (error) throw error;
