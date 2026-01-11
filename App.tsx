@@ -57,7 +57,6 @@ const App: React.FC = () => {
   // Captura imediata se é um link de recuperação ANTES do Supabase limpar o hash
   const isRecoveryLink = useMemo(() => {
     return window.location.hash.includes('type=recovery') ||
-      window.location.hash.includes('access_token=') ||
       window.location.href.includes('type=recovery');
   }, []);
 
