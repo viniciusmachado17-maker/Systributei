@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
                 await supabaseAdmin.from('organizations').update({
                     stripe_customer_id: customerId,
                     stripe_subscription_id: subscriptionId,
-                    subscription_status: 'active',
+                    subscription_status: subscription.status, // Pega o status real (ex: 'incomplete' para boleto pendente)
                     plan_type: planType,
                     price_id: subscription.items.data[0].price.id,
                     current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -60,6 +60,19 @@ Deno.serve(async (req) => {
                     for (const sub of activeSubs.data) {
                         if (sub.id !== subscriptionId) await stripe.subscriptions.cancel(sub.id);
                     }
+                }
+                break
+            }
+
+            case 'checkout.session.async_payment_succeeded': {
+                const session = event.data.object
+                const subscriptionId = session.subscription as string
+                const { data: org } = await supabaseAdmin.from('organizations').select('id').eq('stripe_subscription_id', subscriptionId).single();
+
+                if (org) {
+                    await supabaseAdmin.from('organizations').update({
+                        subscription_status: 'active'
+                    }).eq('id', org.id)
                 }
                 break
             }

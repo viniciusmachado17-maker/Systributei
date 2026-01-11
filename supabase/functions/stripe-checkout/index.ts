@@ -123,7 +123,12 @@ Deno.serve(async (req) => {
             mode: 'subscription',
             success_url: successUrl,
             cancel_url: cancelUrl,
-            payment_method_types: ['card'],
+            payment_method_types: ['card', 'boleto'],
+            payment_method_options: {
+                boleto: {
+                    expires_after_days: 3,
+                },
+            },
             metadata: { orgId, userId },
             subscription_data: { metadata: { orgId, userId } },
             locale: 'pt-BR'
