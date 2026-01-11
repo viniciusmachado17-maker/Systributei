@@ -11,13 +11,49 @@ const ProductManager: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [formTab, setFormTab] = useState<'info' | 'cbs' | 'ibs'>('info');
 
     // Form states
     const [formData, setFormData] = useState({
+        // Info base
         produto: '',
         ean: '',
         ncm: '',
-        cest: ''
+        cest: '',
+
+        // CBS fields
+        cbs: {
+            cst_entrada: '01',
+            cst_saida: '01',
+            cclass_entrada: '01',
+            cclass_saida: '01',
+            alq_ent: '0',
+            alq_sai: '0',
+            red_alq_ent: '0',
+            red_alq_sai: '0',
+            alqf_ent: '0',
+            alqf_sai: '0'
+        },
+
+        // IBS fields
+        ibs: {
+            cst_entrada: '01',
+            cst_saida: '01',
+            cclass_entrada: '01',
+            cclass_saida: '01',
+            alqe_ent: '0',
+            alqe_sai: '0',
+            red_alqe_ent: '0',
+            red_alqe_sai: '0',
+            alqfe_ent: '0',
+            alqfe_sai: '0',
+            alqm_ent: '0',
+            alqm_sai: '0',
+            red_alqm_ent: '0',
+            red_alqm_sai: '0',
+            alqfm_ent: '0',
+            alqfm_sai: '0'
+        }
     });
 
     useEffect(() => {
@@ -48,7 +84,7 @@ const ProductManager: React.FC = () => {
         setError(null);
 
         try {
-            // Validation
+            // 1. Validations
             if (formData.ean) {
                 const { data: existingEan } = await supabase
                     .from('products')
@@ -56,9 +92,7 @@ const ProductManager: React.FC = () => {
                     .eq('ean', formData.ean)
                     .maybeSingle();
 
-                if (existingEan) {
-                    throw new Error("Já existe um produto com este EAN.");
-                }
+                if (existingEan) throw new Error("Já existe um produto com este EAN.");
             } else {
                 const { data: existingName } = await supabase
                     .from('products')
@@ -66,12 +100,10 @@ const ProductManager: React.FC = () => {
                     .ilike('produto', formData.produto)
                     .maybeSingle();
 
-                if (existingName) {
-                    throw new Error("Já existe um produto com este nome.");
-                }
+                if (existingName) throw new Error("Já existe um produto com este nome.");
             }
 
-            // Insert product
+            // 2. Insert Product Base
             const { data: newProduct, error: insertError } = await supabase
                 .from('products')
                 .insert([{
@@ -86,9 +118,36 @@ const ProductManager: React.FC = () => {
 
             if (insertError) throw insertError;
 
-            alert("Produto cadastrado com sucesso!");
-            setFormData({ produto: '', ean: '', ncm: '', cest: '' });
+            // 3. Insert CBS Data
+            const { error: cbsError } = await supabase
+                .from('cbs')
+                .insert([{
+                    product_id: newProduct.id,
+                    ...formData.cbs
+                }]);
+
+            if (cbsError) throw cbsError;
+
+            // 4. Insert IBS Data
+            const { error: ibsError } = await supabase
+                .from('ibs')
+                .insert([{
+                    product_id: newProduct.id,
+                    ...formData.ibs
+                }]);
+
+            if (ibsError) throw ibsError;
+
+            alert("Produto e dados tributários cadastrados com sucesso!");
+
+            // Reset form
+            setFormData({
+                produto: '', ean: '', ncm: '', cest: '',
+                cbs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alq_ent: '0', alq_sai: '0', red_alq_ent: '0', red_alq_sai: '0', alqf_ent: '0', alqf_sai: '0' },
+                ibs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alqe_ent: '0', alqe_sai: '0', red_alqe_ent: '0', red_alqe_sai: '0', alqfe_ent: '0', alqfe_sai: '0', alqm_ent: '0', alqm_sai: '0', red_alqm_ent: '0', red_alqm_sai: '0', alqfm_ent: '0', alqfm_sai: '0' }
+            });
             setShowForm(false);
+            setFormTab('info');
             fetchRecentProducts();
         } catch (err: any) {
             setError(err.message);
@@ -130,7 +189,7 @@ const ProductManager: React.FC = () => {
                                     <th className="px-6 py-4">Produto</th>
                                     <th className="px-6 py-4">EAN</th>
                                     <th className="px-6 py-4">NCM</th>
-                                    <th className="px-6 py-4">CEST</th>
+                                    <th className="px-6 py-4">Status</th>
                                     <th className="px-6 py-4">Data</th>
                                 </tr>
                             </thead>
@@ -140,7 +199,9 @@ const ProductManager: React.FC = () => {
                                         <td className="px-6 py-4 font-bold text-slate-800">{p.produto}</td>
                                         <td className="px-6 py-4 font-mono text-xs">{p.ean || '---'}</td>
                                         <td className="px-6 py-4 font-mono text-xs">{p.ncm}</td>
-                                        <td className="px-6 py-4 font-mono text-xs text-slate-400">{p.cest || '---'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded">Ativo</span>
+                                        </td>
                                         <td className="px-6 py-4 text-xs font-medium text-slate-400 whitespace-nowrap">
                                             {new Date(p.created_at || p.updated_at).toLocaleDateString('pt-BR')}
                                         </td>
@@ -152,100 +213,274 @@ const ProductManager: React.FC = () => {
                 </div>
             )}
 
-            {/* MODAL CADASTRO PRODUTO */}
+            {/* MODAL CADASTRO PRODUTO COMPLETO */}
             {showForm && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in p-4">
-                    <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg relative animate-slide-up">
-                        <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition p-2">
-                            <i className="fa-solid fa-xmark text-xl"></i>
-                        </button>
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col relative animate-slide-up overflow-hidden">
 
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
-                                <i className="fa-solid fa-box-open"></i>
+                        {/* Header Modal */}
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center text-lg shadow-lg shadow-brand-500/20">
+                                    <i className="fa-solid fa-box-open"></i>
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 tracking-tight">Cadastro de Produto e Tributação</h3>
                             </div>
-                            <div>
-                                <h3 className="text-xl font-black text-slate-800">Novo Produto</h3>
-                                <p className="text-xs text-slate-400 font-medium">Preencha os dados tributários base</p>
-                            </div>
+                            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 transition p-2">
+                                <i className="fa-solid fa-xmark text-xl"></i>
+                            </button>
                         </div>
 
-                        {error && (
-                            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-shake">
-                                <i className="fa-solid fa-triangle-exclamation"></i>
-                                <p className="text-[10px] font-bold uppercase tracking-tight">{error}</p>
-                            </div>
-                        )}
+                        {/* Tabs Internas do Form */}
+                        <div className="flex border-b border-slate-100 px-6 bg-white shrink-0">
+                            <button
+                                onClick={() => setFormTab('info')}
+                                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition ${formTab === 'info' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                            >
+                                01. Informações Base
+                            </button>
+                            <button
+                                onClick={() => setFormTab('cbs')}
+                                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition ${formTab === 'cbs' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                            >
+                                02. Tributação CBS (Federal)
+                            </button>
+                            <button
+                                onClick={() => setFormTab('ibs')}
+                                className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition ${formTab === 'ibs' ? 'border-brand-600 text-brand-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                            >
+                                03. Tributação IBS (Est./Mun.)
+                            </button>
+                        </div>
 
-                        <form onSubmit={handleSaveProduct} className="space-y-5">
-                            <div className="space-y-1.5">
-                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Descrição do Produto*</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="Ex: ARROZ INTEGRAL TIO JOÃO 1KG"
-                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all"
-                                    value={formData.produto}
-                                    onChange={(e) => setFormData({ ...formData, produto: e.target.value.toUpperCase() })}
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Código de Barras (EAN)</label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="789..."
-                                        className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all"
-                                        value={formData.ean}
-                                        onChange={(e) => setFormData({ ...formData, ean: e.target.value })}
-                                    />
-                                    <i className="fa-solid fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                        {/* Conteúdo Form */}
+                        <form onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto p-8">
+                            {error && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-shake">
+                                    <i className="fa-solid fa-triangle-exclamation"></i>
+                                    <p className="text-[10px] font-bold uppercase tracking-tight">{error}</p>
                                 </div>
-                                <p className="text-[9px] text-slate-400 font-medium ml-1">Se vazio, o sistema validará o Nome do Produto.</p>
-                            </div>
+                            )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">NCM*</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="0000.00.00"
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all text-center"
-                                        value={formData.ncm}
-                                        onChange={(e) => setFormData({ ...formData, ncm: e.target.value })}
-                                    />
+                            {/* TAB 01: INFO BASE */}
+                            {formTab === 'info' && (
+                                <div className="animate-fade-in space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="md:col-span-2 space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Descrição Comercial*</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="Ex: ARROZ INTEGRAL TIO JOÃO 1KG"
+                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm"
+                                                value={formData.produto}
+                                                onChange={(e) => setFormData({ ...formData, produto: e.target.value.toUpperCase() })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Cód. Barras (EAN13)</label>
+                                            <input
+                                                type="text"
+                                                placeholder="789..."
+                                                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm"
+                                                value={formData.ean}
+                                                onChange={(e) => setFormData({ ...formData, ean: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">NCM*</label>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    placeholder="0000.00.00"
+                                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm text-center"
+                                                    value={formData.ncm}
+                                                    onChange={(e) => setFormData({ ...formData, ncm: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CEST</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="00.000.00"
+                                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm text-center"
+                                                    value={formData.cest}
+                                                    onChange={(e) => setFormData({ ...formData, cest: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-brand-50/50 p-4 rounded-xl border border-brand-100/50 flex items-start gap-3">
+                                        <i className="fa-solid fa-circle-info text-brand-600 mt-1"></i>
+                                        <p className="text-[10px] text-brand-700 font-medium leading-relaxed">
+                                            O NCM é obrigatório para todas as buscas. Se não houver EAN, o sistema utilizará a Descrição Comercial para validação de duplicidade.
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CEST (Opcional)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="00.000.00"
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all text-center"
-                                        value={formData.cest}
-                                        onChange={(e) => setFormData({ ...formData, cest: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                            )}
 
-                            <div className="flex gap-3 mt-8">
+                            {/* TAB 02: CBS */}
+                            {formTab === 'cbs' && (
+                                <div className="animate-fade-in space-y-8">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="space-y-1.5 col-span-1">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Entrada</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.cbs.cst_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_entrada: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5 col-span-1">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Saída</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.cbs.cst_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_saida: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5 col-span-1">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Ent.</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.cbs.cclass_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_entrada: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5 col-span-1">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Sai.</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.cbs.cclass_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_saida: e.target.value } })} />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-200 space-y-6">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-brand-500 rounded-full"></div>
+                                            Alíquotas e Reduções (CBS)
+                                        </h4>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alíquota Sai. (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm"
+                                                    value={formData.cbs.alq_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alq_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Redução Sai. (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm"
+                                                    value={formData.cbs.red_alq_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, red_alq_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alíq. Final Sai. (%)</label>
+                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.cbs.alqf_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alqf_sai: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 03: IBS */}
+                            {formTab === 'ibs' && (
+                                <div className="animate-fade-in space-y-6">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Entrada</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.ibs.cst_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_entrada: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Saída</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.ibs.cst_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_saida: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Ent.</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.ibs.cclass_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_entrada: e.target.value } })} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Sai.</label>
+                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
+                                                value={formData.ibs.cclass_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_saida: e.target.value } })} />
+                                        </div>
+                                    </div>
+
+                                    {/* Estadual */}
+                                    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-200 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                            <i className="fa-solid fa-map"></i>
+                                            Componente Estadual (IBS-E)
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíquota E (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.alqe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqe_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Redução E (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.red_alqe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqe_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíq. F. Estadual (%)</label>
+                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.ibs.alqfe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfe_sai: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Municipal */}
+                                    <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-200 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                                            <i className="fa-solid fa-city"></i>
+                                            Componente Municipal (IBS-M)
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíquota M (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.alqm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqm_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Redução M (%)</label>
+                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.red_alqm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqm_sai: e.target.value } })} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíq. F. Municipal (%)</label>
+                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.ibs.alqfm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfm_sai: e.target.value } })} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </form>
+
+                        {/* Footer Modal Action */}
+                        <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setShowForm(false)}
+                                className="px-6 py-3 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-100 transition text-xs uppercase tracking-widest"
+                            >
+                                Cancelar
+                            </button>
+                            {formTab === 'info' && (
+                                <button type="button" onClick={() => setFormTab('cbs')} className="px-8 py-3 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition text-xs uppercase tracking-widest shadow-lg shadow-brand-500/20">
+                                    Próximo: CBS
+                                </button>
+                            )}
+                            {formTab === 'cbs' && (
+                                <button type="button" onClick={() => setFormTab('ibs')} className="px-8 py-3 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition text-xs uppercase tracking-widest shadow-lg shadow-brand-500/20">
+                                    Próximo: IBS
+                                </button>
+                            )}
+                            {formTab === 'ibs' && (
                                 <button
                                     type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="flex-1 py-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-xs uppercase tracking-widest"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
+                                    onClick={handleSaveProduct}
                                     disabled={isSaving}
-                                    className="flex-2 px-8 py-4 bg-slate-900 text-white font-black rounded-xl hover:bg-black transition text-xs uppercase tracking-widest shadow-xl shadow-slate-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                                    className="px-10 py-3 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition text-xs uppercase tracking-widest shadow-xl shadow-brand-500/30 disabled:opacity-70 flex items-center justify-center gap-2"
                                 >
-                                    {isSaving ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Salvar Produto'}
+                                    {isSaving ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Finalizar e Salvar'}
                                 </button>
-                            </div>
-                        </form>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
