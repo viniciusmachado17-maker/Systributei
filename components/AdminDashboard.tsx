@@ -5,6 +5,254 @@ interface AdminDashboardProps {
     onNavigate: (view: any) => void;
 }
 
+const ProductManager: React.FC = () => {
+    const [products, setProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Form states
+    const [formData, setFormData] = useState({
+        produto: '',
+        ean: '',
+        ncm: '',
+        cest: ''
+    });
+
+    useEffect(() => {
+        fetchRecentProducts();
+    }, []);
+
+    const fetchRecentProducts = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+            setProducts(data || []);
+        } catch (err: any) {
+            console.error("Error fetching products:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            // Validation
+            if (formData.ean) {
+                const { data: existingEan } = await supabase
+                    .from('products')
+                    .select('id')
+                    .eq('ean', formData.ean)
+                    .maybeSingle();
+
+                if (existingEan) {
+                    throw new Error("Já existe um produto com este EAN.");
+                }
+            } else {
+                const { data: existingName } = await supabase
+                    .from('products')
+                    .select('id')
+                    .ilike('produto', formData.produto)
+                    .maybeSingle();
+
+                if (existingName) {
+                    throw new Error("Já existe um produto com este nome.");
+                }
+            }
+
+            // Insert product
+            const { data: newProduct, error: insertError } = await supabase
+                .from('products')
+                .insert([{
+                    produto: formData.produto,
+                    ean: formData.ean || null,
+                    ncm: formData.ncm,
+                    cest: formData.cest || null,
+                    status: 'active'
+                }])
+                .select()
+                .single();
+
+            if (insertError) throw insertError;
+
+            alert("Produto cadastrado com sucesso!");
+            setFormData({ produto: '', ean: '', ncm: '', cest: '' });
+            setShowForm(false);
+            fetchRecentProducts();
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div>
+                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Gestão de Produtos</h2>
+                    <p className="text-slate-500 font-medium text-sm">Adicione ou visualize itens na base tributária</p>
+                </div>
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="px-6 py-3 bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition transform active:scale-[0.98] flex items-center gap-2 text-xs uppercase tracking-wider"
+                >
+                    <i className="fa-solid fa-plus text-sm"></i>
+                    Cadastrar Produto
+                </button>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-12 text-slate-400 font-medium">Carregando produtos recentes...</div>
+            ) : (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                        <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                            <i className="fa-solid fa-clock-rotate-left text-brand-500"></i>
+                            Últimos Cadastros
+                        </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-slate-600">
+                            <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-4">Produto</th>
+                                    <th className="px-6 py-4">EAN</th>
+                                    <th className="px-6 py-4">NCM</th>
+                                    <th className="px-6 py-4">CEST</th>
+                                    <th className="px-6 py-4">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {products.map((p) => (
+                                    <tr key={p.id} className="hover:bg-slate-50/50 transition">
+                                        <td className="px-6 py-4 font-bold text-slate-800">{p.produto}</td>
+                                        <td className="px-6 py-4 font-mono text-xs">{p.ean || '---'}</td>
+                                        <td className="px-6 py-4 font-mono text-xs">{p.ncm}</td>
+                                        <td className="px-6 py-4 font-mono text-xs text-slate-400">{p.cest || '---'}</td>
+                                        <td className="px-6 py-4 text-xs font-medium text-slate-400 whitespace-nowrap">
+                                            {new Date(p.created_at || p.updated_at).toLocaleDateString('pt-BR')}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL CADASTRO PRODUTO */}
+            {showForm && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in p-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg relative animate-slide-up">
+                        <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition p-2">
+                            <i className="fa-solid fa-xmark text-xl"></i>
+                        </button>
+
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                                <i className="fa-solid fa-box-open"></i>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-800">Novo Produto</h3>
+                                <p className="text-xs text-slate-400 font-medium">Preencha os dados tributários base</p>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-shake">
+                                <i className="fa-solid fa-triangle-exclamation"></i>
+                                <p className="text-[10px] font-bold uppercase tracking-tight">{error}</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSaveProduct} className="space-y-5">
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Descrição do Produto*</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="Ex: ARROZ INTEGRAL TIO JOÃO 1KG"
+                                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all"
+                                    value={formData.produto}
+                                    onChange={(e) => setFormData({ ...formData, produto: e.target.value.toUpperCase() })}
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">Código de Barras (EAN)</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="789..."
+                                        className="w-full p-4 pl-12 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all"
+                                        value={formData.ean}
+                                        onChange={(e) => setFormData({ ...formData, ean: e.target.value })}
+                                    />
+                                    <i className="fa-solid fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                                </div>
+                                <p className="text-[9px] text-slate-400 font-medium ml-1">Se vazio, o sistema validará o Nome do Produto.</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">NCM*</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="0000.00.00"
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all text-center"
+                                        value={formData.ncm}
+                                        onChange={(e) => setFormData({ ...formData, ncm: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CEST (Opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="00.000.00"
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm transition-all text-center"
+                                        value={formData.cest}
+                                        onChange={(e) => setFormData({ ...formData, cest: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    className="flex-1 py-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-xs uppercase tracking-widest"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSaving}
+                                    className="flex-2 px-8 py-4 bg-slate-900 text-white font-black rounded-xl hover:bg-black transition text-xs uppercase tracking-widest shadow-xl shadow-slate-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                                >
+                                    {isSaving ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Salvar Produto'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) => {
     const [subscribers, setSubscribers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -12,6 +260,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
     const [selectedOrg, setSelectedOrg] = useState<any>(null);
     const [modalMode, setModalMode] = useState<'plan' | 'member' | null>(null);
+    const [currentTab, setCurrentTab] = useState<'subscribers' | 'products'>('subscribers');
 
     // Form States
     const [newPlan, setNewPlan] = useState('start');
@@ -137,109 +386,129 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-3xl font-black text-slate-800 tracking-tight">Painel Administrativo</h1>
-                        <p className="text-slate-500 font-medium">Gerencie assinaturas e acessos</p>
+                        <p className="text-slate-500 font-medium">Gerencie assinaturas e banco de dados</p>
                     </div>
-                    <button
-                        onClick={() => onNavigate('dashboard')}
-                        className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-xs shadow-sm transition flex items-center gap-2 uppercase tracking-wide"
-                    >
-                        <i className="fa-solid fa-arrow-left"></i>
-                        Voltar ao App
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="bg-white p-1 rounded-xl border border-slate-200 shadow-sm flex mr-4">
+                            <button
+                                onClick={() => setCurrentTab('subscribers')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition uppercase tracking-wider ${currentTab === 'subscribers' ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Assinantes
+                            </button>
+                            <button
+                                onClick={() => setCurrentTab('products')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition uppercase tracking-wider ${currentTab === 'products' ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Produtos
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => onNavigate('dashboard')}
+                            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-bold text-xs shadow-sm transition flex items-center gap-2 uppercase tracking-wide"
+                        >
+                            <i className="fa-solid fa-arrow-left"></i>
+                            Voltar ao App
+                        </button>
+                    </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-slate-600">
-                            <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
-                                <tr>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Organização</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Dono (Email)</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Plano</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Carência</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Status</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Vencimento</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Dia</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Membros</th>
-                                    <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {subscribers.map((org) => {
-                                    const owner = org.profiles?.[0]; // Assumindo relação
-                                    const statusKey = org.subscription_status || 'gratis';
-                                    return (
-                                        <tr key={org.id} className="hover:bg-slate-50/50 transition">
-                                            <td className="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">{org.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{owner?.email || 'N/A'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.plan_type === 'premium' ? 'bg-purple-100 text-purple-700' :
-                                                    org.plan_type === 'pro' ? 'bg-indigo-100 text-indigo-700' :
-                                                        org.plan_type === 'enterprise' ? 'bg-slate-800 text-white' :
-                                                            'bg-slate-100 text-slate-600'
-                                                    }`}>
-                                                    {org.plan_type}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.has_commitment ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'}
+                {currentTab === 'subscribers' ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-slate-600">
+                                <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
+                                    <tr>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Organização</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Dono (Email)</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Plano</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Carência</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Status</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs">Vencimento</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Dia</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-center">Membros</th>
+                                        <th className="px-6 py-4 whitespace-nowrap text-[10px] md:text-xs text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {subscribers.map((org) => {
+                                        const owner = org.profiles?.[0]; // Assumindo relação
+                                        const statusKey = org.subscription_status || 'gratis';
+                                        return (
+                                            <tr key={org.id} className="hover:bg-slate-50/50 transition">
+                                                <td className="px-6 py-4 font-bold text-slate-800 whitespace-nowrap">{org.name}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{owner?.email || 'N/A'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.plan_type === 'premium' ? 'bg-purple-100 text-purple-700' :
+                                                        org.plan_type === 'pro' ? 'bg-indigo-100 text-indigo-700' :
+                                                            org.plan_type === 'enterprise' ? 'bg-slate-800 text-white' :
+                                                                'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                        {org.plan_type}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${org.has_commitment ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'}
                                                     `}>
-                                                    {org.has_commitment ? '12 Meses' : 'Mensal'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${statusColors[statusKey] || 'bg-slate-100 text-slate-600'
-                                                    }`}>
-                                                    {statusMap[statusKey] || statusKey}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 font-medium text-xs text-slate-600 whitespace-nowrap">
-                                                {org.current_period_end
-                                                    ? new Date(org.current_period_end).toLocaleDateString('pt-BR')
-                                                    : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 font-mono text-xs text-center text-indigo-600 font-bold whitespace-nowrap">
-                                                {org.billing_day ? org.billing_day : '-'}
-                                            </td>
-                                            <td className="px-6 py-4 font-mono text-xs text-center whitespace-nowrap">
-                                                <span className={`px-2 py-1 rounded-md ${(org.profiles?.length || 0) > (org.max_users || 1) ? 'bg-red-100 text-red-600 font-bold' : 'text-slate-600'
-                                                    }`}>
-                                                    {org.profiles?.length || 0} <span className="text-slate-400">/</span> {org.max_users || 1}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedOrg(org);
-                                                        setNewPlan(org.plan_type);
-                                                        setNewBillingDate(org.current_period_end ? new Date(org.current_period_end).toISOString().split('T')[0] : '');
-                                                        setBillingDay(org.billing_day || '');
-                                                        setHasCommitment(!!org.has_commitment);
-                                                        setModalMode('plan');
-                                                    }}
-                                                    className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition"
-                                                >
-                                                    Mudar Plano
-                                                </button>
-                                                <button
-                                                    onClick={() => { setSelectedOrg(org); setModalMode('member'); }}
-                                                    disabled={!['premium', 'enterprise'].includes(org.plan_type)}
-                                                    title={!['premium', 'enterprise'].includes(org.plan_type) ? "Disponível apenas no Premium" : "Adicionar Membro"}
-                                                    className={`font-bold text-[10px] px-2 py-1.5 rounded-lg transition ${['premium', 'enterprise'].includes(org.plan_type)
-                                                        ? "text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200"
-                                                        : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
-                                                        }`}
-                                                >
-                                                    + Membro
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                                        {org.has_commitment ? '12 Meses' : 'Mensal'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wide ${statusColors[statusKey] || 'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                        {statusMap[statusKey] || statusKey}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 font-medium text-xs text-slate-600 whitespace-nowrap">
+                                                    {org.current_period_end
+                                                        ? new Date(org.current_period_end).toLocaleDateString('pt-BR')
+                                                        : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 font-mono text-xs text-center text-indigo-600 font-bold whitespace-nowrap">
+                                                    {org.billing_day ? org.billing_day : '-'}
+                                                </td>
+                                                <td className="px-6 py-4 font-mono text-xs text-center whitespace-nowrap">
+                                                    <span className={`px-2 py-1 rounded-md ${(org.profiles?.length || 0) > (org.max_users || 1) ? 'bg-red-100 text-red-600 font-bold' : 'text-slate-600'
+                                                        }`}>
+                                                        {org.profiles?.length || 0} <span className="text-slate-400">/</span> {org.max_users || 1}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedOrg(org);
+                                                            setNewPlan(org.plan_type);
+                                                            setNewBillingDate(org.current_period_end ? new Date(org.current_period_end).toISOString().split('T')[0] : '');
+                                                            setBillingDay(org.billing_day || '');
+                                                            setHasCommitment(!!org.has_commitment);
+                                                            setModalMode('plan');
+                                                        }}
+                                                        className="text-indigo-600 hover:text-indigo-800 font-bold text-[10px] bg-indigo-50 px-2 py-1.5 rounded-lg hover:bg-indigo-100 transition"
+                                                    >
+                                                        Mudar Plano
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setSelectedOrg(org); setModalMode('member'); }}
+                                                        disabled={!['premium', 'enterprise'].includes(org.plan_type)}
+                                                        title={!['premium', 'enterprise'].includes(org.plan_type) ? "Disponível apenas no Premium" : "Adicionar Membro"}
+                                                        className={`font-bold text-[10px] px-2 py-1.5 rounded-lg transition ${['premium', 'enterprise'].includes(org.plan_type)
+                                                            ? "text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200"
+                                                            : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
+                                                            }`}
+                                                    >
+                                                        + Membro
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <ProductManager />
+                )}
             </div>
 
             {/* MODAL MUDAR PLANO */}
