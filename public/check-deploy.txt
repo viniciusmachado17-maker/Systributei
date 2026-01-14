@@ -1,0 +1,2 @@
+Deploy realizado via GitHub Actions em: 14/01/2026.
+Se você está lendo isso, a pasta de destino está correta!
