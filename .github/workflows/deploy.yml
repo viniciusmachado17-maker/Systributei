@@ -26,9 +26,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
-      - name: List built files (Debug)
-        run: ls -R dist/
-
       - name: Sync files via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -38,4 +35,3 @@ jobs:
           local-dir: ./dist/
           server-dir: /
           dangerous-clean-slate: false
-          log-level: verbose
