@@ -10,6 +10,8 @@ import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage,
 import insightsData from '../deps/cclasstrib_insights.json';
 import insightsSimplificado from '../deps/cclasstrib_simplificado.json';
 import { UserProfile } from '../App';
+import XMLAnalysis from './XMLAnalysis';
+import { Package, Calculator, History, MessageSquare, Settings, FileSpreadsheet } from 'lucide-react';
 
 interface DashboardProps {
   user: UserProfile | null;
@@ -17,7 +19,7 @@ interface DashboardProps {
   onNavigate: (view: any) => void;
 }
 
-type DashboardTab = 'search' | 'history' | 'consultancy' | 'settings';
+type DashboardTab = 'search' | 'history' | 'consultancy' | 'settings' | 'batch';
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('search');
@@ -2763,6 +2765,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               </span>
             )}
           </button>
+          <button
+            onClick={() => {
+              if (['gratis', 'start'].includes(user?.organization?.plan_type || '')) {
+                setUpgradeReason('usage');
+                setIsUpgradeModalOpen(true);
+              } else {
+                setActiveTab('batch');
+              }
+            }}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'batch' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <div className="flex items-center gap-3">
+              <i className="fa-solid fa-file-invoice"></i> Análise XML
+            </div>
+            {['gratis', 'start'].includes(user?.organization?.plan_type || '') && <i className="fa-solid fa-lock text-[10px] opacity-40"></i>}
+          </button>
           <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'settings' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
             <i className="fa-solid fa-gear"></i> Minha Conta
           </button>
@@ -2791,7 +2809,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 'bg-red-500 shadow-lg shadow-red-500/20'
               }`} title={connStatus === 'online' ? 'Conectado à Base Live' : connStatus === 'testing' ? 'Verificando conexão...' : 'Modo Demo (Offline)'}></span>
             <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">
-              {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : 'Minha Conta'}
+              {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : activeTab === 'batch' ? 'Análise XML' : 'Minha Conta'}
             </h2>
           </div>
 
@@ -2945,6 +2963,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         <div className="flex-grow overflow-y-auto p-5 md:p-10">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
+          {activeTab === 'batch' && <XMLAnalysis />}
           {activeTab === 'history' && (
             <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-slide-up">
               <div className="flex justify-between items-baseline gap-4">
@@ -3021,6 +3040,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             )}
           </div>
           <span className="text-[10px] font-black uppercase tracking-tighter">Dúvidas</span>
+        </button>
+        <button
+          onClick={() => {
+            if (['gratis', 'start'].includes(user?.organization?.plan_type || '')) {
+              setUpgradeReason('usage');
+              setIsUpgradeModalOpen(true);
+            } else {
+              setActiveTab('batch');
+            }
+          }}
+          className={`flex flex-col items-center gap-1 ${activeTab === 'batch' ? 'text-brand-600' : 'text-slate-400'}`}
+        >
+          <div className="relative">
+            <i className="fa-solid fa-file-invoice text-lg"></i>
+            {['gratis', 'start'].includes(user?.organization?.plan_type || '') && (
+              <i className="fa-solid fa-lock absolute -top-1 -right-1 text-[8px] text-slate-400"></i>
+            )}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-tighter">XML</span>
         </button>
         <button
           onClick={() => setActiveTab('settings')}

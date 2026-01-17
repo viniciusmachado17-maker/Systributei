@@ -65,3 +65,26 @@ export interface ProductRequest {
   status: 'pending' | 'approved' | 'rejected';
   created_at?: string;
 }
+
+export interface XMLProduct {
+  cProd: string;
+  xProd: string;
+  NCM: string;
+  cEAN: string;
+  qCom: number;
+  vUnCom: number;
+  vProd: number;
+  vDesc: number;
+  orig: string;
+  foundProduct?: Product | null;
+  taxes?: TaxBreakdown | null;
+  status: 'found' | 'not_found' | 'searching';
+  foundBy?: 'EAN' | 'NCM' | 'Nome';
+}
+
+export interface XMLAnalysisResult {
+  fileName: string;
+  date: string;
+  totalValue: number;
+  products: XMLProduct[];
+}

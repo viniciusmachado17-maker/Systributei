@@ -11,9 +11,13 @@
   "dependencies": {
     "@google/genai": "^1.34.0",
     "@supabase/supabase-js": "^2.45.1",
+    "@types/xlsx": "^0.0.35",
+    "fast-xml-parser": "^5.3.3",
     "html5-qrcode": "^2.3.8",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "xlsx": "^0.18.5",
     "zxing-wasm": "^2.2.4"
   },
   "devDependencies": {

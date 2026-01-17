@@ -16,6 +16,72 @@ const parseNumber = (value: string | number | null | undefined): number => {
 };
 
 /**
+ * Normaliza e formata o NCM para busca no banco (xxxx.xx.xx)
+ */
+const formatNCMForDB = (ncm: string): string => {
+  const digits = ncm.replace(/\D/g, '').padStart(8, '0');
+  return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6, 8)}`;
+};
+
+/**
+ * Calcula a similaridade entre duas strings (0 a 1) usando Levenshtein
+ */
+const calculateSimilarity = (s1: string, s2: string): number => {
+  const str1 = s1.toLowerCase().trim();
+  const str2 = s2.toLowerCase().trim();
+
+  if (str1 === str2) return 1.0;
+  if (str1.length === 0 || str2.length === 0) return 0.0;
+
+  const costs = new Array();
+  for (let i = 0; i <= str1.length; i++) {
+    let lastValue = i;
+    for (let j = 0; j <= str2.length; j++) {
+      if (i === 0) {
+        costs[j] = j;
+      } else {
+        if (j > 0) {
+          let newValue = costs[j - 1];
+          if (str1.charAt(i - 1) !== str2.charAt(j - 1)) {
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          }
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0) costs[str2.length] = lastValue;
+  }
+
+  const distance = costs[str2.length];
+  const maxLen = Math.max(str1.length, str2.length);
+  return (maxLen - distance) / maxLen;
+};
+
+/**
+ * Calcula a similaridade baseada em palavras (Interseção)
+ * Útil para capturar "PAO FRANCES" em "PAO FRANCES MOREIRA"
+ */
+const calculateWordSimilarity = (s1: string, s2: string): number => {
+  const getWords = (s: string) => s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 1); // Ignora conectivos de 1 letra
+
+  const w1 = getWords(s1);
+  const w2 = getWords(s2);
+
+  if (w1.length === 0 || w2.length === 0) return 0;
+
+  const intersection = w1.filter(word => w2.includes(word));
+  // Score baseado no quanto da menor string está contida na maior
+  const score = intersection.length / Math.min(w1.length, w2.length);
+
+  return score;
+};
+
+/**
  * Realiza os cálculos baseados nos dados brutos das tabelas ibs e cbs
  */
 export const calculateTaxes = (product: Product, isCashback: boolean = false): TaxBreakdown => {
@@ -74,31 +140,41 @@ export const searchProducts = async (query: string, searchType: 'name' | 'ncm' =
   if (!isSupabaseConfigured) return [];
 
   try {
-    // Usamos a nova função RPC que lida com unaccent e busca avançada
+    // Se for busca por NCM, não usamos o RPC de busca por nome
+    if (searchType === 'ncm') {
+      const formattedNCM = query.includes('.') ? query : formatNCMForDB(query);
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, produto, ean, ncm, cest')
+        .ilike('ncm', `%${formattedNCM}%`)
+        .limit(1000);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    // Busca por Nome via RPC (ou fallback)
     const { data, error } = await supabase.rpc('search_products_v2', {
       search_term: query,
-      limit_val: 50
+      limit_val: 1000 // Aumentado para 1000 itens
     });
 
     if (error) {
       console.error("Erro ao chamar RPC search_products_v2:", error);
 
-      // Fallback para busca tradicional se o RPC falhar (ex: função não existe ainda)
+      // Fallback para busca tradicional se o RPC falhar
       let queryBuilder = supabase
         .from('products')
         .select('id, produto, ean, ncm, cest');
 
-      if (searchType === 'ncm') {
-        queryBuilder = queryBuilder.ilike('ncm', `%${query}%`);
-      } else {
-        const words = query.trim().split(/\s+/).filter(w => w.length > 0);
-        if (words.length === 0) return [];
-        words.forEach(word => {
-          queryBuilder = queryBuilder.ilike('produto', `%${word}%`);
-        });
-      }
+      const words = query.trim().split(/\s+/).filter(w => w.length > 0);
+      if (words.length === 0) return [];
+      words.forEach(word => {
+        queryBuilder = queryBuilder.ilike('produto', `%${word}%`);
+      });
 
-      const { data: fallbackData, error: fallbackError } = await queryBuilder.limit(50);
+      const { data: fallbackData, error: fallbackError } = await queryBuilder.limit(1000);
       if (fallbackError) throw fallbackError;
       return fallbackData || [];
     }
@@ -160,6 +236,87 @@ export const getProductDetails = async (identifier: string | number, type: 'id' 
 };
 
 /**
+ * Busca o produto por cascata de prioridade dinâmica: 
+ * 1. EAN (Exato)
+ * 2. Nome (Fuzzie / All Words) - Padrão rigoroso
+ * 3. NCM + Nome (Interseção de palavras) - Padrão flexível
+ */
+export const findProductByCascade = async (ean?: string, ncm?: string, name?: string): Promise<{ product: Product | null, source?: 'EAN' | 'NCM' | 'Nome' }> => {
+  if (!isSupabaseConfigured) return { product: null };
+
+  // 1. Tentar por EAN (se válido e não for "SEM GTIN" ou zeros)
+  if (ean && ean !== 'SEM GTIN' && ean !== '0' && !/^0+$/.test(ean)) {
+    const fromEan = await getProductDetails(ean, 'ean');
+    if (fromEan) return { product: fromEan, source: 'EAN' };
+  }
+
+  // 2. Se temos Nome, tentamos a busca por palavras total (Rigorosa)
+  if (name) {
+    const list = await searchProducts(name, 'name');
+    if (list.length > 0) {
+      let bestMatch: { product: ProductSummary | null, score: number } = { product: null, score: 0 };
+
+      for (const item of list) {
+        const score = calculateSimilarity(name, item.produto);
+        if (score > bestMatch.score) {
+          bestMatch = { product: item, score };
+        }
+      }
+
+      if (bestMatch.product && bestMatch.score >= 0.8) {
+        const fromName = await getProductDetails(bestMatch.product.id, 'id');
+        if (fromName) return { product: fromName, source: 'Nome' };
+      }
+    }
+  }
+
+  // 3. Se não achou pelo nome completo ou não achou nada, usamos o NCM como âncora
+  // e tentamos uma validação por nome dentro dos produtos do mesmo NCM
+  if (ncm) {
+    const formattedNCM = formatNCMForDB(ncm);
+
+    // Buscamos todos os produtos com esse NCM (até 500 para análise)
+    const { data: ncmProducts, error } = await supabase
+      .from('products')
+      .select('id, produto, ean, ncm')
+      .eq('ncm', formattedNCM)
+      .limit(500);
+
+    if (ncmProducts && ncmProducts.length > 0) {
+      // Se tivermos o nome do XML, tentamos achar o "irmão" mais parecido
+      if (name) {
+        let bestSubMatch: { product: any, score: number } = { product: null, score: 0 };
+
+        for (const item of ncmProducts) {
+          // Usamos similaridade de palavras para ser mais flexível (ex: extra brand names)
+          const wordScore = calculateWordSimilarity(name, item.produto);
+          const levScore = calculateSimilarity(name, item.produto);
+
+          // O score final prioriza a interseção mas pondera o Levenshtein
+          const finalScore = (wordScore * 0.7) + (levScore * 0.3);
+
+          if (finalScore > bestSubMatch.score) {
+            bestSubMatch = { product: item, score: finalScore };
+          }
+        }
+
+        // Se o score for bom (> 60%), assumimos que é este produto
+        if (bestSubMatch.product && bestSubMatch.score >= 0.6) {
+          const matched = await getProductDetails(bestSubMatch.product.id, 'id');
+          if (matched) return { product: matched, source: 'Nome' };
+        }
+      }
+
+      // 4. Fallback: Se não teve match de nome bom o suficiente, pega o primeiro do NCM mesmo
+      const fallbackNcm = await getProductDetails(ncmProducts[0].id, 'id');
+      if (fallbackNcm) return { product: fallbackNcm, source: 'NCM' };
+    }
+  }
+
+  return { product: null };
+};
+
+/**
  * Busca o produto e seus impostos relacionados (Wrapper de compatibilidade)
  */
 export const findProduct = async (query: string, mode: 'barcode' | 'name' | 'ncm'): Promise<Product | null> => {
@@ -174,7 +331,20 @@ export const findProduct = async (query: string, mode: 'barcode' | 'name' | 'ncm
     }
   }
 
-  // NCM não temos busca específica de detalhes ainda, talvez fallback para lista?
-  // Por enquanto, retorna null se não for barcode ou name
+  // Busca por NCM
+  if (mode === 'ncm') {
+    const formattedNCM = formatNCMForDB(query);
+    const { data: ncmData } = await supabase
+      .from('products')
+      .select('id')
+      .eq('ncm', formattedNCM)
+      .limit(1)
+      .maybeSingle();
+
+    if (ncmData) {
+      return getProductDetails(ncmData.id, 'id');
+    }
+  }
+
   return null;
 }

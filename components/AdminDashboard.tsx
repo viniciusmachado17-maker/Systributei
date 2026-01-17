@@ -13,7 +13,6 @@ const ProductManager: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [formTab, setFormTab] = useState<'info' | 'cbs' | 'ibs'>('info');
 
-    // Form states
     const [formData, setFormData] = useState({
         // Info base
         produto: '',
@@ -56,6 +55,43 @@ const ProductManager: React.FC = () => {
         }
     });
 
+    // --- Auxiliares de Formatação ---
+    const maskNCM = (val: string) => {
+        const digits = val.replace(/\D/g, '').slice(0, 8);
+        if (digits.length <= 4) return digits;
+        if (digits.length <= 6) return `${digits.slice(0, 4)}.${digits.slice(4)}`;
+        return `${digits.slice(0, 4)}.${digits.slice(4, 6)}.${digits.slice(6)}`;
+    };
+
+    const maskCEST = (val: string) => {
+        const digits = val.replace(/\D/g, '').slice(0, 7);
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+        return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+    };
+
+    const maskCST = (val: string) => val.replace(/\D/g, '').slice(0, 3);
+    const maskCClass = (val: string) => val.replace(/\D/g, '').slice(0, 10);
+
+    const handleRateBlur = (field: 'cbs' | 'ibs', subField: string) => {
+        setFormData(prev => {
+            const currentVal = (prev as any)[field][subField];
+            if (!currentVal) return prev;
+
+            let numeric = currentVal.replace(/[^\d.]/g, '');
+            if (numeric === '' || isNaN(parseFloat(numeric))) return prev;
+
+            const formatted = `${parseFloat(numeric).toFixed(2)}%`;
+            return {
+                ...prev,
+                [field]: {
+                    ...(prev as any)[field],
+                    [subField]: formatted
+                }
+            };
+        });
+    };
+
     useEffect(() => {
         fetchRecentProducts();
     }, []);
@@ -84,16 +120,40 @@ const ProductManager: React.FC = () => {
         setError(null);
 
         try {
-            // 1. Validations
-            if (formData.ean) {
-                const { data: existingEan } = await supabase
-                    .from('products')
-                    .select('id')
-                    .eq('ean', formData.ean)
-                    .maybeSingle();
+            // 1. Definição do EAN (Manual ou Automático baseado no nome)
+            let finalEan = formData.ean.trim();
+            if (!finalEan) {
+                // Remove espaços e caracteres especiais, limita a 20 chars e põe em caixa alta
+                finalEan = formData.produto
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                    .replace(/[^a-zA-Z0-9]/g, '') // Apenas alfanuméricos
+                    .slice(0, 20)
+                    .toUpperCase();
 
-                if (existingEan) throw new Error("Já existe um produto com este EAN.");
-            } else {
+                // Se ainda estiver vazio (ex: nome só de emojis/símbolos), usa um timestamp
+                if (!finalEan) {
+                    finalEan = `INT${Date.now().toString().slice(-8)}`;
+                }
+            }
+
+            // 2. Validations
+            const { data: existingEan } = await supabase
+                .from('products')
+                .select('id')
+                .eq('ean', finalEan)
+                .maybeSingle();
+
+            if (existingEan) {
+                if (formData.ean) {
+                    throw new Error("Já existe um produto com este EAN.");
+                } else {
+                    // Se foi o gerado automaticamente, tenta um sufixo para desempate
+                    finalEan = `${finalEan}${Math.floor(Math.random() * 1000)}`;
+                }
+            }
+
+            // Apenas para garantir que não mandamos o mesmo nome se o EAN for gerado
+            if (!formData.ean) {
                 const { data: existingName } = await supabase
                     .from('products')
                     .select('id')
@@ -103,12 +163,12 @@ const ProductManager: React.FC = () => {
                 if (existingName) throw new Error("Já existe um produto com este nome.");
             }
 
-            // 2. Insert Product Base
+            // 3. Insert Product Base
             const { data: newProduct, error: insertError } = await supabase
                 .from('products')
                 .insert([{
                     produto: formData.produto,
-                    ean: formData.ean || null,
+                    ean: finalEan,
                     ncm: formData.ncm,
                     cest: formData.cest || null,
                     status: 'active'
@@ -296,7 +356,7 @@ const ProductManager: React.FC = () => {
                                                     placeholder="0000.00.00"
                                                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm text-center"
                                                     value={formData.ncm}
-                                                    onChange={(e) => setFormData({ ...formData, ncm: e.target.value })}
+                                                    onChange={(e) => setFormData({ ...formData, ncm: maskNCM(e.target.value) })}
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
@@ -306,7 +366,7 @@ const ProductManager: React.FC = () => {
                                                     placeholder="00.000.00"
                                                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 font-bold text-slate-700 text-sm text-center"
                                                     value={formData.cest}
-                                                    onChange={(e) => setFormData({ ...formData, cest: e.target.value })}
+                                                    onChange={(e) => setFormData({ ...formData, cest: maskCEST(e.target.value) })}
                                                 />
                                             </div>
                                         </div>
@@ -326,23 +386,23 @@ const ProductManager: React.FC = () => {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="space-y-1.5 col-span-1">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Entrada</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.cbs.cst_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_entrada: e.target.value } })} />
+                                            <input type="text" placeholder="000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.cbs.cst_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_entrada: maskCST(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5 col-span-1">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Saída</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.cbs.cst_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_saida: e.target.value } })} />
+                                            <input type="text" placeholder="000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.cbs.cst_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cst_saida: maskCST(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5 col-span-1">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Ent.</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.cbs.cclass_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_entrada: e.target.value } })} />
+                                            <input type="text" placeholder="00000000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.cbs.cclass_entrada} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_entrada: maskCClass(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5 col-span-1">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Sai.</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.cbs.cclass_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_saida: e.target.value } })} />
+                                            <input type="text" placeholder="00000000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.cbs.cclass_saida} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, cclass_saida: maskCClass(e.target.value) } })} />
                                         </div>
                                     </div>
 
@@ -354,18 +414,31 @@ const ProductManager: React.FC = () => {
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alíquota Sai. (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm"
-                                                    value={formData.cbs.alq_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alq_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm"
+                                                    value={formData.cbs.alq_sai}
+                                                    onBlur={() => handleRateBlur('cbs', 'alq_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alq_sai: e.target.value } })} />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Redução Sai. (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm"
-                                                    value={formData.cbs.red_alq_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, red_alq_sai: e.target.value } })} />
+                                                <select className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold shadow-sm outline-none"
+                                                    value={formData.cbs.red_alq_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, red_alq_sai: e.target.value } })}>
+                                                    <option value="0%">0%</option>
+                                                    <option value="30%">30%</option>
+                                                    <option value="40%">40%</option>
+                                                    <option value="50%">50%</option>
+                                                    <option value="60%">60%</option>
+                                                    <option value="70%">70%</option>
+                                                    <option value="80%">80%</option>
+                                                    <option value="100%">100%</option>
+                                                </select>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Alíq. Final Sai. (%)</label>
-                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
-                                                    value={formData.cbs.alqf_sai} onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alqf_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.cbs.alqf_sai}
+                                                    onBlur={() => handleRateBlur('cbs', 'alqf_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, cbs: { ...formData.cbs, alqf_sai: e.target.value } })} />
                                             </div>
                                         </div>
                                     </div>
@@ -378,23 +451,23 @@ const ProductManager: React.FC = () => {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Entrada</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.ibs.cst_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_entrada: e.target.value } })} />
+                                            <input type="text" placeholder="000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.ibs.cst_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_entrada: maskCST(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">CST Saída</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.ibs.cst_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_saida: e.target.value } })} />
+                                            <input type="text" placeholder="000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.ibs.cst_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cst_saida: maskCST(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Ent.</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.ibs.cclass_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_entrada: e.target.value } })} />
+                                            <input type="text" placeholder="00000000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.ibs.cclass_entrada} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_entrada: maskCClass(e.target.value) } })} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="block text-[10px] uppercase font-black text-slate-400 tracking-widest ml-1">C.Class Sai.</label>
-                                            <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs"
-                                                value={formData.ibs.cclass_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_saida: e.target.value } })} />
+                                            <input type="text" placeholder="00000000" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-center"
+                                                value={formData.ibs.cclass_saida} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, cclass_saida: maskCClass(e.target.value) } })} />
                                         </div>
                                     </div>
 
@@ -407,18 +480,31 @@ const ProductManager: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíquota E (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
-                                                    value={formData.ibs.alqe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqe_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.alqe_sai}
+                                                    onBlur={() => handleRateBlur('ibs', 'alqe_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqe_sai: e.target.value } })} />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Redução E (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
-                                                    value={formData.ibs.red_alqe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqe_sai: e.target.value } })} />
+                                                <select className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none"
+                                                    value={formData.ibs.red_alqe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqe_sai: e.target.value } })}>
+                                                    <option value="0%">0%</option>
+                                                    <option value="30%">30%</option>
+                                                    <option value="40%">40%</option>
+                                                    <option value="50%">50%</option>
+                                                    <option value="60%">60%</option>
+                                                    <option value="70%">70%</option>
+                                                    <option value="80%">80%</option>
+                                                    <option value="100%">100%</option>
+                                                </select>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíq. F. Estadual (%)</label>
-                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
-                                                    value={formData.ibs.alqfe_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfe_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.ibs.alqfe_sai}
+                                                    onBlur={() => handleRateBlur('ibs', 'alqfe_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfe_sai: e.target.value } })} />
                                             </div>
                                         </div>
                                     </div>
@@ -432,18 +518,31 @@ const ProductManager: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíquota M (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
-                                                    value={formData.ibs.alqm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqm_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
+                                                    value={formData.ibs.alqm_sai}
+                                                    onBlur={() => handleRateBlur('ibs', 'alqm_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqm_sai: e.target.value } })} />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Redução M (%)</label>
-                                                <input type="text" className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold"
-                                                    value={formData.ibs.red_alqm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqm_sai: e.target.value } })} />
+                                                <select className="w-full p-3 bg-white border border-slate-200 rounded-xl font-bold outline-none"
+                                                    value={formData.ibs.red_alqm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, red_alqm_sai: e.target.value } })}>
+                                                    <option value="0%">0%</option>
+                                                    <option value="30%">30%</option>
+                                                    <option value="40%">40%</option>
+                                                    <option value="50%">50%</option>
+                                                    <option value="60%">60%</option>
+                                                    <option value="70%">70%</option>
+                                                    <option value="80%">80%</option>
+                                                    <option value="100%">100%</option>
+                                                </select>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Alíq. F. Municipal (%)</label>
-                                                <input type="text" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
-                                                    value={formData.ibs.alqfm_sai} onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfm_sai: e.target.value } })} />
+                                                <input type="text" placeholder="0.00%" className="w-full p-3 bg-indigo-50 border border-indigo-100 rounded-xl font-black text-brand-700 text-center"
+                                                    value={formData.ibs.alqfm_sai}
+                                                    onBlur={() => handleRateBlur('ibs', 'alqfm_sai')}
+                                                    onChange={(e) => setFormData({ ...formData, ibs: { ...formData.ibs, alqfm_sai: e.target.value } })} />
                                             </div>
                                         </div>
                                     </div>

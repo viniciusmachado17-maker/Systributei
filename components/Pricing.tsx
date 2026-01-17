@@ -34,7 +34,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       priceId: 'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
       description: 'Perfeito para pequenos negócios e autônomos.',
       features: [
-        '300 Consultas por mês',
+        '300 Consultas de produtos/mês',
         '1 Usuário logado',
         'Histórico de buscas',
         '5 Consultas via plataforma',
@@ -52,7 +52,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       priceId: 'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
       description: 'A solução completa para empresas em crescimento.',
       features: [
-        'Consultas ilimitadas',
+        'Consultas de produtos ilimitadas',
         '1 Usuário logado',
         'Histórico de buscas',
         '15 Consultas via plataforma',
@@ -70,11 +70,11 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       priceId: 'price_1SnTmZFkPBkTRBNfAzqkRru9',
       description: 'Gestão fiscal de alta performance para grandes volumes.',
       features: [
-        'Consultas ilimitadas',
+        'Consultas de produtos ilimitadas',
         'Suporte VIP 24/7',
         'Até 5 Usuários simultâneos',
         'Acesso antecipado',
-        'Consultas e-mail ilimitadas',
+        'Consultas via plataforma ilimitadas',
         '100 Solicitações de Cadastro'
       ],
       buttonText: 'Assinar Premium',
