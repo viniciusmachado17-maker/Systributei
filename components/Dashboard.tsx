@@ -211,20 +211,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         setPendingCounts(prev => ({ ...prev, requests: 0 }));
         setUserRequests(prev => prev.map(r => ({ ...r, user_seen: true })));
 
-        // Async update server
-        markRequestsAsSeen(user.id).then(() => {
-          refreshPendingCounts();
-        });
+        // Async update server (fire and forget for UI purposes)
+        markRequestsAsSeen(user.id);
       } else if (userConsultancyView === 'consultas' && pendingCounts.consultations > 0) {
         console.log("Marking consultations as seen for user", user.id);
         // Instant update local
         setPendingCounts(prev => ({ ...prev, consultations: 0 }));
         setAdminConsultations(prev => prev.map(c => ({ ...c, user_seen: true })));
 
-        // Async update server
-        markConsultationsAsSeen(user.id).then(() => {
-          refreshPendingCounts();
-        });
+        // Async update server (fire and forget for UI purposes)
+        markConsultationsAsSeen(user.id);
       }
     }
   }, [user, activeTab, userConsultancyView, pendingCounts.requests, pendingCounts.consultations]);
