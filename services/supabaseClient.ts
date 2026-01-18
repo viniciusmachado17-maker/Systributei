@@ -616,15 +616,23 @@ export const createCheckoutSession = async (params: {
 
 /**
  * Marca todas as solicitações de produto de um usuário como vistas.
+ * Usa RPC para garantir permissões de update.
  */
 export const markRequestsAsSeen = async (userId: string): Promise<void> => {
   if (!isSupabaseConfigured) return;
   try {
-    await supabase
-      .from('product_requests')
-      .update({ user_seen: true })
-      .eq('user_id', userId)
-      .eq('user_seen', false);
+    // Usamos RPC (Stored Function) para contornar limitações de RLS no UPDATE direto
+    const { error } = await supabase.rpc('mark_my_requests_as_seen');
+
+    if (error) {
+      console.error("Erro RPC markRequestsAsSeen:", error);
+      // Fallback para update direto caso a RPC falhe (se RLS permitir no futuro)
+      await supabase
+        .from('product_requests')
+        .update({ user_seen: true })
+        .eq('user_id', userId)
+        .eq('user_seen', false);
+    }
   } catch (err) {
     console.error("Erro ao marcar pedidos como vistos:", err);
   }
@@ -636,11 +644,16 @@ export const markRequestsAsSeen = async (userId: string): Promise<void> => {
 export const markConsultationsAsSeen = async (userId: string): Promise<void> => {
   if (!isSupabaseConfigured) return;
   try {
-    await supabase
-      .from('email_consultations')
-      .update({ user_seen: true })
-      .eq('user_id', userId)
-      .eq('user_seen', false);
+    const { error } = await supabase.rpc('mark_my_consultations_as_seen');
+
+    if (error) {
+      console.error("Erro RPC markConsultationsAsSeen:", error);
+      await supabase
+        .from('email_consultations')
+        .update({ user_seen: true })
+        .eq('user_id', userId)
+        .eq('user_seen', false);
+    }
   } catch (err) {
     console.error("Erro ao marcar consultas como vistas:", err);
   }
