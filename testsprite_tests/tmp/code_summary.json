@@ -1,0 +1,56 @@
+{
+    "tech_stack": [
+        "TypeScript",
+        "React",
+        "Vite",
+        "Supabase",
+        "TailwindCSS",
+        "Stripe",
+        "Google Gemini"
+    ],
+    "features": [
+        {
+            "name": "Authentication",
+            "description": "User login, signup, password reset, and session management using Supabase Auth.",
+            "files": [
+                "components/Login.tsx",
+                "components/Signup.tsx",
+                "components/ResetPassword.tsx",
+                "services/supabaseClient.ts",
+                "App.tsx"
+            ]
+        },
+        {
+            "name": "Product Search & Tax Engine",
+            "description": "Search products by EAN, NCM, or Name, and calculate IBS/CBS taxes with comparative analysis.",
+            "files": [
+                "services/taxService.ts",
+                "components/Dashboard.tsx",
+                "types.ts"
+            ]
+        },
+        {
+            "name": "AI Insights (Gemini)",
+            "description": "Generates simplified tax explanations and processes images for barcode extraction.",
+            "files": [
+                "services/geminiService.ts"
+            ]
+        },
+        {
+            "name": "Subscription & Payments",
+            "description": "Pricing plans, Stripe checkout integration, and organization management.",
+            "files": [
+                "components/Pricing.tsx",
+                "services/supabaseClient.ts",
+                "supabase/functions/stripe-checkout/index.ts"
+            ]
+        },
+        {
+            "name": "Admin Dashboard",
+            "description": "Backoffice for managing users, organizations, and products.",
+            "files": [
+                "components/AdminDashboard.tsx"
+            ]
+        }
+    ]
+}

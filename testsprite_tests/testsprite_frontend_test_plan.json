@@ -1,0 +1,595 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Signup Success",
+    "description": "Verify that a new user can successfully sign up with valid email and password, and is assigned the default user role.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to signup page"
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid email address and a strong password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the signup form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the account is created, user is logged in, and assigned the 'user' role"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Login Success",
+    "description": "Check that existing users can log in with valid credentials and access the user dashboard.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter valid email and password"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is authenticated and redirected to dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login Failure with Invalid Credentials",
+    "description": "Verify that login fails using incorrect email or password, and appropriate error message is shown.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter incorrect email or password"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login is rejected and error message displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Password Reset Flow",
+    "description": "Validate the password reset process requests password reset email and allows user to update password.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to password reset page"
+      },
+      {
+        "type": "action",
+        "description": "Enter registered email address"
+      },
+      {
+        "type": "action",
+        "description": "Submit password reset request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password reset email is sent"
+      },
+      {
+        "type": "action",
+        "description": "Follow password reset link received via email"
+      },
+      {
+        "type": "action",
+        "description": "Enter a new valid password and confirm"
+      },
+      {
+        "type": "action",
+        "description": "Submit new password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password is updated and user can login with new password"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Role-Based Access Control for User and Admin",
+    "description": "Verify that users with 'admin' role have access to admin dashboard and management features, while regular users do not.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as an admin user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to admin dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm admin dashboard and management features are accessible"
+      },
+      {
+        "type": "action",
+        "description": "Logout and login as regular user"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access admin dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied for regular user"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Product Search by EAN with Exact Match",
+    "description": "Verify that searching with a valid EAN barcode returns the correct product details within 2 seconds.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login to user dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid EAN code into product search"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify correct product is returned within 2 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Product Search by Product Name with Fuzzy Search",
+    "description": "Confirm the search supports fuzzy matching of product names and returns relevant products.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login to user dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Enter a partially correct or misspelled product name"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify list of relevant products including close matches is returned"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Product Search by NCM Code with Validation",
+    "description": "Ensure searching by NCM returns valid products and invalid NCM codes show appropriate error messages.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login to user dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid NCM code"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify valid products matching the NCM are returned"
+      },
+      {
+        "type": "action",
+        "description": "Enter an invalid or malformed NCM code"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify proper validation error is shown to user"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Tax Calculation Accuracy for IBS and CBS",
+    "description": "Validate that the tax engine calculates IBS and CBS correctly according to current legislation, including reductions and split payments.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Search for a product with known tax parameters"
+      },
+      {
+        "type": "action",
+        "description": "Trigger tax calculation for IBS and CBS"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify IBS and CBS amounts are calculated accurately, including any applicable reductions and split payments"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Financial Impact Simulation Comparing Old vs New Tax System",
+    "description": "Verify that the system simulates and presents a comparative financial impact between current tax burden and new IBS/CBS system.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a product and retrieve tax data"
+      },
+      {
+        "type": "action",
+        "description": "Run the tax impact simulation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify simulation output displays side-by-side comparison of old vs new tax burdens clearly"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "AI Insights Generation for Tax Explanation",
+    "description": "Ensure AI assistant generates accurate and relevant simplified tax explanations related to product queries within 5 seconds.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform a product search to trigger AI insight generation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI generates tax insight that is relevant, contextually accurate, and delivered within 3-5 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Subscription Plan Selection and Stripe Checkout Success",
+    "description": "Validate that users can select subscription tiers, complete payment via Stripe checkout, and activate features post-purchase.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to pricing page"
+      },
+      {
+        "type": "action",
+        "description": "Select a subscription plan"
+      },
+      {
+        "type": "action",
+        "description": "Complete payment using Stripe checkout with valid payment details"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription status updates, features are activated, and user dashboard reflects new plan"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Subscription Upgrade and Downgrade Flow",
+    "description": "Check that users can upgrade and downgrade their subscription plans and the changes reflect correctly with billing adjustments.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to subscription management"
+      },
+      {
+        "type": "action",
+        "description": "Initiate plan upgrade"
+      },
+      {
+        "type": "action",
+        "description": "Complete payment for upgrade if required"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription changes and billing updates for upgrade"
+      },
+      {
+        "type": "action",
+        "description": "Initiate plan downgrade"
+      },
+      {
+        "type": "action",
+        "description": "Confirm downgrade action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription and billing updates for downgrade"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Subscription Cancellation and Feature Revocation",
+    "description": "Ensure that users can cancel subscriptions, payment status updates accordingly, and feature access is revoked as per plan.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to subscription settings"
+      },
+      {
+        "type": "action",
+        "description": "Cancel active subscription"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription status changes to cancelled and features are revoked post cancellation"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "User Dashboard Displays Recent Search History and Subscription Status",
+    "description": "Validate that the user dashboard correctly shows recent product searches and reflects current subscription details accurately.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and perform several product searches"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to user dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify recent search history includes latest queries and subscription summary matches active plan"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Admin Dashboard User and Organization Management",
+    "description": "Confirm that admin users can add, edit, disable, and delete users and organizations via the admin dashboard with real-time updates.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin user"
+      },
+      {
+        "type": "action",
+        "description": "Access admin dashboard user management section"
+      },
+      {
+        "type": "action",
+        "description": "Add a new user with specific roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify new user appears in user list with correct roles"
+      },
+      {
+        "type": "action",
+        "description": "Edit an existing user to change roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user roles update in real-time"
+      },
+      {
+        "type": "action",
+        "description": "Disable and then delete a user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is disabled and removed from active list"
+      },
+      {
+        "type": "action",
+        "description": "Manage organizations similarly by adding, editing, and deleting"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify organization management actions reflect immediately"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Admin Dashboard Product Database Management",
+    "description": "Verify admin can add, update, and delete product entries in the database and see immediate effect in user product searches.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Access product database management in the admin dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Add a new test product with specific EAN, NCM, and name"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify new product is accessible via product search"
+      },
+      {
+        "type": "action",
+        "description": "Update an existing product's tax data and name"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updates reflect in subsequent product searches and tax calculations"
+      },
+      {
+        "type": "action",
+        "description": "Delete a product"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify product no longer appears in search results"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Search Performance Within 2 Seconds",
+    "description": "Measure product search response times to ensure results are returned within 2 seconds for all search types (EAN, NCM, name).",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform product search using valid EAN"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response time is less than or equal to 2 seconds"
+      },
+      {
+        "type": "action",
+        "description": "Perform product search using valid product name"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response time is less than or equal to 2 seconds"
+      },
+      {
+        "type": "action",
+        "description": "Perform product search using valid NCM code"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm response time is less than or equal to 2 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "System UI Responsiveness on Mobile Devices",
+    "description": "Verify that all user interfaces (login, dashboard, admin dashboard, pricing) are fully responsive and usable on common mobile device screen sizes.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access UI pages on mobile emulator or real devices with different screen sizes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify layout is readable, controls are easily accessible, and no UI elements overlap or disappear"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Subscription Status Updates Reflected in User Dashboard",
+    "description": "Ensure that any changes in subscription status (active, expired, cancelled) are accurately reflected in the user dashboard in real time.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Change subscription status via backend or Stripe webhook (activate, expire, cancel)"
+      },
+      {
+        "type": "action",
+        "description": "Login to user dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription status shown matches current subscription state"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Handling of Invalid Product Search Inputs",
+    "description": "Verify system handles invalid, empty, or malformed inputs in the product search gracefully with user-friendly error messages.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Enter empty search query"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify prompt appears to enter a valid search term"
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid characters or very long strings"
+      },
+      {
+        "type": "action",
+        "description": "Submit search"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify search fails gracefully with an error or no results message"
+      }
+    ]
+  }
+]

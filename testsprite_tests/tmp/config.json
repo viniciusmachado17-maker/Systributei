@@ -1,0 +1,21 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "adm@tributeiclass.com.br",
+  "loginPassword": "Masterkey",
+  "executionArgs": {
+    "projectName": "Systributei",
+    "projectPath": "d:/PROJETOS/TRIBUTEICLASS/Systributei",
+    "testIds": [
+      "TC006",
+      "TC011"
+    ],
+    "additionalInstruction": "Run Test TC006 with a valid EAN barcode: '7891910000197' (Açúcar União). This is a confirmed existing product in the database. Also run TC011 again now that the Supabase schema has been fixed.",
+    "envs": {
+      "API_KEY": "sk-user-U-ceWTHDQaGaACThov_h0tha6uw0jpZbd7sWPwfM9jISlWcgW2iPrlWV8cyL9q7pziT2JRidJCiIkX33egHkyNzPTTgDXfIjU9XxUOvMNj_viN4KvP7AptOLVPvrlj0gYbw"
+    }
+  },
+  "proxy": "http://3f4ec285-9147-42f9-8691-bca8c6823834:r3gdWrYWXkN1ROpvPOvwuO6376kazWiq@tun.testsprite.com:8080"
+}
