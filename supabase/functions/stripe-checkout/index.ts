@@ -31,7 +31,10 @@ Deno.serve(async (req) => {
         })
 
         const body = await req.json()
-        const { priceId, orgId, userId, successUrl, cancelUrl } = body
+        console.log("Request Body:", JSON.stringify(body));
+        const { priceId, orgId, userId, successUrl, cancelUrl, mode = 'subscription', metadata = {}, custom_price } = body
+
+        console.log("Variables:", { priceId, orgId, userId, mode, custom_price });
 
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) throw new Error('Não autorizado');
@@ -55,6 +58,47 @@ Deno.serve(async (req) => {
 
         let customerId = org?.stripe_customer_id
 
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                email: user.email,
+                metadata: { orgId, userId }
+            })
+            customerId = customer.id
+            await supabaseAdmin.from('organizations').update({ stripe_customer_id: customerId }).eq('id', orgId);
+        }
+
+        // Logic for One-off Payment (Spreadsheets)
+        if (mode === 'payment') {
+            const session = await stripe.checkout.sessions.create({
+                customer: customerId,
+                line_items: [
+                    custom_price ? {
+                        price_data: {
+                            currency: 'brl',
+                            product_data: {
+                                name: 'Processamento de Planilha Profissional',
+                                description: `Classificação Tributária de ${metadata.rowCount || 'itens'} na nuvem`,
+                            },
+                            unit_amount: custom_price,
+                        },
+                        quantity: 1,
+                    } : { price: priceId, quantity: 1 }
+                ],
+                mode: 'payment',
+                success_url: successUrl,
+                cancel_url: cancelUrl,
+                payment_method_types: ['card', 'boleto'],
+                metadata: { ...metadata, orgId, userId },
+                locale: 'pt-BR'
+            })
+
+            return new Response(JSON.stringify({ url: session.url }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200
+            })
+        }
+
+        // Logic for Subscriptions (Standard)
         if (org?.stripe_subscription_id && (org.subscription_status === 'active' || org.subscription_status === 'trialing')) {
             try {
                 const existingSub = await stripe.subscriptions.retrieve(org.stripe_subscription_id);
@@ -108,15 +152,6 @@ Deno.serve(async (req) => {
             }
         }
 
-        if (!customerId) {
-            const customer = await stripe.customers.create({
-                email: user.email,
-                metadata: { orgId, userId }
-            })
-            customerId = customer.id
-            await supabaseAdmin.from('organizations').update({ stripe_customer_id: customerId }).eq('id', orgId);
-        }
-
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             line_items: [{ price: priceId, quantity: 1 }],
@@ -139,11 +174,15 @@ Deno.serve(async (req) => {
             status: 200
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Checkout error:', error.message);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({
+            error: error.message,
+            stack: error.stack,
+            details: "Erro capturado no Edge Function"
+        }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400
+            status: 200 // Retornamos 200 para conseguir ler o corpo no frontend caso o invoke falhe
         })
     }
 })

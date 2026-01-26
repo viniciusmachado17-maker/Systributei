@@ -6,11 +6,12 @@ import Logo from './Logo';
 import { SearchMode, Product, TaxBreakdown, ProductSummary } from '../types';
 import { findProduct, calculateTaxes, searchProducts, getProductDetails } from '../services/taxService';
 import { explainTaxRule, extractBarcodeFromImage } from '../services/geminiService';
-import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus, markRequestsAsSeen, markConsultationsAsSeen } from '../services/supabaseClient';
+import { supabase, testSupabaseConnection, isSupabaseConfigured, incrementUsage, createProductRequest, sendEmailConsultation, getAllConsultations, getUserConsultations, updateConsultationStatus, getOrganization, getProductRequests, updateProductRequestStatus, getUserProductRequests, saveSearchHistory, getSearchHistory, clearUserSearchHistory, getDemoRequests, updateDemoRequestStatus, markRequestsAsSeen, markConsultationsAsSeen, reportMissingProduct } from '../services/supabaseClient';
 import insightsData from '../deps/cclasstrib_insights.json';
 import insightsSimplificado from '../deps/cclasstrib_simplificado.json';
 import { UserProfile } from '../App';
 import XMLAnalysis from './XMLAnalysis';
+import SpreadsheetAnalysis from './SpreadsheetAnalysis';
 import { Package, Calculator, History, MessageSquare, Settings, FileSpreadsheet } from 'lucide-react';
 
 interface DashboardProps {
@@ -23,6 +24,7 @@ type DashboardTab = 'search' | 'history' | 'consultancy' | 'settings' | 'batch';
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('search');
+  const [batchMode, setBatchMode] = useState<'xml' | 'spreadsheet'>('xml');
   const [mode, setMode] = useState<SearchMode>('barcode');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false); // Renamed from isLoading
@@ -96,6 +98,139 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
   // User Request View State
   const [userConsultancyView, setUserConsultancyView] = useState<'consultas' | 'requests'>('consultas');
+
+  // Spreadsheet Background Processing State
+  const [spreadsheetStatus, setSpreadsheetStatus] = useState<'idle' | 'processing' | 'completed' | 'error' | 'awaiting_payment'>('idle');
+  const [spreadsheetProgress, setSpreadsheetProgress] = useState({ current: 0, total: 0 });
+  const [spreadsheetResult, setSpreadsheetResult] = useState<string | null>(null);
+  const [spreadsheetError, setSpreadsheetError] = useState<string | null>(null);
+  const [showDoneNotification, setShowDoneNotification] = useState(false);
+  const [activeJob, setActiveJob] = useState<any>(null);
+
+  // Monitorar Jobs em tempo real
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchActiveJob = async () => {
+      const { data } = await supabase
+        .from('spreadsheet_jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setActiveJob(data);
+        if (data.status === 'completed') {
+          setSpreadsheetStatus('completed');
+          setSpreadsheetResult(data.output_path);
+        } else if (data.status === 'pending_admin' || data.status === 'processing') {
+          setSpreadsheetStatus('processing');
+        } else if (data.status === 'pending') {
+          setSpreadsheetStatus('awaiting_payment');
+        } else if (data.status === 'failed') {
+          setSpreadsheetStatus('error');
+          setSpreadsheetError(data.error_message);
+        }
+
+        if (data.progress !== undefined) setSpreadsheetProgress({ current: data.progress, total: 100 });
+      }
+    };
+    fetchActiveJob();
+
+    const channel = supabase
+      .channel('spreadsheet_jobs_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'spreadsheet_jobs',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        const updated = payload.new as any;
+        setActiveJob(updated);
+
+        if (updated.status === 'completed') {
+          setSpreadsheetStatus('completed');
+          setSpreadsheetResult(updated.output_path);
+          setShowDoneNotification(true);
+        } else if (updated.status === 'pending_admin' || updated.status === 'processing') {
+          setSpreadsheetStatus('processing');
+        } else if (updated.status === 'pending') {
+          setSpreadsheetStatus('awaiting_payment');
+        } else if (updated.status === 'failed') {
+          setSpreadsheetStatus('error');
+          setSpreadsheetError(updated.error_message);
+        }
+
+        if (updated.progress !== undefined) {
+          setSpreadsheetProgress({ current: updated.progress, total: 100 });
+        }
+      })
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, [user?.id]);
+
+  const handleSpreadsheetCheckout = async (rowCount: number, fileName: string, inputPath: string, eanKey: string, nameKey: string) => {
+    try {
+      setLoading(true);
+      const { data: job, error: jobErr } = await supabase.from('spreadsheet_jobs').insert({
+        user_id: user?.id,
+        organization_id: user?.organization?.id,
+        filename: fileName,
+        status: 'pending',
+        input_path: inputPath,
+        ean_column: eanKey,
+        name_column: nameKey,
+        is_paid: false
+      }).select().single();
+
+      if (jobErr) throw jobErr;
+
+      const { data, error: checkoutErr } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          orgId: user?.organization?.id,
+          userId: user?.id,
+          mode: 'payment',
+          metadata: { jobId: job.id, type: 'spreadsheet_process', rowCount },
+          custom_price: Math.max(10, Math.ceil(rowCount / 100) * 5) * 100, // Preço customizado
+          successUrl: window.location.origin + '/?spreadsheet_success=true',
+          cancelUrl: window.location.origin + '/?spreadsheet_cancel=true'
+        }
+      });
+
+      if (checkoutErr) throw checkoutErr;
+
+      if (data?.error) {
+        alert("Erro no Stripe: " + data.error);
+        return;
+      }
+
+      if (data?.url) window.location.href = data.url;
+
+    } catch (err: any) {
+      alert("Erro ao iniciar pagamento: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadJobResult = async () => {
+    if (!activeJob?.output_path) return;
+    try {
+      const { data, error } = await supabase.storage.from('spreadsheets').download(activeJob.output_path);
+      if (error) throw error;
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = activeJob.filename.replace('.xlsx', '_processado.xlsx');
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert("Erro ao baixar resultado: " + err.message);
+    }
+  };
   const [userRequests, setUserRequests] = useState<any[]>([]);
   const [isUserRequestsLoading, setIsUserRequestsLoading] = useState(false);
 
@@ -2965,7 +3100,47 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
         <div className="flex-grow overflow-y-auto p-5 md:p-10">
           {activeTab === 'search' && renderSearch()}
           {activeTab === 'consultancy' && renderConsultancy()}
-          {activeTab === 'batch' && <XMLAnalysis />}
+          {activeTab === 'batch' && (
+            <div className="flex flex-col h-full">
+              <div className="flex gap-4 mb-4 bg-white p-2 rounded-2xl border border-slate-200 w-fit shrink-0">
+                <button
+                  onClick={() => setBatchMode('xml')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${batchMode === 'xml' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <i className="fa-solid fa-file-code mr-2"></i>
+                  Análise XML
+                </button>
+                <button
+                  onClick={() => setBatchMode('spreadsheet')}
+                  className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${batchMode === 'spreadsheet' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <i className="fa-solid fa-file-spreadsheet mr-2"></i>
+                  Classificação Planilha
+                </button>
+              </div>
+              <div className="flex-grow overflow-hidden">
+                {batchMode === 'xml' ? (
+                  <XMLAnalysis />
+                ) : (
+                  <SpreadsheetAnalysis
+                    user={user}
+                    status={spreadsheetStatus}
+                    progress={spreadsheetProgress}
+                    result={spreadsheetResult}
+                    error={spreadsheetError}
+                    onCheckout={handleSpreadsheetCheckout}
+                    onReset={() => {
+                      setSpreadsheetStatus('idle');
+                      setSpreadsheetResult(null);
+                      setSpreadsheetError(null);
+                      setActiveJob(null);
+                    }}
+                    onDownload={handleDownloadJobResult}
+                  />
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === 'history' && (
             <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 animate-slide-up">
               <div className="flex justify-between items-baseline gap-4">

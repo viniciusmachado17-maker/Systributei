@@ -31,21 +31,34 @@ Deno.serve(async (req) => {
         switch (event.type) {
             case 'checkout.session.completed': {
                 const session = event.data.object
-                let orgId = session.metadata?.orgId
-                const subscriptionId = session.subscription as string
+                const orgId = session.metadata?.orgId
                 const customerId = session.customer as string
+                const type = session.metadata?.type
+                const jobId = session.metadata?.jobId
 
+                // One-off Payment Logic (Spreadsheets)
+                if (session.mode === 'payment' && type === 'spreadsheet_process' && jobId) {
+                    await supabaseAdmin.from('spreadsheet_jobs').update({
+                        is_paid: true,
+                        status: 'processing' // Inicia processamento automático
+                    }).eq('id', jobId)
+                    break
+                }
+
+                // Subscription Logic
+                const subscriptionId = session.subscription as string
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-                if (!orgId) orgId = subscription.metadata?.orgId
+                let resolvedOrgId = orgId
+                if (!resolvedOrgId) resolvedOrgId = subscription.metadata?.orgId
 
-                if (!orgId) return new Response(JSON.stringify({ error: 'OrgId not found' }), { status: 400 })
+                if (!resolvedOrgId) return new Response(JSON.stringify({ error: 'OrgId not found' }), { status: 400 })
 
                 const { planType, limits } = getPlanDetails(subscription.items.data[0].price.id)
 
                 await supabaseAdmin.from('organizations').update({
                     stripe_customer_id: customerId,
                     stripe_subscription_id: subscriptionId,
-                    subscription_status: subscription.status, // Pega o status real (ex: 'incomplete' para boleto pendente)
+                    subscription_status: subscription.status,
                     plan_type: planType,
                     price_id: subscription.items.data[0].price.id,
                     current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -53,7 +66,7 @@ Deno.serve(async (req) => {
                     usage_limit: limits.usage,
                     email_limit: limits.email,
                     request_limit: limits.requests
-                }).eq('id', orgId)
+                }).eq('id', resolvedOrgId)
 
                 if (customerId) {
                     const activeSubs = await stripe.subscriptions.list({ customer: customerId, status: 'active' })

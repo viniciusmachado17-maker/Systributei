@@ -1,17 +1,302 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { supabase, getMissingProducts, deleteMissingProduct } from '../services/supabaseClient';
+import { Trash2, Box, Info, Loader2, CheckCircle2, FileStack, ChevronRight, ExternalLink, Download } from 'lucide-react';
+
+interface SpreadsheetJobManagerProps { }
+
+const SpreadsheetJobManager: React.FC<SpreadsheetJobManagerProps> = () => {
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+    useEffect(() => {
+        loadJobs();
+    }, []);
+
+    const loadJobs = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('admin-actions', {
+                body: { action: 'list_spreadsheet_jobs', payload: {} }
+            });
+            if (error) throw error;
+            setJobs(data || []);
+        } catch (err: any) {
+            console.error(err);
+            alert("Erro ao carregar planilhas: " + (err.message || JSON.stringify(err)));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApprove = async (jobId: string) => {
+        if (!confirm("Confirmar liberação desta planilha para o cliente? O e-mail de aviso será enviado automaticamente.")) return;
+
+        setActionLoading(jobId);
+        try {
+            const { error } = await supabase.functions.invoke('admin-actions', {
+                body: { action: 'approve_spreadsheet_job', payload: { jobId } }
+            });
+            if (error) throw error;
+            alert("Planilha liberada com sucesso!");
+            loadJobs();
+        } catch (err: any) {
+            alert("Erro: " + err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const getStatusInfo = (status: string, isPaid: boolean) => {
+        if (!isPaid) return { label: 'Aguardando Pgto', color: 'bg-slate-100 text-slate-500' };
+        switch (status) {
+            case 'pending': return { label: 'Pendente', color: 'bg-orange-100 text-orange-700' };
+            case 'pending_admin': return { label: 'Revisão Admin', color: 'bg-blue-100 text-blue-700' };
+            case 'processing': return { label: 'IA Processando', color: 'bg-indigo-100 text-indigo-700' };
+            case 'completed': return { label: 'Liberado', color: 'bg-emerald-100 text-emerald-700' };
+            case 'failed': return { label: 'Falhou', color: 'bg-red-100 text-red-700' };
+            default: return { label: status, color: 'bg-slate-100 text-slate-500' };
+        }
+    };
+
+    if (loading) return <div className="p-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Carregando pedidos de planilhas...</div>;
+
+    return (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <FileStack size={14} className="text-brand-600" />
+                    Pedidos de Classificação de Planilhas
+                </h3>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-600">
+                    <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
+                        <tr>
+                            <th className="px-6 py-4">Data/Arquivo</th>
+                            <th className="px-6 py-4">Empresa/Usuário</th>
+                            <th className="px-6 py-4 text-center">Itens</th>
+                            <th className="px-6 py-4 text-center">Status</th>
+                            <th className="px-6 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {jobs.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="p-12 text-center text-slate-400 font-bold text-sm">
+                                    Nenhum pedido de planilha pago até o momento.
+                                </td>
+                            </tr>
+                        ) : (
+                            jobs.map((job) => {
+                                const status = getStatusInfo(job.status, job.is_paid);
+                                return (
+                                    <tr key={job.id} className="hover:bg-slate-50/50 transition border-b border-slate-50 last:border-0">
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-black text-slate-900 text-xs">{job.filename || 'Sem nome'}</span>
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase">{job.created_at ? new Date(job.created_at).toLocaleString('pt-BR') : '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-black text-slate-700 text-[11px] uppercase">{job.organizations?.name || 'Empresa n/a'}</span>
+                                                <span className="text-[10px] text-slate-400">{job.profiles?.email || 'Email n/a'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center font-black text-slate-600">
+                                            {job.progress || 0}%
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${status.color}`}>
+                                                {status.label}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                {/* Botão de Download para o Admin Review */}
+                                                {(job.status === 'completed' || job.status === 'pending_admin' || job.status === 'processing') && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const path = job.output_path || job.input_path;
+                                                            console.log("Tentando baixar arquivo:", path);
+                                                            if (!path) return alert("Caminho do arquivo não encontrado.");
+                                                            const { data, error } = await supabase.storage.from('spreadsheets').createSignedUrl(path, 60);
+                                                            if (error) {
+                                                                console.error("Erro signedUrl:", error);
+                                                                return alert("Erro ao gerar link: " + error.message);
+                                                            }
+                                                            console.log("Link gerado:", data.signedUrl);
+                                                            window.open(data.signedUrl, '_blank');
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-brand-600 transition"
+                                                        title="Baixar para revisão"
+                                                    >
+                                                        <Download size={18} />
+                                                    </button>
+                                                )}
+
+                                                {/* Botão de Liberação */}
+                                                {job.status === 'pending_admin' && (
+                                                    <button
+                                                        onClick={() => handleApprove(job.id)}
+                                                        disabled={actionLoading === job.id}
+                                                        className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-emerald-700 transition disabled:opacity-50 flex items-center gap-2"
+                                                    >
+                                                        {actionLoading === job.id ? <Loader2 size={12} className="animate-spin" /> : <ChevronRight size={14} />}
+                                                        Liberar
+                                                    </button>
+                                                )}
+
+                                                {job.status === 'completed' && (
+                                                    <span className="text-emerald-500 font-black text-[9px] uppercase flex items-center gap-1">
+                                                        <CheckCircle2 size={12} />
+                                                        Entregue
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+interface MissingProductManagerProps {
+    onRegister: (ean: string) => void;
+}
+
+const MissingProductManager: React.FC<MissingProductManagerProps> = ({ onRegister }) => {
+    const [missing, setMissing] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        setLoading(true);
+        const data = await getMissingProducts();
+        setMissing(data);
+        setLoading(false);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (confirm("Remover este EAN da lista?")) {
+            const success = await deleteMissingProduct(id);
+            if (success) {
+                setMissing(prev => prev.filter(m => m.id !== id));
+            }
+        }
+    };
+
+    if (loading) return <div className="p-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Carregando produtos faltantes...</div>;
+
+    return (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <i className="fa-solid fa-triangle-exclamation text-orange-500"></i>
+                    EANs Não Encontrados em Planilhas
+                </h3>
+                <span className="text-[10px] font-black bg-slate-200 px-3 py-1 rounded-full text-slate-600">{missing.length} PENDENTES</span>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-600">
+                    <thead className="text-xs text-slate-400 font-black uppercase bg-slate-50 tracking-wider">
+                        <tr>
+                            <th className="px-6 py-4">Código EAN</th>
+                            <th className="px-6 py-4">Produto (Planilha)</th>
+                            <th className="px-6 py-4">Origem (Empresa)</th>
+                            <th className="px-6 py-4">Usuário</th>
+                            <th className="px-6 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {missing.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="p-12 text-center text-emerald-600 font-bold text-sm">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <CheckCircle2 size={32} />
+                                        Nenhum EAN pendente de cadastro!
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
+                            missing.map((m) => (
+                                <tr key={m.id} className="hover:bg-slate-50/50 transition border-b border-slate-50 last:border-0">
+                                    <td className="px-6 py-4 font-black font-mono text-slate-900 group">
+                                        <div className="flex items-center gap-2">
+                                            {m.ean}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-slate-700 italic max-w-xs truncate">
+                                        {m.product_name || '---'}
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-slate-400 text-xs">{m.organizations?.name || '---'}</td>
+                                    <td className="px-6 py-4 text-[10px]">
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-slate-600">{m.profiles?.name || 'Sistema'}</span>
+                                            <span className="text-slate-400">{m.profiles?.email || 'pelo .csv'}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                        <button
+                                            onClick={() => onRegister(m.ean)}
+                                            className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition"
+                                            title="Cadastrar agora"
+                                        >
+                                            <Box size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(m.id)}
+                                            className="p-2 text-slate-300 hover:text-red-500 transition"
+                                            title="Remover da lista"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
 
 interface AdminDashboardProps {
     onNavigate: (view: any) => void;
 }
 
-const ProductManager: React.FC = () => {
+const ProductManager = React.forwardRef((props, ref) => {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formTab, setFormTab] = useState<'info' | 'cbs' | 'ibs'>('info');
+
+    // EXPOSTO VIA REF
+    React.useImperativeHandle(ref, () => ({
+        setQueryEan: (ean: string) => {
+            setFormData(prev => ({ ...prev, ean, produto: '' }));
+            setShowForm(true);
+            setFormTab('info');
+        }
+    }));
+
+    // EXPOSTO PARA USO EXTERNO (Criação a partir de faltante)
+    const setQueryEan = (ean: string) => {
+        setFormData(prev => ({ ...prev, ean }));
+        setShowForm(true);
+    };
 
     const [formData, setFormData] = useState({
         // Info base
@@ -585,7 +870,7 @@ const ProductManager: React.FC = () => {
             )}
         </div>
     );
-};
+});
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) => {
     const [subscribers, setSubscribers] = useState<any[]>([]);
@@ -594,7 +879,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
     const [selectedOrg, setSelectedOrg] = useState<any>(null);
     const [modalMode, setModalMode] = useState<'plan' | 'member' | null>(null);
-    const [currentTab, setCurrentTab] = useState<'subscribers' | 'products'>('subscribers');
+    const [currentTab, setCurrentTab] = useState<'subscribers' | 'products' | 'missing' | 'spreadsheets'>('subscribers');
+    const productManagerRef = React.useRef<any>(null);
+
+    const handleRegisterMissing = (ean: string) => {
+        setCurrentTab('products');
+        setTimeout(() => {
+            productManagerRef.current?.setQueryEan(ean);
+        }, 100);
+    };
 
     // Form States
     const [newPlan, setNewPlan] = useState('start');
@@ -736,6 +1029,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                             >
                                 Produtos
                             </button>
+                            <button
+                                onClick={() => setCurrentTab('missing')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition uppercase tracking-wider ${currentTab === 'missing' ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Faltantes
+                            </button>
+                            <button
+                                onClick={() => setCurrentTab('spreadsheets')}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition uppercase tracking-wider ${currentTab === 'spreadsheets' ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                Planilhas Pagas
+                            </button>
                         </div>
                         <button
                             onClick={() => onNavigate('dashboard')}
@@ -746,6 +1051,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                         </button>
                     </div>
                 </div>
+
+                {currentTab === 'products' && <ProductManager ref={productManagerRef} />}
+
+                {currentTab === 'spreadsheets' && <SpreadsheetJobManager />}
+
+                {currentTab === 'missing' && <MissingProductManager onRegister={handleRegisterMissing} />}
 
                 {currentTab === 'subscribers' ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

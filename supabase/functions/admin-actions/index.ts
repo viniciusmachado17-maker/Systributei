@@ -26,7 +26,12 @@ serve(async (req) => {
         const token = authHeader.replace('Bearer ', '')
         const { data: { user }, error: userError } = await supabase.auth.getUser(token)
 
-        if (userError || !user) throw new Error('Invalid Token')
+        if (userError || !user) {
+            console.error("User Auth Error:", userError?.message);
+            throw new Error('Invalid Token');
+        }
+
+        console.log("Authenticated User ID:", user.id);
 
         // 3. Verificar Role Admin
         const { data: profile } = await supabase
@@ -35,15 +40,20 @@ serve(async (req) => {
             .eq('id', user.id)
             .single()
 
+        console.log("User Profile Role:", profile?.role);
+
         if (profile?.role !== 'admin') {
-            return new Response(JSON.stringify({ error: 'Unauthorized: User is not admin' }), {
+            console.warn("Access Denied: Role is", profile?.role);
+            return new Response(JSON.stringify({ error: `Unauthorized: User is ${profile?.role}` }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 403,
             })
         }
 
         // 4. Processar Ação
-        const { action, payload } = await req.json()
+        const body = await req.json()
+        const { action, payload } = body
+        console.log("Admin Action:", action, "Payload:", JSON.stringify(payload));
 
         let result;
         if (action === 'list_subscribers') {
@@ -61,8 +71,100 @@ serve(async (req) => {
             })
             result = await updatePlan(supabase, stripe, payload)
 
-        } else if (action === 'add_member') {
-            result = await addMember(supabase, payload)
+        } else if (action === 'list_spreadsheet_jobs') {
+            console.log("Fetching spreadsheet jobs with clean joins...");
+            const { data: jobs, error } = await supabase
+                .from('spreadsheet_jobs')
+                .select(`
+                    id,
+                    filename,
+                    status,
+                    progress,
+                    input_path,
+                    output_path,
+                    is_paid,
+                    created_at,
+                    profiles:profiles!spreadsheet_jobs_profiles_fkey (email, name),
+                    organizations:organizations!spreadsheet_jobs_organization_id_fkey (name)
+                `)
+                .eq('is_paid', true)
+                .order('created_at', { ascending: false })
+
+            if (error) {
+                console.error("Query Error:", JSON.stringify(error));
+                throw new Error("Query failed: " + error.message);
+            }
+            console.log("Jobs found:", jobs?.length);
+            result = jobs;
+
+        } else if (action === 'approve_spreadsheet_job') {
+            const { jobId, finalOutputPath } = payload;
+
+            // 1. Get job details
+            const { data: job } = await supabase.from('spreadsheet_jobs').select('*').eq('id', jobId).single();
+            if (!job) throw new Error("Job not found");
+
+            // 2. Update status and output path
+            const updateData: any = {
+                status: 'completed',
+                completed_at: new Date().toISOString()
+            };
+            if (finalOutputPath) updateData.output_path = finalOutputPath;
+
+            const { error: updateErr } = await supabase.from('spreadsheet_jobs').update(updateData).eq('id', jobId);
+            if (updateErr) throw updateErr;
+
+            // 3. Send Email Notification
+            try {
+                const { data: userData, error: userFetchErr } = await supabase.auth.admin.getUserById(job.user_id)
+                if (userFetchErr) console.error("User Fetch Error:", userFetchErr);
+
+                const userEmail = userData?.user?.email
+                const resendKey = Deno.env.get('RESEND_API_KEY')
+
+                console.log("Attempting email to:", userEmail, "with key:", resendKey ? "PRESENT" : "MISSING");
+
+                if (resendKey && userEmail) {
+                    console.log(`Sending email to ${userEmail} using domain tributeiclass.com.br`);
+                    const emailRes = await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${resendKey}`
+                        },
+                        body: JSON.stringify({
+                            from: 'TributeiClass <nao-responda@tributeiclass.com.br>',
+                            to: userEmail,
+                            subject: `✅ Planilha Pronta para Download: ${job.filename}`,
+                            html: `
+                                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;">
+                                    <div style="background-color: #0f172a; padding: 32px 20px; text-align: center;">
+                                        <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Tributei<span style="color: #3b82f6;">Class</span></h1>
+                                    </div>
+                                    <div style="padding: 40px 30px; text-align: center;">
+                                        <h2 style="color: #1e293b; font-size: 20px; margin-bottom: 16px;">Sua planilha foi liberada!</h2>
+                                        <p style="color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+                                            O administrador revisou e liberou o processamento do arquivo <strong>${job.filename}</strong>.
+                                        </p>
+                                        <a href="https://tributeiclass.com.br" style="display: inline-block; background-color: #2563eb; color: #ffffff; padding: 16px 40px; border-radius: 12px; font-weight: 700; text-decoration: none;">
+                                            Abrir Sistema
+                                        </a>
+                                    </div>
+                                </div>
+                            `
+                        })
+                    })
+                    const resJson = await emailRes.json();
+                    console.log(`Resend Status: ${emailRes.status}`);
+                    console.log("Resend Body:", JSON.stringify(resJson));
+                } else {
+                    console.warn(`Email not sent. Key: ${resendKey ? "YES" : "NO"}, UserEmail: ${userEmail}`);
+                }
+            } catch (err) {
+                console.error("Resend API Exception:", err);
+            }
+
+            result = { success: true };
         } else {
             throw new Error('Action not found')
         }
@@ -73,7 +175,7 @@ serve(async (req) => {
         })
 
     } catch (error) {
-        console.error(error)
+        console.error("Function Error:", error.message)
         return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,

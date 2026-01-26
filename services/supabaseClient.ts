@@ -658,3 +658,60 @@ export const markConsultationsAsSeen = async (userId: string): Promise<void> => 
     console.error("Erro ao marcar consultas como vistas:", err);
   }
 };
+
+/**
+ * Adiciona um produto não encontrado na lista de "Produtos Faltantes".
+ */
+export const reportMissingProduct = async (ean: string, productName?: string, userId?: string, orgId?: string): Promise<void> => {
+  if (!isSupabaseConfigured) return;
+  try {
+    await supabase.from('missing_products').insert({
+      ean,
+      product_name: productName,
+      user_id: userId,
+      organization_id: orgId
+    });
+  } catch (err) {
+    console.error("Erro ao reportar produto faltante:", err);
+  }
+};
+
+/**
+ * Busca todos os produtos faltantes (Apenas Admins).
+ */
+export const getMissingProducts = async (): Promise<any[]> => {
+  if (!isSupabaseConfigured) return [];
+  try {
+    const { data, error } = await supabase
+      .from('missing_products')
+      .select(`
+        *,
+        organizations:organization_id (name),
+        profiles:user_id (name, email)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Erro ao buscar produtos faltantes:", err);
+    return [];
+  }
+};
+
+/**
+ * Remove um produto da lista de faltantes (Apenas Admins).
+ */
+export const deleteMissingProduct = async (id: string): Promise<boolean> => {
+  if (!isSupabaseConfigured) return true;
+  try {
+    const { error } = await supabase
+      .from('missing_products')
+      .delete()
+      .eq('id', id);
+    return !error;
+  } catch (err) {
+    console.error("Erro ao remover produto faltante:", err);
+    return false;
+  }
+};
