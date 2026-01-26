@@ -2507,6 +2507,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
               <p className="text-sm font-bold text-orange-900">
                 {upgradeReason === 'trial' && "Seu período de teste de 7 dias expirou."}
                 {upgradeReason === 'usage' && "Você atingiu o limite de consultas do seu plano atual."}
+                {upgradeReason === 'batch' && "O Processamento em Lote é um recurso exclusivo para assinantes."}
                 {upgradeReason === 'history' && "O Histórico de Consultas é um recurso exclusivo de nossos planos Start, Pro e Premium."}
                 {upgradeReason === 'email' && "Você atingiu o limite de consultoria por e-mail do seu plano."}
                 {upgradeReason === 'whatsapp' && "O Suporte VIP via WhatsApp é exclusivo para clientes do plano Premium."}
@@ -2910,8 +2911,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
           </button>
           <button
             onClick={() => {
-              if (['gratis', 'start'].includes(user?.organization?.plan_type || '')) {
-                setUpgradeReason('usage');
+              if (user?.organization?.plan_type === 'gratis') {
+                setUpgradeReason('batch');
                 setIsUpgradeModalOpen(true);
               } else {
                 setActiveTab('batch');
@@ -2920,9 +2921,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
             className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'batch' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}
           >
             <div className="flex items-center gap-3">
-              <i className="fa-solid fa-file-invoice"></i> Análise XML
+              <i className="fa-solid fa-boxes-stacked"></i> Processamento em Lote
             </div>
-            {['gratis', 'start'].includes(user?.organization?.plan_type || '') && <i className="fa-solid fa-lock text-[10px] opacity-40"></i>}
+            {user?.organization?.plan_type === 'gratis' && <i className="fa-solid fa-lock text-[10px] opacity-40"></i>}
           </button>
           <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${activeTab === 'settings' ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'}`}>
             <i className="fa-solid fa-gear"></i> Minha Conta
@@ -2952,7 +2953,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
                 'bg-red-500 shadow-lg shadow-red-500/20'
               }`} title={connStatus === 'online' ? 'Conectado à Base Live' : connStatus === 'testing' ? 'Verificando conexão...' : 'Modo Demo (Offline)'}></span>
             <h2 className="text-lg md:text-xl font-black text-slate-800 tracking-tight">
-              {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : activeTab === 'batch' ? 'Análise XML' : 'Minha Conta'}
+              {activeTab === 'search' ? 'Consulta de Produtos' : activeTab === 'history' ? 'Histórico de Consultas' : activeTab === 'consultancy' ? 'Consultoria Técnica' : activeTab === 'batch' ? 'Processamento em Lote' : 'Minha Conta'}
             </h2>
           </div>
 
