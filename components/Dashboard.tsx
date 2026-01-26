@@ -187,13 +187,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
 
       if (jobErr) throw jobErr;
 
+      // 1. Calculate Tiered Pricing
+      let totalPriceCents = 0;
+      if (rowCount <= 1500) {
+        totalPriceCents = 45000; // Mínimo de R$ 450,00
+      } else if (rowCount <= 10000) {
+        totalPriceCents = rowCount * 25; // R$ 0,25 por item
+      } else if (rowCount <= 15000) {
+        totalPriceCents = rowCount * 21; // R$ 0,21 por item
+      } else {
+        totalPriceCents = rowCount * 19; // R$ 0,19 por item
+      }
+
       const { data, error: checkoutErr } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           orgId: user?.organization?.id,
           userId: user?.id,
           mode: 'payment',
           metadata: { jobId: job.id, type: 'spreadsheet_process', rowCount },
-          custom_price: Math.max(10, Math.ceil(rowCount / 100) * 5) * 100, // Preço customizado
+          custom_price: totalPriceCents,
           successUrl: window.location.origin + '/?spreadsheet_success=true',
           cancelUrl: window.location.origin + '/?spreadsheet_cancel=true'
         }

@@ -73,9 +73,18 @@ const SpreadsheetAnalysis: React.FC<SpreadsheetAnalysisProps> = ({
                         throw new Error(`Colunas obrigatórias não encontradas: EAN e PRODUTO.`);
                     }
 
-                    // Calcular Preço (Exemplo: R$ 5,00 base + R$ 0,05 por linha)
+                    // Calcular Preço Tiered
                     const rowCount = sheetData.length;
-                    const estimatedPrice = Math.max(10, Math.ceil(rowCount / 100) * 5);
+                    let estimatedPrice = 0;
+                    if (rowCount <= 1500) {
+                        estimatedPrice = 450;
+                    } else if (rowCount <= 10000) {
+                        estimatedPrice = rowCount * 0.25;
+                    } else if (rowCount <= 15000) {
+                        estimatedPrice = rowCount * 0.21;
+                    } else {
+                        estimatedPrice = rowCount * 0.19;
+                    }
 
                     // Subir para o Storage antes do pagamento (fica lá temporário associado ao user)
                     const storagePath = `${user?.id}/${Date.now()}_${file.name}`;
