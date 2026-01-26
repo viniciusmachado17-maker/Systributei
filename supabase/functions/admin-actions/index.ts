@@ -84,6 +84,7 @@ serve(async (req) => {
                     output_path,
                     is_paid,
                     created_at,
+                    downloaded_at,
                     profiles:profiles!spreadsheet_jobs_profiles_fkey (email, name),
                     organizations:organizations!spreadsheet_jobs_organization_id_fkey (name)
                 `)
