@@ -108,9 +108,17 @@ const SpreadsheetJobManager: React.FC<SpreadsheetJobManagerProps> = () => {
                                             {job.progress || 0}%
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${status.color}`}>
-                                                {status.label}
-                                            </span>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${status.color}`}>
+                                                    {status.label}
+                                                </span>
+                                                {job.downloaded_at && (
+                                                    <span className="text-[8px] text-emerald-600 font-bold uppercase flex items-center gap-1">
+                                                        <CheckCircle2 size={10} />
+                                                        Baixado em {new Date(job.downloaded_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">

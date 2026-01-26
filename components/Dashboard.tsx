@@ -220,6 +220,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
     try {
       const { data, error } = await supabase.storage.from('spreadsheets').download(activeJob.output_path);
       if (error) throw error;
+
+      // Log download in database
+      await supabase.from('spreadsheet_jobs').update({
+        downloaded_at: new Date().toISOString()
+      }).eq('id', activeJob.id);
+
       const url = window.URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
