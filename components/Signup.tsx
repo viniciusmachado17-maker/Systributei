@@ -9,6 +9,9 @@ interface SignupProps {
 
 const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -19,6 +22,12 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!acceptedTerms) {
+      alert("Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.");
+      return;
+    }
+
     setIsLoading(true);
 
     if (!supabase) {
@@ -28,10 +37,6 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
     }
 
     try {
-      // 1. Criar usuário no Supabase Auth
-      // O Trigger 'on_auth_user_created' no banco vai criar automaticamente:
-      // - A Organização
-      // - O Perfil do Usuário
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -40,14 +45,13 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
           data: {
             name: formData.name,
             phone: formData.phone,
-            company_name: formData.company // Passando para o Trigger usar
+            company_name: formData.company
           }
         }
       });
 
       if (authError) throw authError;
 
-      // Sucesso
       alert("Conta criada com sucesso! Se necessário, verifique seu email.");
       onNavigate('login');
 
@@ -60,16 +64,14 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
-      {/* ... (rest of the UI remains the same, assuming imports are correct) ... */}
-      {/* Just mapping the UI back correctly */}
+    <div className="min-h-screen pt-32 pb-20 px-4 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden text-slate-900">
+      {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-40">
         <div className="absolute top-20 right-10 w-80 h-80 bg-brand-100 rounded-full mix-blend-multiply filter blur-3xl animate-float"></div>
         <div className="absolute bottom-20 left-10 w-80 h-80 bg-accent-100 rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
 
       <div className="w-full max-w-lg relative z-10 animate-slide-up">
-        {/* We need to keep the form UI exactly as it was, just ensure the onSubmit calls our new handleSubmit */}
         <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 p-8 md:p-10 border border-slate-100">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Comece agora</h2>
@@ -89,7 +91,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
-                  <i className="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <i className="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-brand-600"></i>
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -102,7 +104,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                   />
-                  <i className="fa-solid fa-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <i className="fa-solid fa-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-brand-600"></i>
                 </div>
               </div>
             </div>
@@ -118,7 +120,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
-                <i className="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <i className="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-brand-600"></i>
               </div>
             </div>
 
@@ -133,7 +135,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
-                <i className="fa-brands fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <i className="fa-brands fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-brand-600"></i>
               </div>
             </div>
 
@@ -148,7 +150,40 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-                <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs text-brand-600"></i>
+              </div>
+            </div>
+
+            {/* Checkbox de Termos */}
+            <div className="flex items-start gap-3 px-1 py-1">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  required
+                  className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-slate-300 rounded cursor-pointer"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                />
+              </div>
+              <div className="text-[10px] text-slate-500 leading-tight">
+                Eu li e aceito os{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-brand-600 font-bold hover:underline"
+                >
+                  Termos de Uso
+                </button>
+                {' '}e a{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsPrivacyModalOpen(true)}
+                  className="text-brand-600 font-bold hover:underline"
+                >
+                  Política de Privacidade
+                </button>.
               </div>
             </div>
 
@@ -163,16 +198,12 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white py-4 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/30 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-70"
+              disabled={isLoading || !acceptedTerms}
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white py-4 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/30 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Criar minha conta agora'}
             </button>
           </form>
-
-          <p className="text-[10px] text-center text-slate-400 mt-6 leading-relaxed">
-            Ao se cadastrar, você concorda com nossos Termos de Uso e Política de Privacidade.
-          </p>
         </div>
 
         <p className="text-center mt-8 text-xs text-slate-500 font-medium">
@@ -182,6 +213,109 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
           </button>
         </p>
       </div>
+
+      {/* Modal de Termos Integrado */}
+      {isTermsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsTermsModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center">
+                  <i className="fa-solid fa-file-contract"></i>
+                </div>
+                <h3 className="font-black text-slate-900 uppercase tracking-tight text-sm">Termos de Uso</h3>
+              </div>
+              <button
+                onClick={() => setIsTermsModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition text-slate-400"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
+              <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
+                <p className="mb-4">Estes Termos e Condições de Uso regulam o acesso e o uso da plataforma TributeiClass. Ao acessar ou utilizar a Plataforma, você declara que leu, entendeu e concorda com estes Termos.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Definições</h4>
+                <p>Usuário: pessoa física ou jurídica que utiliza a Plataforma. Conta: cadastro do Usuário para acesso à área logada.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Objeto do serviço</h4>
+                <p>O TributeiClass disponibiliza um sistema de pesquisa e organização de informações relacionadas à Reforma Tributária, com foco em IBS e CBS.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Natureza informativa</h4>
+                <p>A Plataforma tem finalidade informativa e de apoio. Ela não constitui consultoria tributária, contábil ou jurídica, nem substitui análise profissional especializada.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso</h4>
+                <p>Reembolso em 7 dias: caso o Usuário cancele o Plano em até 7 dias contados da contratação inicial, o TributeiClass realizará o reembolso integral.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei aplicável e foro</h4>
+                <p>Fica eleito o foro da comarca de Uberlândia/MG para resolver quaisquer controvérsias decorrentes destes Termos.</p>
+
+                <div className="mt-10 p-4 bg-brand-50 rounded-2xl text-center border border-brand-100">
+                  <p className="font-bold text-brand-900 mb-3 text-xs tracking-tight">Deseja aceitar estes termos e prosseguir com o cadastro?</p>
+                  <button
+                    onClick={() => {
+                      setAcceptedTerms(true);
+                      setIsTermsModalOpen(false);
+                    }}
+                    className="bg-brand-600 text-white px-10 py-3 rounded-xl font-bold text-xs shadow-lg shadow-brand-500/20 transition-all active:scale-95"
+                  >
+                    Aceitar e Continuar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Privacidade Integrado */}
+      {isPrivacyModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsPrivacyModalOpen(false)}></div>
+          <div className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <i className="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 className="font-black text-slate-900 uppercase tracking-tight text-sm">Política de Privacidade</h3>
+              </div>
+              <button
+                onClick={() => setIsPrivacyModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition text-slate-400"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
+              <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
+                <p className="mb-4">O TributeiClass valoriza a sua privacidade. Esta Política de Privacidade explica como coletamos, usamos e protegemos seus dados pessoais.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Dados que coletamos</h4>
+                <p>Coletamos nome, e-mail, telefone, dados da empresa e histórico de consultas para prover as funcionalidades da plataforma.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Finalidade</h4>
+                <p>Os dados são usados para criar sua conta, facilitar o login, processar pagamentos e melhorar nossos serviços.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Seus Direitos (LGPD)</h4>
+                <p>Você tem direito a acessar, corrigir ou excluir seus dados a qualquer momento entrando em contato pelo e-mail suporte@tributeiclass.com.br.</p>
+
+                <div className="mt-10 p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
+                  <p className="font-bold text-emerald-900 mb-3 text-xs tracking-tight">Agradecemos a sua confiança em nossa plataforma.</p>
+                  <button
+                    onClick={() => setIsPrivacyModalOpen(false)}
+                    className="bg-emerald-600 text-white px-10 py-3 rounded-xl font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                  >
+                    Entendi e concordo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

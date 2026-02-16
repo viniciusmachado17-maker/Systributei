@@ -37,22 +37,22 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, user }) => {
           </div>
 
           <div className="hidden md:flex items-center space-x-8 text-xs font-bold text-slate-600 uppercase tracking-wider">
-            {(currentView === 'landing' || currentView === 'pricing') && (
-              <>
-                <button
-                  onClick={() => handleNavClick('pricing')}
-                  className={`transition ${currentView === 'pricing' ? 'text-brand-600' : 'hover:text-brand-600'}`}
-                >
-                  Planos
-                </button>
-                {currentView === 'landing' && (
-                  <a href="#duvidas" className="hover:text-brand-600 transition">Dúvidas</a>
-                )}
-              </>
-            )}
-
             {currentView !== 'landing' && (
               <button onClick={() => handleNavClick('landing')} className="hover:text-brand-600 transition">Início</button>
+            )}
+
+            <button
+              onClick={() => handleNavClick('pricing')}
+              className={`transition ${currentView === 'pricing' ? 'text-brand-600' : 'hover:text-brand-600'}`}
+            >
+              Planos
+            </button>
+
+            <button onClick={() => handleNavClick('terms')} className="hover:text-brand-600 transition">Termos</button>
+            <button onClick={() => handleNavClick('privacy')} className="hover:text-brand-600 transition">Privacidade</button>
+
+            {currentView === 'landing' && (
+              <a href="#duvidas" className="hover:text-brand-600 transition">Dúvidas</a>
             )}
 
             {!user ? (
@@ -97,22 +97,17 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, user }) => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-slate-100 animate-in slide-in-from-top duration-300">
           <div className="px-4 py-8 space-y-6 flex flex-col items-center text-center">
-            {(currentView === 'landing' || currentView === 'pricing') && (
-              <>
-                <button
-                  onClick={() => handleNavClick('pricing')}
-                  className={`text-sm font-black uppercase tracking-widest ${currentView === 'pricing' ? 'text-brand-600' : 'text-slate-600'}`}
-                >
-                  Planos
-                </button>
-                {currentView === 'landing' && (
-                  <a href="#duvidas" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-black uppercase tracking-widest text-slate-600">Dúvidas</a>
-                )}
-              </>
-            )}
-
-            {currentView !== 'landing' && (
-              <button onClick={() => handleNavClick('landing')} className="text-sm font-black uppercase tracking-widest text-slate-600">Início</button>
+            <button onClick={() => handleNavClick('landing')} className="text-sm font-black uppercase tracking-widest text-slate-600">Início</button>
+            <button
+              onClick={() => handleNavClick('pricing')}
+              className={`text-sm font-black uppercase tracking-widest ${currentView === 'pricing' ? 'text-brand-600' : 'text-slate-600'}`}
+            >
+              Planos
+            </button>
+            <button onClick={() => handleNavClick('terms')} className="text-sm font-black uppercase tracking-widest text-slate-600">Termos</button>
+            <button onClick={() => handleNavClick('privacy')} className="text-sm font-black uppercase tracking-widest text-slate-600">Privacidade</button>
+            {currentView === 'landing' && (
+              <a href="#duvidas" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-black uppercase tracking-widest text-slate-600">Dúvidas</a>
             )}
 
             {!user ? (
