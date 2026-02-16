@@ -328,32 +328,43 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">A sua privacidade é importante para nós. Esta Política descreve como o TributeiClass coleta e protege seus dados em conformidade com a LGPD.</p>
+                <p className="mb-4">Esta Política descreve como o TributeiClass coleta, usa e protege seus dados em conformidade com a LGPD. Ao utilizar a Plataforma, você declara ciência destas práticas.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Controlador</h4>
-                <p>O TributeiClass atua como Controlador dos dados. Contato DPO: suporte@tributeiclass.com.br</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Controlador e Contato</h4>
+                <p>O TributeiClass atua como Controlador. Canal DPO: suporte@tributeiclass.com.br</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Dados Coletados</h4>
-                <ul className="list-disc pl-4 space-y-1 mb-4">
-                  <li><strong>Dados cadastrais:</strong> nome e e-mail.</li>
-                  <li><strong>Dados técnicos:</strong> IP, logs de acesso e cookies.</li>
-                  <li><strong>Dados de uso:</strong> histórico de consultas e preferências.</li>
-                </ul>
+                <p>Coletamos dados cadastrais (nome/email), dados de autenticação, uso da plataforma (histórico), dados técnicos/logs e dados de pagamento (Stripe).</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Finalidades</h4>
-                <p>Usamos seus dados para criar sua conta, fornecer suporte, processar pagamentos via Stripe e melhorar a experiência da plataforma.</p>
+                <p>Usamos dados para gerir sua conta, fornecer o serviço, prevenir fraudes, gerir assinaturas e cumprir obrigações legais.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">4. Bases Legais</h4>
+                <p>O tratamento baseia-se na execução de contrato, legítimo interesse e cumprimento de obrigação legal.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Compartilhamento</h4>
-                <p>Não vendemos seus dados. Compartilhamos apenas com provedores essenciais (Stripe, Google Analytics, Supabase) ou autoridades legais.</p>
+                <p>Não vendemos seus dados. Compartilhamos com provedores essenciais (Stripe, Google, Infra) ou por ordem judicial.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">7. Retenção</h4>
+                <p>Mantemos dados pelo tempo necessário para as finalidades descritas ou por obrigações legais/regulatórias.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">8. Segurança</h4>
+                <p>Adotamos criptografia (HTTPS), controles de acesso e monitoramento para proteger suas informações.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Seus Direitos</h4>
-                <p>Você tem direito a acessar, corrigir ou excluir seus dados a qualquer momento enviando um e-mail para suporte@tributeiclass.com.br.</p>
+                <p>Você pode solicitar acesso, correção, eliminação ou portabilidade via suporte@tributeiclass.com.br.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Cookies</h4>
+                <p>Usamos cookies essenciais e analíticos para funcionamento e melhoria. Você pode gerir via navegador.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Cobrança e Reembolso</h4>
-                <p>Dados de pagamento são processados pelo Stripe. Mantemos registros financeiros pelo tempo necessário para cumprir obrigações legais e contábeis.</p>
+                <p>A gestão financeira é processada via Stripe. Mantemos registros pelo prazo legal necessário.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">14. Alterações</h4>
+                <p>Esta política pode ser atualizada. A versão vigente estará sempre disponível na plataforma.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Contato</h4>
-                <p>Dúvidas sobre privacidade? suporte@tributeiclass.com.br</p>
+                <p>Suporte: suporte@tributeiclass.com.br</p>
 
                 <div className="mt-10 p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
                   <p className="font-bold text-emerald-900 mb-3 text-xs tracking-tight">Agradecemos a sua confiança em nossa plataforma.</p>

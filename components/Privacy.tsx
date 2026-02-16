@@ -16,27 +16,17 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                         <div className="relative z-10">
                             <h1 className="text-3xl md:text-4xl font-black tracking-tighter mb-4">Política de Privacidade</h1>
-                            <p className="text-emerald-100 font-medium">Última atualização: 15 de Fevereiro de 2026</p>
+                            <p className="text-emerald-100 font-medium">Última atualização: 15/02/2026</p>
                         </div>
                     </div>
 
                     <div className="p-8 md:p-12">
-                        {/* TL;DR Section */}
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 mb-10">
-                            <h2 className="text-emerald-900 font-black uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
-                                <i className="fa-solid fa-bolt"></i> Resumo Rápido
-                            </h2>
-                            <p className="text-emerald-800 text-sm leading-relaxed">
-                                O TributeiClass coleta dados como nome, e-mail, senha protegida (hash), logs e histórico de uso/consultas para permitir login, fornecer o serviço, melhorar a Plataforma e manter segurança. Usamos Google Analytics para métricas e Stripe para processar assinaturas — sem armazenar, em regra, dados sensíveis do cartão. Não vendemos seus dados. Você pode solicitar acesso/correção/eliminação e demais direitos LGPD pelo e-mail suporte@tributeiclass.com.br. Cookies essenciais são necessários para login; cookies analíticos ajudam a melhorar a experiência.
-                            </p>
-                        </div>
-
                         <div className="prose prose-slate max-w-none">
-                            <p className="text-slate-600 leading-relaxed mb-8">
+                            <p className="text-slate-600 leading-relaxed mb-6 font-medium">
                                 A sua privacidade é importante para nós. Esta Política de Privacidade descreve como o TributeiClass (“TributeiClass”, “nós”) coleta, usa, armazena, compartilha e protege dados pessoais no site e aplicativo web <a href="https://tributeiclass.com.br" className="text-brand-600 font-bold hover:underline">https://tributeiclass.com.br</a> (“Plataforma”).
                             </p>
 
-                            <p className="text-slate-600 leading-relaxed mb-8">
+                            <p className="text-slate-600 leading-relaxed mb-10">
                                 Tratamos dados pessoais em conformidade com a Lei nº 13.709/2018 (LGPD), o Marco Civil da Internet (Lei nº 12.965/2014), o Código de Defesa do Consumidor (Lei nº 8.078/1990) e demais normas aplicáveis.
                             </p>
 
@@ -45,7 +35,7 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                                 <p className="text-slate-600 text-sm leading-relaxed">
                                     O TributeiClass atua como Controlador dos dados pessoais tratados na Plataforma, definindo as finalidades e os meios de tratamento.
                                 </p>
-                                <p className="text-slate-600 text-sm font-bold mt-2">Canal de Privacidade (Encarregado/DPO): suporte@tributeiclass.com.br</p>
+                                <p className="text-slate-600 text-sm font-bold mt-2 italic">Canal de Privacidade (Encarregado/DPO): suporte@tributeiclass.com.br</p>
                             </section>
 
                             <section className="mb-10">
@@ -62,19 +52,21 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                                     <p className="bg-slate-50 p-4 rounded-xl border border-slate-100 italic">
                                         <strong>Observação:</strong> dados sensíveis do cartão (como número completo e CVV) são processados pelo provedor de pagamentos e, em regra, não ficam armazenados em nossos servidores.
                                     </p>
+                                    <p><strong>Importante:</strong> não solicitamos dados pessoais desnecessários. Caso você opte por não fornecer determinados dados, pode ser que não seja possível utilizar algumas funcionalidades (por exemplo, criar conta e acessar áreas restritas).</p>
                                 </div>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">3. Para quais finalidades usamos os dados</h3>
+                                <p className="text-slate-600 text-sm mb-4">Usamos dados pessoais para:</p>
                                 <ul className="list-disc pl-5 space-y-2 text-slate-600 text-sm leading-relaxed">
-                                    <li>Criar e administrar sua conta (cadastro, acesso, suporte e comunicações operacionais);</li>
-                                    <li>Autenticar e manter sua sessão (login, segurança e prevenção de acessos indevidos);</li>
-                                    <li>Fornecer e melhorar a Plataforma (funcionalidades, performance, estabilidade e correções);</li>
-                                    <li>Prevenir fraudes e abusos e manter a segurança (monitoramento, logs e detecção de atividades suspeitas);</li>
-                                    <li>Gerenciar assinaturas, cobranças, cancelamentos e reembolsos;</li>
-                                    <li>Cumprir obrigações legais e regulatórias;</li>
-                                    <li>Análises estatísticas e métricas de uso.</li>
+                                    <li>criar e administrar sua conta (cadastro, acesso, suporte e comunicações operacionais);</li>
+                                    <li>autenticar e manter sua sessão (login, segurança e prevenção de acessos indevidos);</li>
+                                    <li>fornecer e melhorar a Plataforma (funcionalidades, performance, estabilidade e correções);</li>
+                                    <li>prevenir fraudes e abusos e manter a segurança (monitoramento, logs e detecção de atividades suspeitas);</li>
+                                    <li>gerenciar assinaturas, cobranças, cancelamentos e reembolsos (processamento de pagamento, gestão do plano e registros operacionais);</li>
+                                    <li>cumprir obrigações legais e regulatórias e atender solicitações de autoridades competentes;</li>
+                                    <li>análises estatísticas e métricas de uso para entender como a Plataforma é utilizada e aprimorar a experiência do usuário.</li>
                                 </ul>
                             </section>
 
@@ -83,10 +75,10 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                                 <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                                     <p>O TributeiClass realiza o tratamento de dados pessoais com fundamento nas bases legais previstas na LGPD, especialmente:</p>
                                     <ul className="list-disc pl-5 space-y-2">
-                                        <li>Execução de contrato e procedimentos preliminares;</li>
-                                        <li>Legítimo interesse (prevenção a fraudes, segurança, melhoria do produto);</li>
-                                        <li>Cumprimento de obrigação legal ou regulatória;</li>
-                                        <li>Consentimento, quando aplicável.</li>
+                                        <li>execução de contrato e procedimentos preliminares (cadastro, acesso e uso do serviço; gestão de assinatura);</li>
+                                        <li>legítimo interesse (prevenção a fraudes, segurança, melhoria do produto e métricas de uso, com avaliação e respeito aos seus direitos);</li>
+                                        <li>cumprimento de obrigação legal ou regulatória;</li>
+                                        <li>consentimento, quando aplicável (por exemplo, determinados cookies não essenciais, conforme suas preferências).</li>
                                     </ul>
                                 </div>
                             </section>
@@ -94,55 +86,97 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">5. Compartilhamento de dados com terceiros</h3>
                                 <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
-                                    <p>Não vendemos seus dados pessoais. Podemos compartilhar dados somente quando necessário, com:</p>
+                                    <p>Não vendemos seus dados pessoais. Podemos compartilhar dados somente quando necessário para operar a Plataforma, cumprir obrigações legais ou proteger direitos, nos seguintes casos:</p>
                                     <ul className="list-disc pl-5 space-y-2">
-                                        <li>Provedores de tecnologia e infraestrutura (como Supabase para armazenamento);</li>
-                                        <li>Google Analytics, para análises estatísticas;</li>
-                                        <li>Stripe, para processamento de assinaturas e cobranças;</li>
-                                        <li>Autoridades públicas, mediante ordem judicial ou obrigação legal.</li>
+                                        <li>provedores de tecnologia e infraestrutura (hospedagem, armazenamento, monitoramento), estritamente para viabilizar a operação;</li>
+                                        <li>Google Analytics, para análises estatísticas de uso da Plataforma (cookies e identificadores);</li>
+                                        <li>Stripe, para processamento de assinaturas, cobranças e eventuais reembolsos, incluindo prevenção a fraudes e gestão da cobrança;</li>
+                                        <li>autoridades públicas, mediante ordem judicial, requisição legal ou obrigação regulatória.</li>
                                     </ul>
+                                    <p>Exigimos que fornecedores e parceiros adotem medidas de segurança e privacidade compatíveis com a legislação e tratem os dados conforme nossas instruções, quando aplicável.</p>
                                 </div>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">6. Transferência internacional de dados</h3>
                                 <p className="text-slate-600 text-sm leading-relaxed">
-                                    Alguns provedores (como Google Analytics e Stripe) podem processar dados em servidores fora do Brasil. Adotamos medidas para que a transferência ocorra de forma segura e conforme a LGPD.
+                                    Alguns provedores (por exemplo, Google Analytics e Stripe) podem processar dados em servidores localizados fora do Brasil. Nesses casos, adotamos medidas para que a transferência internacional ocorra de forma adequada, conforme a LGPD e padrões contratuais do mercado.
                                 </p>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">7. Retenção e eliminação</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    Reteremos dados pessoais pelo tempo necessário para cumprir as finalidades descritas, resolver disputas e cumprir obrigações legais. Quando não mais necessária, a informação será eliminada ou anonimizada.
-                                </p>
+                                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                    <p>Reteremos dados pessoais apenas pelo tempo necessário para cumprir as finalidades descritas nesta Política, inclusive para:</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>manter sua conta ativa;</li>
+                                        <li>cumprir obrigações legais, regulatórias e de auditoria;</li>
+                                        <li>resolver disputas, prevenir fraudes e manter a segurança;</li>
+                                        <li>preservar registros de acesso, quando aplicável;</li>
+                                        <li>manter registros operacionais de assinatura/pagamento/reembolso, quando aplicável.</li>
+                                    </ul>
+                                    <p>Quando a retenção não for mais necessária, os dados serão eliminados ou anonimizados, observadas as obrigações legais e prazos aplicáveis.</p>
+                                </div>
+                            </section>
+
+                            <section className="mb-10">
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">8. Segurança da informação</h3>
+                                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                    <p>Adotamos medidas técnicas e administrativas razoáveis para proteger dados pessoais contra acessos não autorizados, destruição, perda, alteração, comunicação ou difusão indevida. Entre elas:</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>criptografia em trânsito (HTTPS/TLS);</li>
+                                        <li>controles de acesso e autenticação;</li>
+                                        <li>logs e monitoramento de segurança;</li>
+                                        <li>boas práticas de desenvolvimento e atualizações.</li>
+                                    </ul>
+                                    <p>Apesar disso, nenhum sistema é 100% seguro. Em caso de incidentes relevantes, adotaremos as medidas cabíveis e, quando exigido, comunicaremos autoridades e titulares conforme a LGPD.</p>
+                                </div>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">9. Direitos do titular (LGPD)</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                    Você pode solicitar acesso, correção, eliminação, portabilidade ou revogar o consentimento a qualquer momento.
-                                </p>
-                                <p className="text-slate-600 text-sm font-bold">
-                                    Para exercer seus direitos, entre em contato: suporte@tributeiclass.com.br
-                                </p>
+                                <p className="text-slate-600 text-sm leading-relaxed mb-4">Você pode solicitar, a qualquer momento, nos termos da LGPD:</p>
+                                <ul className="list-disc pl-5 space-y-2 text-slate-600 text-sm leading-relaxed">
+                                    <li>confirmação da existência de tratamento;</li>
+                                    <li>acesso aos dados;</li>
+                                    <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+                                    <li>anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em desconformidade;</li>
+                                    <li>portabilidade (quando aplicável e conforme regulamentação);</li>
+                                    <li>eliminação dos dados tratados com consentimento (quando aplicável);</li>
+                                    <li>informação sobre compartilhamentos;</li>
+                                    <li>informação sobre a possibilidade de não consentir e suas consequências (quando aplicável);</li>
+                                    <li>revogação do consentimento (quando aplicável).</li>
+                                </ul>
+                            </section>
+
+                            <section className="mb-10">
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">10. Como exercer seus direitos</h3>
+                                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                    <p>Para alterar seus dados cadastrais, acesse “Minha Conta” (quando disponível).</p>
+                                    <p>Para solicitações relacionadas a privacidade e direitos do titular, entre em contato pelo e-mail <strong>suporte@tributeiclass.com.br</strong>.</p>
+                                    <p>As solicitações serão avaliadas e respondidas em prazo razoável, conforme a LGPD e regulamentações aplicáveis, podendo haver necessidade de confirmação de identidade para proteção do titular.</p>
+                                </div>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">11. Política de Cookies</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    Usamos cookies essenciais para funcionamento e segurança, e cookies analíticos (Google Analytics) para melhoria do serviço. Você pode gerenciar as preferências no seu navegador.
-                                </p>
+                                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                    <p>Cookies são pequenos arquivos armazenados no seu navegador/dispositivo para viabilizar funcionalidades, segurança e melhorar sua experiência. Também podemos utilizar tecnologias semelhantes (tags e pixels).</p>
+                                    <p>Usamos:</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li><strong>cookies essenciais (necessários):</strong> autenticação, manutenção de sessão, segurança e funcionamento básico da Plataforma;</li>
+                                        <li><strong>cookies de desempenho/analíticos (Google Analytics):</strong> medir e entender como a Plataforma é utilizada, ajudando na melhoria do serviço.</li>
+                                    </ul>
+                                    <p>Você pode gerenciar cookies nas configurações do seu navegador. A desativação de cookies essenciais pode impedir o funcionamento correto do login e de recursos da Plataforma.</p>
+                                </div>
                             </section>
 
                             <section className="mb-10">
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">12. Cancelamento, cobrança e reembolso (informações de privacidade)</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                    Quando o Usuário contrata um Plano, informações necessárias para gestão de assinatura, cobrança, cancelamento e reembolso podem ser tratadas e compartilhadas com a Stripe para viabilizar o pagamento e a operação financeira.
-                                </p>
-                                <p className="text-slate-600 text-sm leading-relaxed">
-                                    As regras comerciais (incluindo prazos e condições de reembolso) estão descritas nos Termos e Condições de Uso e/ou no checkout. Em caso de reembolso, manteremos registros operacionais relacionados à cobrança e ao status do reembolso pelo tempo necessário para cumprir finalidades legais, contábeis e de segurança.
-                                </p>
+                                <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                    <p>Quando o Usuário contrata um Plano, informações necessárias para gestão de assinatura, cobrança, cancelamento e reembolso podem ser tratadas e compartilhadas com a Stripe para viabilizar o pagamento e a operação financeira.</p>
+                                    <p>As regras comerciais (incluindo prazos e condições de reembolso) estão descritas nos Termos e Condições de Uso e/ou no checkout. Em caso de reembolso, manteremos registros operacionais relacionados à cobrança e ao status do reembolso pelo tempo necessário para cumprir finalidades legais, contábeis e de segurança.</p>
+                                </div>
                             </section>
 
                             <section className="mb-10">
