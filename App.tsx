@@ -15,6 +15,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import ResetPassword from './components/ResetPassword';
 import Terms from './components/Terms';
 import Privacy from './components/Privacy';
+import CookieConsent from './components/CookieConsent';
 
 import { testSupabaseConnection, supabase } from './services/supabaseClient';
 
@@ -219,6 +220,7 @@ const App: React.FC = () => {
       </main>
 
       {currentView !== 'dashboard' && <Footer onNavigate={navigateTo} />}
+      <CookieConsent />
     </div>
   );
 };
