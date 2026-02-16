@@ -235,56 +235,52 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">Estes Termos e Condições de Uso (“Termos”) regulam o acesso e o uso da plataforma TributeiClass (“Plataforma”). Ao acessar ou utilizar a Plataforma, você declara que leu, entendeu e concorda com estes Termos.</p>
+                <p className="mb-4">Estes Termos e Condições de Uso regem o uso da plataforma TributeiClass. Ao utilizar a Plataforma, você concorda com estas regras.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Definições</h4>
-                <ul className="list-disc pl-4 space-y-1 mb-4">
-                  <li><strong>Usuário:</strong> pessoa física ou jurídica que utiliza a Plataforma.</li>
-                  <li><strong>Conta:</strong> cadastro do Usuário para acesso à área logada.</li>
-                  <li><strong>Serviços:</strong> funcionalidades disponibilizadas, incluindo pesquisa/consulta e relatórios.</li>
-                </ul>
+                <p>Usuário; Conta; Serviços (pesquisa, histórico, relatórios); Conteúdo e Assinatura/Plano.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Objeto do serviço</h4>
-                <p>O TributeiClass disponibiliza um sistema de pesquisa e organização de informações relacionadas à Reforma Tributária, com foco em IBS e CBS.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Objeto do Serviço</h4>
+                <p>Sistema de pesquisa e organização de informações relacionadas à Reforma Tributária (IBS e CBS).</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Natureza informativa</h4>
-                <p>A Plataforma tem finalidade informativa e de apoio. Ela não constitui consultoria tributária, contábil ou jurídica. O Usuário é o único responsável por validar informações antes de tomar decisões.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Natureza Informativa</h4>
+                <p>A plataforma tem finalidade informativa e não constitui consultoria tributária, contábil ou jurídica. O usuário é o único responsável pela validação das informações.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">4. Elegibilidade</h4>
-                <p>O Usuário deve fornecer informações verdadeiras e é responsável pela confidencialidade de sua conta.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">4. Elegibilidade e Cadastro</h4>
+                <p>O usuário deve fornecer informações verdadeiras e é responsável pela confidencialidade de suas credenciais.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Condutas Proibidas</h4>
-                <p>É proibido copiar, vender, realizar engenharia reversa ou usar automações para extração massiva de dados sem autorização.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Uso Permitido e Proibições</h4>
+                <p>É proibido copiar dados massivamente (scrapers), realizar engenharia reversa ou usar a plataforma para fins ilícitos.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso</h4>
-                <p>Pagamentos via Stripe. Reembolso integral em até 7 dias contados da contratação inicial em caso de cancelamento.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso (Stripe)</h4>
+                <p>Pagamentos via Stripe. Renovação automática habilitada. Reembolso integral garantido em até 7 dias da contratação inicial.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">7. Propriedade Intelectual</h4>
-                <p>A plataforma e todo seu conteúdo (layout, algoritmos, marcas) são de propriedade exclusiva do TributeiClass.</p>
+                <p>A plataforma e seu conteúdo são de propriedade exclusiva do TributeiClass.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">8. Histórico de Consultas</h4>
-                <p>A plataforma armazena o histórico de consultas para fins de funcionalidade, auditoria e melhoria do serviço.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">8. Conteúdo e Histórico</h4>
+                <p>Armazenamos histórico de consultas para funcionalidades e melhorias, conforme Política de Privacidade.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Privacidade (LGPD)</h4>
-                <p>O tratamento de dados pessoais segue nossa Política de Privacidade. Contato: suporte@tributeiclass.com.br.</p>
+                <p>O tratamento de dados é regido por nossa Política de Privacidade. Contato: suporte@tributeiclass.com.br</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">10. Disponibilidade e Suporte</h4>
-                <p>Podem ocorrer interrupções por manutenção. Podemos alterar funcionalidades para evolução técnica do produto.</p>
+                <p>Podem ocorrer interrupções para manutenção. Podemos atualizar ou descontinuar funcionalidades para melhoria técnica.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Responsabilidade</h4>
-                <p>O TributeiClass não se responsabiliza por decisões baseadas no conteúdo ou falhas de serviços de terceiros.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Limitação de Responsabilidade</h4>
+                <p>Não nos responsabilizamos por decisões tomadas com base no conteúdo ou por falhas de terceiros.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Encerramento de conta</h4>
-                <p>Podemos suspender acessos por violação destes termos. O usuário pode encerrar a conta a qualquer momento via plataforma.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Suspensão e Encerramento</h4>
+                <p>Podemos encerrar o acesso por violação destes termos ou suspeita de fraude.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">13. Comunicações</h4>
-                <p>Enviamos avisos operacionais e de segurança. Comunicações promocionais seguem as normas de descadastro.</p>
+                <p>Enviamos avisos operacionais. Promoções dependem de consentimento e possuem opção de descadastro.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">14. Alterações</h4>
-                <p>Estes termos podem ser atualizados. O uso continuado da plataforma indica concordância com a nova versão.</p>
+                <p>Estes termos podem ser atualizados. O uso continuado indica concordância com a nova versão.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei aplicável</h4>
-                <p>Termos regidos pelas leis brasileiras. Foro eleito: Uberlândia/MG.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei Aplicável e Foro</h4>
+                <p>Leis do Brasil. Foro eleito: Uberlândia/MG.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">16. Contato</h4>
                 <p>E-mail: suporte@tributeiclass.com.br</p>
