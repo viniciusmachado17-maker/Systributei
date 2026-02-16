@@ -218,7 +218,7 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
       {isTermsModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsTermsModalOpen(false)}></div>
-          <div className="bg-white w-full max-w-2xl max-h-[80vh] rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center">
@@ -235,22 +235,29 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">Estes Termos e Condições de Uso regulam o acesso e o uso da plataforma TributeiClass. Ao acessar ou utilizar a Plataforma, você declara que leu, entendeu e concorda com estes Termos.</p>
+                <p className="mb-4">Estes Termos e Condições de Uso (“Termos”) regulam o acesso e o uso da plataforma TributeiClass (“Plataforma”). Ao acessar ou utilizar a Plataforma, você declara que leu, entendeu e concorda com estes Termos.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Definições</h4>
-                <p>Usuário: pessoa física ou jurídica que utiliza a Plataforma. Conta: cadastro do Usuário para acesso à área logada.</p>
+                <ul className="list-disc pl-4 space-y-1 mb-4">
+                  <li><strong>Usuário:</strong> pessoa física ou jurídica que utiliza a Plataforma.</li>
+                  <li><strong>Conta:</strong> cadastro do Usuário para acesso à área logada.</li>
+                  <li><strong>Serviços:</strong> funcionalidades disponibilizadas, incluindo pesquisa/consulta e relatórios.</li>
+                </ul>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Objeto do serviço</h4>
                 <p>O TributeiClass disponibiliza um sistema de pesquisa e organização de informações relacionadas à Reforma Tributária, com foco em IBS e CBS.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Natureza informativa</h4>
-                <p>A Plataforma tem finalidade informativa e de apoio. Ela não constitui consultoria tributária, contábil ou jurídica, nem substitui análise profissional especializada.</p>
+                <p>A Plataforma tem finalidade informativa e de apoio. Ela não constitui consultoria tributária, contábil ou jurídica, nem substitui análise profissional especializada. O Usuário é o único responsável por validar informações antes de tomar decisões.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Condutas Proibidas</h4>
+                <p>É proibido copiar, vender, realizar engenharia reversa ou usar robôs para extração massiva de dados da Plataforma sem autorização prévia.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso</h4>
-                <p>Reembolso em 7 dias: caso o Usuário cancele o Plano em até 7 dias contados da contratação inicial, o TributeiClass realizará o reembolso integral.</p>
+                <p>Pagamentos são processados via Stripe. Reembolso em 7 dias: caso o Usuário cancele o Plano em até 7 dias contados da contratação inicial, o TributeiClass realizará o reembolso integral.</p>
 
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei aplicável e foro</h4>
-                <p>Fica eleito o foro da comarca de Uberlândia/MG para resolver quaisquer controvérsias decorrentes destes Termos.</p>
+                <p>Estes Termos são regidos pelas leis brasileiras. Fica eleito o foro da comarca de Uberlândia/MG para resolver quaisquer controvérsias.</p>
 
                 <div className="mt-10 p-4 bg-brand-50 rounded-2xl text-center border border-brand-100">
                   <p className="font-bold text-brand-900 mb-3 text-xs tracking-tight">Deseja aceitar estes termos e prosseguir com o cadastro?</p>
@@ -291,16 +298,26 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">O TributeiClass valoriza a sua privacidade. Esta Política de Privacidade explica como coletamos, usamos e protegemos seus dados pessoais.</p>
+                <p className="mb-4">A sua privacidade é importante para nós. Esta Política descreve como o TributeiClass coleta e protege seus dados em conformidade com a LGPD.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Dados que coletamos</h4>
-                <p>Coletamos nome, e-mail, telefone, dados da empresa e histórico de consultas para prover as funcionalidades da plataforma.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Controlador</h4>
+                <p>O TributeiClass atua como Controlador dos dados. Contato DPO: suporte@tributeiclass.com.br</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Finalidade</h4>
-                <p>Os dados são usados para criar sua conta, facilitar o login, processar pagamentos e melhorar nossos serviços.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Dados Coletados</h4>
+                <ul className="list-disc pl-4 space-y-1 mb-4">
+                  <li><strong>Dados cadastrais:</strong> nome e e-mail.</li>
+                  <li><strong>Dados técnicos:</strong> IP, logs de acesso e cookies.</li>
+                  <li><strong>Dados de uso:</strong> histórico de consultas e preferências.</li>
+                </ul>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Seus Direitos (LGPD)</h4>
-                <p>Você tem direito a acessar, corrigir ou excluir seus dados a qualquer momento entrando em contato pelo e-mail suporte@tributeiclass.com.br.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Finalidades</h4>
+                <p>Usamos seus dados para criar sua conta, fornecer suporte, processar pagamentos via Stripe e melhorar a experiência da plataforma.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Compartilhamento</h4>
+                <p>Não vendemos seus dados. Compartilhamos apenas com provedores essenciais (Stripe, Google Analytics, Supabase) ou autoridades legais.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Seus Direitos</h4>
+                <p>Você tem direito a acessar, corrigir ou excluir seus dados a qualquer momento enviando um e-mail para suporte@tributeiclass.com.br.</p>
 
                 <div className="mt-10 p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
                   <p className="font-bold text-emerald-900 mb-3 text-xs tracking-tight">Agradecemos a sua confiança em nossa plataforma.</p>

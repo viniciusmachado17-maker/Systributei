@@ -24,7 +24,7 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                         {/* TL;DR Section */}
                         <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 mb-10">
                             <h2 className="text-emerald-900 font-black uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
-                                <i className="fa-solid fa-bolt"></i> Resumo Rápido (TL;DR)
+                                <i className="fa-solid fa-bolt"></i> Resumo Rápido
                             </h2>
                             <p className="text-emerald-800 text-sm leading-relaxed">
                                 O TributeiClass coleta dados como nome, e-mail, senha protegida (hash), logs e histórico de uso/consultas para permitir login, fornecer o serviço, melhorar a Plataforma e manter segurança. Usamos Google Analytics para métricas e Stripe para processar assinaturas — sem armazenar, em regra, dados sensíveis do cartão. Não vendemos seus dados. Você pode solicitar acesso/correção/eliminação e demais direitos LGPD pelo e-mail suporte@tributeiclass.com.br. Cookies essenciais são necessários para login; cookies analíticos ajudam a melhorar a experiência.
