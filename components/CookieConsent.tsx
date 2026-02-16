@@ -25,33 +25,60 @@ const CookieConsent: React.FC = () => {
     const [analyticsConsent, setAnalyticsConsent] = useState(false);
 
     useEffect(() => {
-        const consent = localStorage.getItem('tc_cookie_consent');
-        if (!consent) {
+        const handleShowConsent = () => {
             setIsVisible(true);
-        } else if (consent === 'granted') {
-            loadGTM(GTM_ID);
+            setShowPreferences(true);
+        };
+
+        window.addEventListener('show-cookie-consent', handleShowConsent);
+
+        const consentRaw = localStorage.getItem('tc_cookie_consent_v1');
+        if (!consentRaw) {
+            setIsVisible(true);
+        } else {
+            try {
+                const consent = JSON.parse(consentRaw);
+                if (consent.analytics === 'granted' || consent.status === 'granted') {
+                    loadGTM(GTM_ID);
+                    setAnalyticsConsent(true);
+                }
+            } catch (e) {
+                setIsVisible(true);
+            }
         }
+
+        return () => window.removeEventListener('show-cookie-consent', handleShowConsent);
     }, []);
 
-    const handleAcceptAll = () => {
-        localStorage.setItem('tc_cookie_consent', 'granted');
-        loadGTM(GTM_ID);
+    const saveConsent = (status: 'granted' | 'declined', analytics: boolean) => {
+        const consentData = {
+            status,
+            analytics: analytics ? 'granted' : 'declined',
+            timestamp: new Date().toISOString(),
+            version: '1.0',
+            userAgent: navigator.userAgent
+        };
+        localStorage.setItem('tc_cookie_consent_v1', JSON.stringify(consentData));
+
+        if (analytics || status === 'granted') {
+            loadGTM(GTM_ID);
+        }
+
         setIsVisible(false);
+    };
+
+    const handleAcceptAll = () => {
+        setAnalyticsConsent(true);
+        saveConsent('granted', true);
     };
 
     const handleDeclineAll = () => {
-        localStorage.setItem('tc_cookie_consent', 'declined');
-        setIsVisible(false);
+        setAnalyticsConsent(false);
+        saveConsent('declined', false);
     };
 
     const handleSavePreferences = () => {
-        if (analyticsConsent) {
-            localStorage.setItem('tc_cookie_consent', 'granted');
-            loadGTM(GTM_ID);
-        } else {
-            localStorage.setItem('tc_cookie_consent', 'declined');
-        }
-        setIsVisible(false);
+        saveConsent(analyticsConsent ? 'granted' : 'declined', analyticsConsent);
     };
 
     if (!isVisible) return null;

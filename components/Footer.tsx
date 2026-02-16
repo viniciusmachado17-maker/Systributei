@@ -26,6 +26,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li><a href="#duvidas" className="hover:text-brand-600 transition">Dúvidas</a></li>
               <li><button onClick={() => onNavigate?.('terms')} className="hover:text-brand-600 transition text-left">Termos de Uso</button></li>
               <li><button onClick={() => onNavigate?.('privacy')} className="hover:text-brand-600 transition text-left">Privacidade</button></li>
+              <li><button onClick={() => window.dispatchEvent(new Event('show-cookie-consent'))} className="hover:text-brand-600 transition text-left">Preferências de cookies</button></li>
             </ul>
           </div>
           <div>
