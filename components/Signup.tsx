@@ -235,54 +235,64 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">Estes Termos e Condições de Uso regem o uso da plataforma TributeiClass. Ao utilizar a Plataforma, você concorda com estas regras.</p>
+                <p className="mb-4">Estes Termos e Condições de Uso (“Termos”) regulam o acesso e o uso da plataforma TributeiClass (“Plataforma”). Ao acessar ou utilizar a Plataforma, você declara que leu, entendeu e concorda com estes Termos. Se você não concordar, não utilize a Plataforma.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Definições</h4>
-                <p>Usuário; Conta; Serviços (pesquisa, histórico, relatórios); Conteúdo e Assinatura/Plano.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">1. Definições</h4>
+                <ul className="list-disc pl-4 space-y-1 mb-4 text-[10px]">
+                  <li><strong>Usuário:</strong> pessoa física ou jurídica que utiliza a Plataforma.</li>
+                  <li><strong>Conta:</strong> cadastro do Usuário para acesso à área logada.</li>
+                  <li><strong>Serviços:</strong> pesquisa/consulta, histórico, relatórios e recursos correlatos.</li>
+                  <li><strong>Conteúdo:</strong> informações, classificações e materiais geradores pela Plataforma.</li>
+                  <li><strong>Assinatura/Plano:</strong> modalidade de contratação paga ou gratuita.</li>
+                </ul>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Objeto do Serviço</h4>
-                <p>Sistema de pesquisa e organização de informações relacionadas à Reforma Tributária (IBS e CBS).</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">2. Objeto do Serviço</h4>
+                <p>Sistema de pesquisa e organização de informações relacionadas à Reforma Tributária (IBS e CBS) aplicáveis a produtos.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Natureza Informativa</h4>
-                <p>A plataforma tem finalidade informativa e não constitui consultoria tributária, contábil ou jurídica. O usuário é o único responsável pela validação das informações.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">3. Natureza Informativa – não é consultoria</h4>
+                <p>3.1. A Plataforma tem finalidade informativa. Não constitui consultoria tributária, contábil ou jurídica.</p>
+                <p>3.2. O Usuário é o único responsável por validar informações antes de emitir documentos fiscais ou efetuar recolhimentos.</p>
+                <p>3.3. Não garantimos que todo Conteúdo esteja completo ou infalível devido às constantes mudanças legislativas.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">4. Elegibilidade e Cadastro</h4>
-                <p>O usuário deve fornecer informações verdadeiras e é responsável pela confidencialidade de suas credenciais.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">4. Elegibilidade e Cadastro</h4>
+                <p>O Usuário deve fornecer informações verdadeiras e é responsável pela confidencialidade de sua Conta.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Uso Permitido e Proibições</h4>
-                <p>É proibido copiar dados massivamente (scrapers), realizar engenharia reversa ou usar a plataforma para fins ilícitos.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">5. Uso Permitido e Condutas Proibidas</h4>
+                <p>Proibido: copiar/vender conteúdo sem autorização; engenharia reversa; uso de robôs/scrapers; burlar limites de segurança.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso (Stripe)</h4>
-                <p>Pagamentos via Stripe. Renovação automática habilitada. Reembolso integral garantido em até 7 dias da contratação inicial.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">6. Assinaturas e Reembolso (Stripe)</h4>
+                <p>6.1. Planos e preços descritos no checkout. Pagamentos via Stripe.</p>
+                <p>6.3. Renovação automática habilitada. Cancelamento interrompe renovações futuras.</p>
+                <p>6.5. <strong>Reembolso em 7 dias:</strong> Garantido para cancelamentos em até 7 dias da contratação inicial.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">7. Propriedade Intelectual</h4>
-                <p>A plataforma e seu conteúdo são de propriedade exclusiva do TributeiClass.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">7. Propriedade Intelectual</h4>
+                <p>A Plataforma, marcas e funcionalidades são de propriedade exclusiva do TributeiClass.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">8. Conteúdo e Histórico</h4>
-                <p>Armazenamos histórico de consultas para funcionalidades e melhorias, conforme Política de Privacidade.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">8. Conteúdo do Usuário e Histórico</h4>
+                <p>Armazenamos histórico para funcionalidades e segurança, conforme Política de Privacidade.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Privacidade (LGPD)</h4>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">9. Privacidade (LGPD)</h4>
                 <p>O tratamento de dados é regido por nossa Política de Privacidade. Contato: suporte@tributeiclass.com.br</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">10. Disponibilidade e Suporte</h4>
-                <p>Podem ocorrer interrupções para manutenção. Podemos atualizar ou descontinuar funcionalidades para melhoria técnica.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">10. Disponibilidade e Suporte</h4>
+                <p>Não garantimos funcionamento ininterrupto. Podemos atualizar ou suspender recursos para melhoria técnica.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Limitação de Responsabilidade</h4>
-                <p>Não nos responsabilizamos por decisões tomadas com base no conteúdo ou por falhas de terceiros.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">11. Limitação de Responsabilidade</h4>
+                <p>Não nos responsabilizamos por decisões baseadas no Conteúdo ou falhas de terceiros. Responsabilidade limitada ao valor pago nos últimos 3 meses.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Suspensão e Encerramento</h4>
-                <p>Podemos encerrar o acesso por violação destes termos ou suspeita de fraude.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">12. Suspensão e Encerramento</h4>
+                <p>Podemos encerrar o acesso por violação destes Termos ou suspeita de fraude.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">13. Comunicações</h4>
-                <p>Enviamos avisos operacionais. Promoções dependem de consentimento e possuem opção de descadastro.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">13. Comunicações</h4>
+                <p>Enviamos avisos operacionais. Promoções possuem opção de descadastro.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">14. Alterações</h4>
-                <p>Estes termos podem ser atualizados. O uso continuado indica concordância com a nova versão.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">14. Alterações destes Termos</h4>
+                <p>Estes Termos podem ser atualizados. O uso continuado indica concordância com a nova versão.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei Aplicável e Foro</h4>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">15. Lei Aplicável e Foro</h4>
                 <p>Leis do Brasil. Foro eleito: Uberlândia/MG.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">16. Contato</h4>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">16. Contato</h4>
                 <p>E-mail: suporte@tributeiclass.com.br</p>
 
                 <div className="mt-10 p-4 bg-brand-50 rounded-2xl text-center border border-brand-100">
@@ -324,43 +334,53 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
             </div>
             <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
               <div className="prose prose-slate prose-sm text-[11px] leading-relaxed text-slate-600">
-                <p className="mb-4">Esta Política descreve como o TributeiClass coleta, usa e protege seus dados em conformidade com a LGPD. Ao utilizar a Plataforma, você declara ciência destas práticas.</p>
+                <p className="mb-4 font-medium">A sua privacidade é importante para nós. Esta Política de Privacidade descreve como o TributeiClass coleta, usa, armazena, compartilha e protege dados pessoais.</p>
+                <p className="mb-6">Tratamos dados em conformidade com a LGPD (Lei nº 13.709/2018), Marco Civil da Internet e demais normas aplicáveis.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">1. Controlador e Contato</h4>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">1. Controlador e Contato</h4>
                 <p>O TributeiClass atua como Controlador. Canal DPO: suporte@tributeiclass.com.br</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">2. Dados Coletados</h4>
-                <p>Coletamos dados cadastrais (nome/email), dados de autenticação, uso da plataforma (histórico), dados técnicos/logs e dados de pagamento (Stripe).</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">2. Dados Coletados</h4>
+                <ul className="list-disc pl-4 space-y-1 mb-4">
+                  <li><strong>Cadastrais:</strong> nome e e-mail.</li>
+                  <li><strong>Autenticação:</strong> hash de senha e dados de login.</li>
+                  <li><strong>Uso:</strong> histórico de consultas e preferências.</li>
+                  <li><strong>Técnicos:</strong> IP, dispositivo e logs de acesso.</li>
+                  <li><strong>Pagamento:</strong> geridos via Stripe (não armazenamos dados sensíveis do cartão).</li>
+                </ul>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">3. Finalidades</h4>
-                <p>Usamos dados para gerir sua conta, fornecer o serviço, prevenir fraudes, gerir assinaturas e cumprir obrigações legais.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">3. Finalidades</h4>
+                <p>Administração de conta, suporte, autenticação, melhoria do serviço, prevenção a fraudes e gestão de assinaturas.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">4. Bases Legais</h4>
-                <p>O tratamento baseia-se na execução de contrato, legítimo interesse e cumprimento de obrigação legal.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">4. Bases Legais</h4>
+                <p>Execução de contrato, legítimo interesse e cumprimento de obrigação legal.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">5. Compartilhamento</h4>
-                <p>Não vendemos seus dados. Compartilhamos com provedores essenciais (Stripe, Google, Infra) ou por ordem judicial.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">5. Compartilhamento</h4>
+                <p>Não vendemos seus dados. Compartilhamos com provedores de infraestrutura, Stripe e autoridades judiciais quando necessário.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">7. Retenção</h4>
-                <p>Mantemos dados pelo tempo necessário para as finalidades descritas ou por obrigações legais/regulatórias.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">6. Transferência Internacional</h4>
+                <p>Ocorre para servidores de parceiros como Google e Stripe, seguindo padrões de segurança.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">8. Segurança</h4>
-                <p>Adotamos criptografia (HTTPS), controles de acesso e monitoramento para proteger suas informações.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">7. Retenção e Eliminação</h4>
+                <p>Dados mantidos conforme finalidade ou obrigações legais. Eliminados quando não forem mais necessários.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Seus Direitos</h4>
-                <p>Você pode solicitar acesso, correção, eliminação ou portabilidade via suporte@tributeiclass.com.br.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">8. Segurança</h4>
+                <p>Adotamos HTTPS, criptografia e monitoramento constante contra acessos indevidos.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Cookies</h4>
-                <p>Usamos cookies essenciais e analíticos para funcionamento e melhoria. Você pode gerir via navegador.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">9. Direitos do Titular</h4>
+                <p>Acesso, correção, eliminação, portabilidade e revogação de consentimento via suporte@tributeiclass.com.br.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Cobrança e Reembolso</h4>
-                <p>A gestão financeira é processada via Stripe. Mantemos registros pelo prazo legal necessário.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">11. Cookies</h4>
+                <p>Essenciais para funcionamento e analíticos para melhora da experiência. Gestão via navegador.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">14. Alterações</h4>
-                <p>Esta política pode ser atualizada. A versão vigente estará sempre disponível na plataforma.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">12. Cobrança e Reembolso</h4>
+                <p>Gestão financeira via Stripe. Registros mantidos pelo prazo legal exigido.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Contato</h4>
-                <p>Suporte: suporte@tributeiclass.com.br</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">14. Alterações</h4>
+                <p>Política atualizável. A versão vigente está sempre disponível na plataforma.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest border-b border-slate-100 pb-1">15. Contato</h4>
+                <p>suporte@tributeiclass.com.br</p>
 
                 <div className="mt-10 p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
                   <p className="font-bold text-emerald-900 mb-3 text-xs tracking-tight">Agradecemos a sua confiança em nossa plataforma.</p>
