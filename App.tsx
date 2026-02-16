@@ -13,10 +13,12 @@ import Pricing from './components/Pricing';
 import Dashboard from './components/Dashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import ResetPassword from './components/ResetPassword';
+import Terms from './components/Terms';
+import Privacy from './components/Privacy';
 
 import { testSupabaseConnection, supabase } from './services/supabaseClient';
 
-export type ViewState = 'landing' | 'login' | 'signup' | 'pricing' | 'dashboard' | 'admin' | 'reset-password';
+export type ViewState = 'landing' | 'login' | 'signup' | 'pricing' | 'dashboard' | 'admin' | 'reset-password' | 'terms' | 'privacy';
 
 export interface Organization {
   id: string;
@@ -212,9 +214,11 @@ const App: React.FC = () => {
         {currentView === 'reset-password' && (
           <ResetPassword onComplete={() => setCurrentView('login')} />
         )}
+        {currentView === 'terms' && <Terms onNavigate={navigateTo} />}
+        {currentView === 'privacy' && <Privacy onNavigate={navigateTo} />}
       </main>
 
-      {currentView !== 'dashboard' && <Footer />}
+      {currentView !== 'dashboard' && <Footer onNavigate={navigateTo} />}
     </div>
   );
 };

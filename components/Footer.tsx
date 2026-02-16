@@ -1,8 +1,12 @@
-
 import React from 'react';
 import Logo from './Logo';
+import { ViewState } from '../App';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigate?: (view: ViewState) => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="bg-white border-t border-slate-200 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,9 +22,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-bold text-slate-900 mb-4">Links Rápidos</h4>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><a href="#" className="hover:text-brand-600">Início</a></li>
-
-              <li><a href="#duvidas" className="hover:text-brand-600">Dúvidas</a></li>
+              <li><button onClick={() => onNavigate?.('landing')} className="hover:text-brand-600 transition">Início</button></li>
+              <li><a href="#duvidas" className="hover:text-brand-600 transition">Dúvidas</a></li>
+              <li><button onClick={() => onNavigate?.('terms')} className="hover:text-brand-600 transition text-left">Termos de Uso</button></li>
+              <li><button onClick={() => onNavigate?.('privacy')} className="hover:text-brand-600 transition text-left">Privacidade</button></li>
             </ul>
           </div>
           <div>
