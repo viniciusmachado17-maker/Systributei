@@ -136,9 +136,33 @@ const Privacy: React.FC<PrivacyProps> = ({ onNavigate }) => {
                             </section>
 
                             <section className="mb-10">
-                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">12. Cancelamento, cobrança e reembolso</h3>
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">12. Cancelamento, cobrança e reembolso (informações de privacidade)</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                                    Quando o Usuário contrata um Plano, informações necessárias para gestão de assinatura, cobrança, cancelamento e reembolso podem ser tratadas e compartilhadas com a Stripe para viabilizar o pagamento e a operação financeira.
+                                </p>
                                 <p className="text-slate-600 text-sm leading-relaxed">
-                                    Informações necessárias para gestão financeira são processadas via Stripe. Regras de reembolso estão descritas nos Termos de Uso.
+                                    As regras comerciais (incluindo prazos e condições de reembolso) estão descritas nos Termos e Condições de Uso e/ou no checkout. Em caso de reembolso, manteremos registros operacionais relacionados à cobrança e ao status do reembolso pelo tempo necessário para cumprir finalidades legais, contábeis e de segurança.
+                                </p>
+                            </section>
+
+                            <section className="mb-10">
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">13. Links para sites externos</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">
+                                    A Plataforma pode conter links para sites de terceiros. Não controlamos e não nos responsabilizamos pelas práticas de privacidade desses sites. Recomendamos que você leia as respectivas políticas.
+                                </p>
+                            </section>
+
+                            <section className="mb-10">
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">14. Alterações desta Política</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">
+                                    Esta Política pode ser atualizada para refletir melhorias na Plataforma ou mudanças legais. A versão vigente estará disponível no site/app, e as alterações passam a valer a partir da publicação.
+                                </p>
+                            </section>
+
+                            <section className="mb-10">
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">15. Contato</h3>
+                                <p className="text-slate-600 text-sm leading-relaxed">
+                                    Se você tiver dúvidas sobre esta Política ou sobre como tratamos dados pessoais, fale conosco: <strong>suporte@tributeiclass.com.br</strong>
                                 </p>
                             </section>
 

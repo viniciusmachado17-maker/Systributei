@@ -328,6 +328,12 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">9. Seus Direitos</h4>
                 <p>Você tem direito a acessar, corrigir ou excluir seus dados a qualquer momento enviando um e-mail para suporte@tributeiclass.com.br.</p>
 
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">12. Cobrança e Reembolso</h4>
+                <p>Dados de pagamento são processados pelo Stripe. Mantemos registros financeiros pelo tempo necessário para cumprir obrigações legais e contábeis.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Contato</h4>
+                <p>Dúvidas sobre privacidade? suporte@tributeiclass.com.br</p>
+
                 <div className="mt-10 p-4 bg-emerald-50 rounded-2xl text-center border border-emerald-100">
                   <p className="font-bold text-emerald-900 mb-3 text-xs tracking-tight">Agradecemos a sua confiança em nossa plataforma.</p>
                   <button
