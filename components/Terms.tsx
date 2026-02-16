@@ -115,10 +115,62 @@ const Terms: React.FC<TermsProps> = ({ onNavigate }) => {
                         </section>
 
                         <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">10. Disponibilidade, atualizações e suporte</h2>
+                            <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                <p>10.1. Buscamos manter a Plataforma disponível, mas não garantimos funcionamento ininterrupto. Podem ocorrer interrupções por manutenção, atualizações, falhas de terceiros, ou eventos fora do nosso controle.</p>
+                                <p>10.2. Podemos alterar, atualizar, suspender ou descontinuar funcionalidades para evolução do produto, segurança, conformidade legal ou adequação técnica.</p>
+                            </div>
+                        </section>
+
+                        <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">11. Limitação de responsabilidade</h2>
+                            <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                <p>11.1. Na extensão máxima permitida pela lei, o TributeiClass não se responsabiliza por:</p>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>Decisões tomadas pelo Usuário com base no Conteúdo da Plataforma;</li>
+                                    <li>Perdas indiretas, lucros cessantes, perda de receita, perda de dados, ou danos reputacionais;</li>
+                                    <li>Inconsistências decorrentes de alterações legislativas, regulamentares ou interpretações;</li>
+                                    <li>Falhas de integrações e serviços de terceiros (incluindo provedores de pagamento, analytics e infraestrutura).</li>
+                                </ul>
+                                <p>11.2. Quando aplicável e permitido por lei, a responsabilidade total do TributeiClass ficará limitada ao valor efetivamente pago pelo Usuário ao TributeiClass nos últimos 3 (três) meses anteriores ao evento que gerou o dano.</p>
+                            </div>
+                        </section>
+
+                        <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">12. Suspensão e encerramento de conta</h2>
+                            <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                                <p>12.1. Podemos suspender ou encerrar o acesso do Usuário em caso de violação destes Termos, suspeita de fraude, risco de segurança, determinação legal ou uso que comprometa a Plataforma.</p>
+                                <p>12.2. O Usuário pode encerrar sua Conta a qualquer momento conforme instruções na Plataforma. Certos dados podem ser mantidos por prazo necessário para obrigações legais, segurança e prevenção a fraudes, conforme Política de Privacidade.</p>
+                            </div>
+                        </section>
+
+                        <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">13. Comunicações</h2>
+                            <p className="text-slate-600 text-sm leading-relaxed">
+                                Podemos enviar comunicações operacionais (segurança, confirmações e avisos importantes). Comunicações promocionais serão enviadas quando aplicável e com opção de descadastro, conforme legislação.
+                            </p>
+                        </section>
+
+                        <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">14. Alterações destes Termos</h2>
+                            <p className="text-slate-600 text-sm leading-relaxed">
+                                Estes Termos podem ser atualizados periodicamente. A versão vigente ficará disponível na Plataforma. O uso continuado após a publicação de alterações indica concordância.
+                            </p>
+                        </section>
+
+                        <section className="mb-10">
                             <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">15. Lei aplicável e foro</h2>
                             <p className="text-slate-600 text-sm leading-relaxed">
                                 Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da comarca de Uberlândia/MG, com renúncia a qualquer outro, salvo disposição legal em contrário.
                             </p>
+                        </section>
+
+                        <section className="mb-10">
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4 border-b border-slate-100 pb-2">16. Contato</h2>
+                            <div className="text-slate-600 text-sm space-y-1">
+                                <p><strong>E-mail:</strong> suporte@tributeiclass.com.br</p>
+                                <p><strong>Site:</strong> <a href="https://tributeiclass.com.br" className="text-brand-600 hover:underline">https://tributeiclass.com.br</a></p>
+                            </div>
                         </section>
 
                         <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-center">

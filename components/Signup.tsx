@@ -256,8 +256,17 @@ const Signup: React.FC<SignupProps> = ({ onNavigate }) => {
                 <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">6. Assinaturas e Reembolso</h4>
                 <p>Pagamentos são processados via Stripe. Reembolso em 7 dias: caso o Usuário cancele o Plano em até 7 dias contados da contratação inicial, o TributeiClass realizará o reembolso integral.</p>
 
-                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei aplicável e foro</h4>
-                <p>Estes Termos são regidos pelas leis brasileiras. Fica eleito o foro da comarca de Uberlândia/MG para resolver quaisquer controvérsias.</p>
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">10. Disponibilidade e Suporte</h4>
+                <p>Podem ocorrer interrupções por manutenção ou atualizações. Podemos alterar ou descontinuar funcionalidades para evolução do produto.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">11. Limitação de responsabilidade</h4>
+                <p>O TributeiClass não se responsabiliza por decisões tomadas com base no conteúdo, nem por perdas indiretas ou lucros cessantes.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">15. Lei aplicável</h4>
+                <p>Estes Termos são regidos pelas leis brasileiras. Foro eleito: Uberlândia/MG.</p>
+
+                <h4 className="font-bold text-slate-900 mt-6 mb-2 uppercase text-[10px] tracking-widest">16. Contato</h4>
+                <p>E-mail: suporte@tributeiclass.com.br</p>
 
                 <div className="mt-10 p-4 bg-brand-50 rounded-2xl text-center border border-brand-100">
                   <p className="font-bold text-brand-900 mb-3 text-xs tracking-tight">Deseja aceitar estes termos e prosseguir com o cadastro?</p>
