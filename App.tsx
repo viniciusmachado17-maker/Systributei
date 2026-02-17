@@ -52,7 +52,28 @@ export interface UserProfile {
 }
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewState>('landing');
+  // Mapeamento de rotas amigáveis para ViewState
+  const routeToView = (path: string): ViewState | null => {
+    const p = path.toLowerCase().split('?')[0];
+    if (p === '/termos') return 'terms';
+    if (p === '/privacidade') return 'privacy';
+    return null;
+  };
+
+  // Mapeamento de ViewState para rotas amigáveis
+  const viewToRoute = (view: ViewState): string => {
+    if (view === 'terms') return '/termos';
+    if (view === 'privacy') return '/privacidade';
+    if (view === 'landing') return '/';
+    return `/${view}`;
+  };
+
+  // Estado inicial baseado na URL
+  const [currentView, setCurrentView] = useState<ViewState>(() => {
+    const view = routeToView(window.location.pathname);
+    return view || 'landing';
+  });
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [nextView, setNextView] = useState<ViewState | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -61,6 +82,17 @@ const App: React.FC = () => {
   const isRecoveryLink = useMemo(() => {
     return window.location.hash.includes('type=recovery') ||
       window.location.href.includes('type=recovery');
+  }, []);
+
+  // Monitora botão voltar/avançar do navegador
+  useEffect(() => {
+    const handlePopState = () => {
+      const view = routeToView(window.location.pathname);
+      setCurrentView(view || 'landing');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   React.useEffect(() => {
@@ -115,7 +147,11 @@ const App: React.FC = () => {
               window.history.replaceState({}, document.title, newUrl);
             } else {
               // Se já estiver logado (fluxo normal), cai no dash
-              setCurrentView('dashboard');
+              // EXCETO se estiver em uma rota pública específica (/termos, /privacidade)
+              const viewFromPath = routeToView(window.location.pathname);
+              if (!viewFromPath) {
+                setCurrentView('dashboard');
+              }
             }
           }
         }
@@ -152,14 +188,17 @@ const App: React.FC = () => {
       setUser(profile);
       // Se houver um redirecionamento pendente (ex: vindo do pricing), vai para ele
       // Caso contrário, vai para a view solicitada (geralmente 'dashboard')
-      setCurrentView(nextView || view);
+      const targetView = nextView || view;
+      setCurrentView(targetView);
       setNextView(null);
+      window.history.pushState({}, '', viewToRoute(targetView));
     } else {
       // Se estiver indo para o login a partir do pricing, salva para voltar depois
       if (view === 'login' && currentView === 'pricing') {
         setNextView('pricing');
       }
       setCurrentView(view);
+      window.history.pushState({}, '', viewToRoute(view));
     }
     window.scrollTo(0, 0);
   };
