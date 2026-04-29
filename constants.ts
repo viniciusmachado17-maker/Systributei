@@ -25,6 +25,12 @@ export interface PlanLimit {
   hasHistory: boolean;
 }
 
+export const STRIPE_PRICE_IDS = {
+  start:   'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
+  pro:     'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
+  premium: 'price_1SnTmZFkPBkTRBNfAzqkRru9',
+} as const;
+
 export const PLAN_LIMITS: Record<string, PlanLimit> = {
   gratis: {
     usage_limit: 10,

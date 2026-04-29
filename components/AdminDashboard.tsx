@@ -955,9 +955,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         // Mapeamento de Planos para Preços (Stripe Price IDs)
         const priceMap: Record<string, string> = {
             'gratis': '',
-            'start': 'price_1SjRiwFkPBkTRBNfsjxZBscY',
-            'pro': 'price_1SjmRKFkPBkTRBNflIqVvWzE',
-            'premium': 'price_1SjmT9FkPBkTRBNfuN3mH65n'
+            'start': 'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
+            'pro': 'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
+            'premium': 'price_1SnTmZFkPBkTRBNfAzqkRru9'
         };
 
         try {

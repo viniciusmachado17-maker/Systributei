@@ -63,7 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }) => 
       ? new Date(org.trial_ends_at)
       : (org.created_at ? new Date(new Date(org.created_at).getTime() + 7 * 24 * 60 * 60 * 1000) : null);
 
-    if (!endsAt) return false;
+    if (!endsAt) return true;
     return endsAt < new Date();
   };
 

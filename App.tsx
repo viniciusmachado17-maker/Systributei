@@ -117,9 +117,7 @@ const App: React.FC = () => {
             .single();
 
           if (profile && !profileError) {
-            const userRole = profile.email === 'adm@tributeiclass.com.br'
-              ? 'admin'
-              : 'user';
+            const userRole = profile.role === 'admin' ? 'admin' : 'user';
 
             const userProfile: UserProfile = {
               id: session.user.id,

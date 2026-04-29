@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 *.xlsx
 supabase/.temp/
+
+# Arquivos sensíveis locais
+INFORMAÇÕES.txt
+env_config.txt
+*.txt

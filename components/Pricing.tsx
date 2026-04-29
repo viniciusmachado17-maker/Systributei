@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ViewState, UserProfile } from '../App';
 import { createCheckoutSession } from '../services/supabaseClient';
+import { STRIPE_PRICE_IDS } from '../constants';
 
 interface PricingProps {
   onNavigate: (view: ViewState) => void;
@@ -31,7 +32,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       name: 'Start',
       price: '59,90',
       // Using the Real Price ID
-      priceId: 'price_1SnTgNFkPBkTRBNfbrMpB1Qr',
+      priceId: STRIPE_PRICE_IDS.start,
       description: 'Perfeito para pequenos negócios e autônomos.',
       features: [
         '300 Consultas de produtos/mês',
@@ -49,7 +50,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       name: 'Pro',
       price: '74,90',
       // Using the Real Price ID
-      priceId: 'price_1SnTjVFkPBkTRBNfm1ZxQfdn',
+      priceId: STRIPE_PRICE_IDS.pro,
       description: 'A solução completa para empresas em crescimento.',
       features: [
         'Consultas de produtos ilimitadas',
@@ -67,7 +68,7 @@ const Pricing: React.FC<PricingProps> = ({ onNavigate, user }) => {
       name: 'Premium',
       price: '99,90',
       // Using the Real Price ID
-      priceId: 'price_1SnTmZFkPBkTRBNfAzqkRru9',
+      priceId: STRIPE_PRICE_IDS.premium,
       description: 'Gestão fiscal de alta performance para grandes volumes.',
       features: [
         'Consultas de produtos ilimitadas',

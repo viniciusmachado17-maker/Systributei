@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.39.8'
 import Stripe from 'npm:stripe@16.12.0'
+import { PRICE_TO_PLAN, PLAN_LIMITS } from '../_shared/stripe_constants.ts'
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY') || ''
 const stripe = new Stripe(stripeSecret, {
@@ -154,19 +155,8 @@ Deno.serve(async (req) => {
 })
 
 function getPlanDetails(priceId: string) {
-    const mapping: Record<string, { type: string, rank: number }> = {
-        'price_1SnTgNFkPBkTRBNfbrMpB1Qr': { type: 'start', rank: 1 },
-        'price_1SnTjVFkPBkTRBNfm1ZxQfdn': { type: 'pro', rank: 2 },
-        'price_1SnTmZFkPBkTRBNfAzqkRru9': { type: 'premium', rank: 3 }
-    }
-    const details = mapping[priceId] || { type: 'gratis', rank: 0 }
-    const limitsConfig: Record<string, any> = {
-        'gratis': { usage: 10, email: 1, requests: 1 },
-        'start': { usage: 300, email: 5, requests: 30 },
-        'pro': { usage: 999999, email: 15, requests: 50 },
-        'premium': { usage: 999999, email: 999999, requests: 100 }
-    }
-    return { planType: details.type, rank: details.rank, limits: limitsConfig[details.type] || limitsConfig['gratis'] }
+    const details = PRICE_TO_PLAN[priceId] || { type: 'gratis', rank: 0 }
+    return { planType: details.type, rank: details.rank, limits: PLAN_LIMITS[details.type] || PLAN_LIMITS['gratis'] }
 }
 
 function isCommitmentPrice(priceId: string): boolean {
