@@ -290,6 +290,7 @@ const ProductManager = React.forwardRef((props, ref) => {
     const [showForm, setShowForm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formTab, setFormTab] = useState<'info' | 'cbs' | 'ibs'>('info');
+    const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
     // EXPOSTO VIA REF
     React.useImperativeHandle(ref, () => ({
@@ -389,6 +390,60 @@ const ProductManager = React.forwardRef((props, ref) => {
         fetchRecentProducts();
     }, []);
 
+    const closeForm = () => {
+        setShowForm(false);
+        setEditingProductId(null);
+        setFormData({
+            produto: '', ean: '', ncm: '', cest: '',
+            cbs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alq_ent: '0', alq_sai: '0', red_alq_ent: '0', red_alq_sai: '0', alqf_ent: '0', alqf_sai: '0' },
+            ibs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alqe_ent: '0', alqe_sai: '0', red_alqe_ent: '0', red_alqe_sai: '0', alqfe_ent: '0', alqfe_sai: '0', alqm_ent: '0', alqm_sai: '0', red_alqm_ent: '0', red_alqm_sai: '0', alqfm_ent: '0', alqfm_sai: '0' }
+        });
+        setFormTab('info');
+        setError(null);
+    };
+
+    const handleEditProduct = async (productId: string) => {
+        setLoading(true);
+        try {
+            const [{ data: product, error: pErr }, { data: cbsData }, { data: ibsData }] = await Promise.all([
+                supabase.from('products').select('*').eq('id', productId).single(),
+                supabase.from('cbs').select('*').eq('product_id', productId).maybeSingle(),
+                supabase.from('ibs').select('*').eq('product_id', productId).maybeSingle(),
+            ]);
+            if (pErr) throw pErr;
+            setFormData({
+                produto: product.produto || '',
+                ean: product.ean || '',
+                ncm: product.ncm || '',
+                cest: product.cest || '',
+                cbs: cbsData ? {
+                    cst_entrada: cbsData.cst_entrada ?? '01', cst_saida: cbsData.cst_saida ?? '01',
+                    cclass_entrada: cbsData.cclass_entrada ?? '01', cclass_saida: cbsData.cclass_saida ?? '01',
+                    alq_ent: cbsData.alq_ent ?? '0', alq_sai: cbsData.alq_sai ?? '0',
+                    red_alq_ent: cbsData.red_alq_ent ?? '0', red_alq_sai: cbsData.red_alq_sai ?? '0',
+                    alqf_ent: cbsData.alqf_ent ?? '0', alqf_sai: cbsData.alqf_sai ?? '0',
+                } : { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alq_ent: '0', alq_sai: '0', red_alq_ent: '0', red_alq_sai: '0', alqf_ent: '0', alqf_sai: '0' },
+                ibs: ibsData ? {
+                    cst_entrada: ibsData.cst_entrada ?? '01', cst_saida: ibsData.cst_saida ?? '01',
+                    cclass_entrada: ibsData.cclass_entrada ?? '01', cclass_saida: ibsData.cclass_saida ?? '01',
+                    alqe_ent: ibsData.alqe_ent ?? '0', alqe_sai: ibsData.alqe_sai ?? '0',
+                    red_alqe_ent: ibsData.red_alqe_ent ?? '0', red_alqe_sai: ibsData.red_alqe_sai ?? '0',
+                    alqfe_ent: ibsData.alqfe_ent ?? '0', alqfe_sai: ibsData.alqfe_sai ?? '0',
+                    alqm_ent: ibsData.alqm_ent ?? '0', alqm_sai: ibsData.alqm_sai ?? '0',
+                    red_alqm_ent: ibsData.red_alqm_ent ?? '0', red_alqm_sai: ibsData.red_alqm_sai ?? '0',
+                    alqfm_ent: ibsData.alqfm_ent ?? '0', alqfm_sai: ibsData.alqfm_sai ?? '0',
+                } : { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alqe_ent: '0', alqe_sai: '0', red_alqe_ent: '0', red_alqe_sai: '0', alqfe_ent: '0', alqfe_sai: '0', alqm_ent: '0', alqm_sai: '0', red_alqm_ent: '0', red_alqm_sai: '0', alqfm_ent: '0', alqfm_sai: '0' },
+            });
+            setEditingProductId(productId);
+            setShowForm(true);
+            setFormTab('info');
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const fetchRecentProducts = async () => {
         setLoading(true);
         try {
@@ -429,78 +484,56 @@ const ProductManager = React.forwardRef((props, ref) => {
                 }
             }
 
-            // 2. Validations
+            // Validação de EAN único — ignora o próprio produto ao editar
             const { data: existingEan } = await supabase
-                .from('products')
-                .select('id')
-                .eq('ean', finalEan)
-                .maybeSingle();
+                .from('products').select('id').eq('ean', finalEan).maybeSingle();
 
-            if (existingEan) {
+            if (existingEan && existingEan.id !== editingProductId) {
                 if (formData.ean) {
                     throw new Error("Já existe um produto com este EAN.");
                 } else {
-                    // Se foi o gerado automaticamente, tenta um sufixo para desempate
                     finalEan = `${finalEan}${Math.floor(Math.random() * 1000)}`;
                 }
             }
 
-            // Apenas para garantir que não mandamos o mesmo nome se o EAN for gerado
-            if (!formData.ean) {
+            // Validação de nome único — apenas no cadastro
+            if (!editingProductId && !formData.ean) {
                 const { data: existingName } = await supabase
-                    .from('products')
-                    .select('id')
-                    .ilike('produto', formData.produto)
-                    .maybeSingle();
-
+                    .from('products').select('id').ilike('produto', formData.produto).maybeSingle();
                 if (existingName) throw new Error("Já existe um produto com este nome.");
             }
 
-            // 3. Insert Product Base
-            const { data: newProduct, error: insertError } = await supabase
-                .from('products')
-                .insert([{
-                    produto: formData.produto,
-                    ean: finalEan,
-                    ncm: formData.ncm,
-                    cest: formData.cest || null,
-                    status: 'active'
-                }])
-                .select()
-                .single();
+            if (editingProductId) {
+                const { error: updateError } = await supabase
+                    .from('products')
+                    .update({ produto: formData.produto, ean: finalEan, ncm: formData.ncm, cest: formData.cest || null })
+                    .eq('id', editingProductId);
+                if (updateError) throw updateError;
 
-            if (insertError) throw insertError;
+                const { error: cbsError } = await supabase.from('cbs').update({ ...formData.cbs }).eq('product_id', editingProductId);
+                if (cbsError) throw cbsError;
 
-            // 3. Insert CBS Data
-            const { error: cbsError } = await supabase
-                .from('cbs')
-                .insert([{
-                    product_id: newProduct.id,
-                    ...formData.cbs
-                }]);
+                const { error: ibsError } = await supabase.from('ibs').update({ ...formData.ibs }).eq('product_id', editingProductId);
+                if (ibsError) throw ibsError;
 
-            if (cbsError) throw cbsError;
+                alert("Produto atualizado com sucesso!");
+            } else {
+                const { data: newProduct, error: insertError } = await supabase
+                    .from('products')
+                    .insert([{ produto: formData.produto, ean: finalEan, ncm: formData.ncm, cest: formData.cest || null, status: 'active' }])
+                    .select().single();
+                if (insertError) throw insertError;
 
-            // 4. Insert IBS Data
-            const { error: ibsError } = await supabase
-                .from('ibs')
-                .insert([{
-                    product_id: newProduct.id,
-                    ...formData.ibs
-                }]);
+                const { error: cbsError } = await supabase.from('cbs').insert([{ product_id: newProduct.id, ...formData.cbs }]);
+                if (cbsError) throw cbsError;
 
-            if (ibsError) throw ibsError;
+                const { error: ibsError } = await supabase.from('ibs').insert([{ product_id: newProduct.id, ...formData.ibs }]);
+                if (ibsError) throw ibsError;
 
-            alert("Produto e dados tributários cadastrados com sucesso!");
+                alert("Produto e dados tributários cadastrados com sucesso!");
+            }
 
-            // Reset form
-            setFormData({
-                produto: '', ean: '', ncm: '', cest: '',
-                cbs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alq_ent: '0', alq_sai: '0', red_alq_ent: '0', red_alq_sai: '0', alqf_ent: '0', alqf_sai: '0' },
-                ibs: { cst_entrada: '01', cst_saida: '01', cclass_entrada: '01', cclass_saida: '01', alqe_ent: '0', alqe_sai: '0', red_alqe_ent: '0', red_alqe_sai: '0', alqfe_ent: '0', alqfe_sai: '0', alqm_ent: '0', alqm_sai: '0', red_alqm_ent: '0', red_alqm_sai: '0', alqfm_ent: '0', alqfm_sai: '0' }
-            });
-            setShowForm(false);
-            setFormTab('info');
+            closeForm();
             fetchRecentProducts();
         } catch (err: any) {
             setError(err.message);
@@ -544,6 +577,7 @@ const ProductManager = React.forwardRef((props, ref) => {
                                     <th className="px-6 py-4">NCM</th>
                                     <th className="px-6 py-4">Status</th>
                                     <th className="px-6 py-4">Data</th>
+                                    <th className="px-6 py-4">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -557,6 +591,14 @@ const ProductManager = React.forwardRef((props, ref) => {
                                         </td>
                                         <td className="px-6 py-4 text-xs font-medium text-slate-400 whitespace-nowrap">
                                             {new Date(p.created_at || p.updated_at).toLocaleDateString('pt-BR')}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <button
+                                                onClick={() => handleEditProduct(p.id)}
+                                                className="flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-800 transition"
+                                            >
+                                                <i className="fa-solid fa-pen-to-square"></i> Editar
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -577,9 +619,9 @@ const ProductManager = React.forwardRef((props, ref) => {
                                 <div className="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center text-lg shadow-lg shadow-brand-500/20">
                                     <i className="fa-solid fa-box-open"></i>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-800 tracking-tight">Cadastro de Produto e Tributação</h3>
+                                <h3 className="text-xl font-black text-slate-800 tracking-tight">{editingProductId ? 'Editar Produto' : 'Cadastro de Produto e Tributação'}</h3>
                             </div>
-                            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 transition p-2">
+                            <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 transition p-2">
                                 <i className="fa-solid fa-xmark text-xl"></i>
                             </button>
                         </div>
@@ -847,7 +889,7 @@ const ProductManager = React.forwardRef((props, ref) => {
                         <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3 shrink-0">
                             <button
                                 type="button"
-                                onClick={() => setShowForm(false)}
+                                onClick={closeForm}
                                 className="px-6 py-3 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-100 transition text-xs uppercase tracking-widest"
                             >
                                 Cancelar
@@ -869,7 +911,7 @@ const ProductManager = React.forwardRef((props, ref) => {
                                     disabled={isSaving}
                                     className="px-10 py-3 bg-brand-600 text-white font-black rounded-xl hover:bg-brand-700 transition text-xs uppercase tracking-widest shadow-xl shadow-brand-500/30 disabled:opacity-70 flex items-center justify-center gap-2"
                                 >
-                                    {isSaving ? <i className="fa-solid fa-circle-notch fa-spin"></i> : 'Finalizar e Salvar'}
+                                    {isSaving ? <i className="fa-solid fa-circle-notch fa-spin"></i> : editingProductId ? 'Salvar Alterações' : 'Finalizar e Salvar'}
                                 </button>
                             )}
                         </div>
@@ -1066,7 +1108,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
                 {currentTab === 'missing' && <MissingProductManager onRegister={handleRegisterMissing} />}
 
-                {currentTab === 'subscribers' ? (
+                {currentTab === 'subscribers' && (
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left text-slate-600">
@@ -1159,8 +1201,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                             </table>
                         </div>
                     </div>
-                ) : (
-                    <ProductManager />
                 )}
             </div>
 
