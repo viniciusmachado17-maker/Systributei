@@ -291,6 +291,7 @@ const ProductManager = React.forwardRef((props, ref) => {
     const [error, setError] = useState<string | null>(null);
     const [formTab, setFormTab] = useState<'info' | 'cbs' | 'ibs'>('info');
     const [editingProductId, setEditingProductId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // EXPOSTO VIA REF
     React.useImperativeHandle(ref, () => ({
@@ -390,6 +391,11 @@ const ProductManager = React.forwardRef((props, ref) => {
         fetchRecentProducts();
     }, []);
 
+    useEffect(() => {
+        const timer = setTimeout(() => fetchRecentProducts(searchQuery), 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     const closeForm = () => {
         setShowForm(false);
         setEditingProductId(null);
@@ -444,15 +450,20 @@ const ProductManager = React.forwardRef((props, ref) => {
         }
     };
 
-    const fetchRecentProducts = async () => {
+    const fetchRecentProducts = async (search = '') => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(20);
+            let query = supabase.from('products').select('*').order('created_at', { ascending: false });
 
+            if (search.trim()) {
+                query = query.or(
+                    `produto.ilike.%${search.trim()}%,ean.ilike.%${search.trim()}%,ncm.ilike.%${search.trim()}%`
+                );
+            } else {
+                query = query.limit(20);
+            }
+
+            const { data, error } = await query;
             if (error) throw error;
             setProducts(data || []);
         } catch (err: any) {
@@ -562,11 +573,26 @@ const ProductManager = React.forwardRef((props, ref) => {
                 <div className="text-center py-12 text-slate-400 font-medium">Carregando produtos recentes...</div>
             ) : (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                        <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest flex items-center gap-2">
-                            <i className="fa-solid fa-clock-rotate-left text-brand-500"></i>
-                            Últimos Cadastros
+                    <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest flex items-center gap-2 shrink-0">
+                            <i className="fa-solid fa-box-archive text-brand-500"></i>
+                            {searchQuery.trim() ? `${products.length} resultado(s)` : 'Últimos 20 cadastros'}
                         </h3>
+                        <div className="relative flex-1">
+                            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input
+                                type="text"
+                                placeholder="Buscar por nome, EAN ou NCM..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
+                            />
+                            {searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                                    <i className="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            )}
+                        </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-slate-600">
@@ -581,6 +607,13 @@ const ProductManager = React.forwardRef((props, ref) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
+                                {products.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-sm font-medium">
+                                            {searchQuery.trim() ? `Nenhum produto encontrado para "${searchQuery}"` : 'Nenhum produto cadastrado ainda.'}
+                                        </td>
+                                    </tr>
+                                )}
                                 {products.map((p) => (
                                     <tr key={p.id} className="hover:bg-slate-50/50 transition">
                                         <td className="px-6 py-4 font-bold text-slate-800">{p.produto}</td>
